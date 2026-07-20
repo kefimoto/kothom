@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-20T18:30:00Z",
+  "title": "Design System: KOTHOM",
+  "extensions": {
+    "colorMeta": {
+      "ink-black": {
+        "role": "neutral",
+        "displayName": "Ink Black",
+        "canonical": "oklch(9% 0 0)",
+        "tonalRamp": [
+          "#0a0a0a",
+          "#1a1a1a",
+          "#2a2a2a",
+          "#3d3d3d",
+          "#525252",
+          "#6b6b6b",
+          "#8a8a8a",
+          "#b0b0b0"
+        ]
+      },
+      "cream": {
+        "role": "neutral",
+        "displayName": "Cream",
+        "canonical": "oklch(95% 0.015 80)",
+        "tonalRamp": [
+          "#5c5344",
+          "#7a6f5c",
+          "#98897149",
+          "#b3a48e",
+          "#c9bca7",
+          "#ddd3c2",
+          "#ece4d6",
+          "#f4efe6"
+        ]
+      },
+      "terracotta": {
+        "role": "primary",
+        "displayName": "Terracotta",
+        "canonical": "oklch(45% 0.08 40)",
+        "tonalRamp": [
+          "#3d251b",
+          "#5a3627",
+          "#764634",
+          "#8f5741",
+          "#a86a52",
+          "#bd8468",
+          "#cf9f83",
+          "#e0bda3"
+        ],
+        "note": "Default token darkened to #764634 (ramp step 3, was #a86a52 at step 5) so cream button/caption-bar text clears 4.5:1 (6.8:1 measured vs 3.78:1). #a86a52 kept as terracotta-swatch for the source-identity reference value."
+      },
+      "tan-gold": {
+        "role": "secondary",
+        "displayName": "Tan-Gold",
+        "canonical": "oklch(75% 0.06 75)",
+        "tonalRamp": [
+          "#40331f",
+          "#5f4d2e",
+          "#7d673d",
+          "#9c8452",
+          "#c9a876",
+          "#d6bc95",
+          "#e2ceb0",
+          "#eee0cc"
+        ]
+      },
+      "silver-emboss": {
+        "role": "tertiary",
+        "displayName": "Silver Emboss",
+        "canonical": "oklch(80% 0 0)",
+        "tonalRamp": [
+          "#3a3a3a",
+          "#525252",
+          "#6b6b6b",
+          "#848484",
+          "#9d9d9d",
+          "#b6b6b6",
+          "#c9c9c9",
+          "#e0e0e0"
+        ]
+      },
+      "charcoal-body": {
+        "role": "neutral",
+        "displayName": "Charcoal Body",
+        "canonical": "oklch(20% 0 0)",
+        "tonalRamp": [
+          "#0a0a0a",
+          "#1a1a1a",
+          "#2a2a2a",
+          "#3d3d3d",
+          "#525252",
+          "#6b6b6b",
+          "#8a8a8a",
+          "#b0b0b0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Wordmark and hero tagline only ('Spreading His Word, One Family At A Time'). Never body copy."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles ('A Ministry Built On Salvation...', 'How You Can Help'). Free substitute for the deck's original Augustea Open."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Mission prose and service descriptions. PT Serif chosen over Lora/Fraunces-style AI defaults for legibility at larger sizes for an older audience."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Default easing for hover/focus state changes only — no orchestrated entrances."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Terracotta action button used for donate/join/help CTAs.",
+      "html": "<button class=\"ds-btn-primary\">BECOME A KNIGHT</button>",
+      "css": ".ds-btn-primary { background: #764634; color: #f4efe6; font-family: 'Cinzel', Georgia, serif; font-weight: 600; letter-spacing: 0.03em; padding: 14px 32px; border: none; border-radius: 0; transition: background 0.2s ease; } .ds-btn-primary:hover { background: #5a3627; } .ds-btn-primary:focus-visible { outline: 2px solid #c9a876; outline-offset: 2px; }"
+    },
+    {
+      "name": "Image Caption Bar",
+      "kind": "card",
+      "refersTo": "button-primary",
+      "description": "Flush terracotta caption bar anchored to the bottom of a full-bleed photo (Pastoral Services, Donations/Support).",
+      "html": "<figure class=\"ds-caption-figure\"><img src=\"/placeholder.jpg\" alt=\"\" /><figcaption class=\"ds-caption-bar\"><a href=\"#\">Pastoral Services</a></figcaption></figure>",
+      "css": ".ds-caption-figure { margin: 0; position: relative; } .ds-caption-figure img { display: block; width: 100%; height: auto; } .ds-caption-bar { background: #764634; padding: 16px 24px; } .ds-caption-bar a { color: #f4efe6; font-family: 'PT Serif', Georgia, serif; text-decoration: underline; font-size: 1.05rem; }"
+    },
+    {
+      "name": "Radiant Cross Mark",
+      "kind": "custom",
+      "refersTo": "components.button-primary",
+      "description": "Signature glowing cross logo with arced wordmark, used in hero and footer/contact sections on black backgrounds.",
+      "html": "<div class=\"ds-cross-mark\"><svg class=\"ds-cross-glow\" viewBox=\"0 0 200 200\" aria-hidden=\"true\"><defs><radialGradient id=\"glow\" cx=\"50%\" cy=\"50%\" r=\"50%\"><stop offset=\"0%\" stop-color=\"#ffffff\" stop-opacity=\"0.9\"/><stop offset=\"100%\" stop-color=\"#ffffff\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"100\" cy=\"100\" r=\"90\" fill=\"url(#glow)\"/><rect x=\"85\" y=\"40\" width=\"30\" height=\"120\" fill=\"#ffffff\"/><rect x=\"55\" y=\"85\" width=\"90\" height=\"30\" fill=\"#ffffff\"/></svg><p class=\"ds-cross-word\">Knights of the Higher Order</p><p class=\"ds-cross-sub\">Ministries</p></div>",
+      "css": ".ds-cross-mark { text-align: center; color: #f4efe6; } .ds-cross-glow { width: 160px; height: 160px; } .ds-cross-word { font-family: 'Cinzel Decorative', Georgia, serif; text-transform: uppercase; letter-spacing: 0.08em; font-size: 1rem; margin: 8px 0 0; } .ds-cross-sub { font-family: 'Cinzel', Georgia, serif; letter-spacing: 0.1em; font-size: 1.25rem; margin: 4px 0 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Order's Seal",
+    "overview": "KOTHOM's existing materials — a radiant white cross on black, inscription-style capital lettering, a black-and-cream duotone — already read like the seal of a chivalric order: solemn, legible, unhurried, built to be trusted by an older, church-going audience rather than to impress a design crowd. This is an existing identity captured from the ministry's own Canva deck, not a new system invented for the web; the job here is preservation and faithful translation, not reinvention. The system explicitly rejects the generic SaaS/startup landing page and the flashy prosperity-gospel megachurch look — this identity is dignified and text-forward, closer to a printed program than an app.",
+    "keyCharacteristics": [
+      "Black-and-cream duotone: dark slides (hero, contact/footer) and light cream slides (mission, services) alternate, never mixed on one surface",
+      "One warm terracotta accent for actionable buttons; a secondary muted tan-gold for footer labels and dividers",
+      "Inscription-style capital display type (Cinzel Decorative for the wordmark, Cinzel for section headlines) paired with a warm, highly legible serif body",
+      "A single signature mark — the radiant cross — anchors the hero and footer"
+    ],
+    "rules": [
+      {
+        "name": "The Duotone Rule",
+        "body": "A given section is either black or cream, never a gradient or blend between them. Alternate section-by-section down the page for rhythm.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Accent Rule",
+        "body": "Terracotta appears only on things a visitor can click. If it's not a button or a link, it isn't terracotta.",
+        "section": "colors"
+      },
+      {
+        "name": "The Accessible-Accent Rule",
+        "body": "The default terracotta used for button/caption-bar text is #764634, not the lighter source swatch #a86a52 — the lighter tone only measures 3.78:1 with cream text at the sizes actually used, failing the 4.5:1 AA threshold for normal text. Accessibility wins over the literal extracted swatch.",
+        "section": "colors"
+      },
+      {
+        "name": "The Legibility-First Rule",
+        "body": "Any typographic decision that trades readability for ornament is wrong for this audience. The decorative display face is reserved for short headline moments only.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Surfaces are flat at rest. The only depth signal is the alternating black/cream duotone itself.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do alternate full-bleed black and cream sections down the page (The Duotone Rule).",
+      "Do reserve terracotta strictly for clickable elements (The One Accent Rule).",
+      "Do use Cinzel Decorative only for the wordmark/hero tagline; Cinzel for section headlines; PT Serif for all body copy.",
+      "Do keep every corner sharp (0px radius) — cards, buttons, images, all of it.",
+      "Do surface the founder's name, address, and phone number prominently as legitimacy proof, not buried in fine print."
+    ],
+    "donts": [
+      "Don't use gradient text or background-clip: text effects.",
+      "Don't use glassmorphism, drop shadows, or floating cards — this system is flat by doctrine.",
+      "Don't build a hero-metric template (big number + small label + gradient accent) — this is a ministry, not a SaaS product.",
+      "Don't add tiny uppercase tracked eyebrows above every section.",
+      "Don't use loud stock photography, autoplay video backgrounds, or aggressive donate popups.",
+      "Don't round any corners — the source identity is sharp-cornered throughout.",
+      "Don't substitute a lighter or more saturated cream for the established #f4efe6 — it's a deliberate brand choice, not a placeholder."
+    ]
+  }
+}
