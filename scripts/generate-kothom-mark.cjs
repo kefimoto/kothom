@@ -3,22 +3,25 @@
 // (not live <text>), so it has no runtime font/JS dependency and can be
 // handed to a print shop as-is.
 //
-// One-time setup to run this:
-//   npm install --no-save opentype.js   (or: bun add opentype.js, then remove from package.json)
-//   curl -o CinzelDecorative-Bold.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/cinzeldecorative/CinzelDecorative-Bold.ttf
-//   curl -o Cinzel-Variable.ttf "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/Cinzel%5Bwght%5D.ttf"
-//   python3 -m pip install --user fonttools
-//   python3 -m fontTools.varLib.instancer Cinzel-Variable.ttf wght=700 -o Cinzel-Bold-static.ttf
-//   node scripts/generate-kothom-mark.cjs   (run from the repo root, with the 3 .ttf files alongside this script)
-//
-// If the arc geometry in the CrossMark component (src/app/page.tsx) ever
-// changes, update the constants below to match and rerun.
+// Full instructions (one-time setup, how the geometry was derived, how to
+// change the font or re-tune anything) are in CROSS-MARK.md — read
+// that before editing this file. Quick start, once the 3 .ttf files this
+// needs are sitting alongside this script (see the doc for how to fetch
+// them):
+//   node scripts/generate-kothom-mark.cjs
+//   WORDMARK_FONT=decorative node scripts/generate-kothom-mark.cjs   (preview a different font — writes to a separate file, not the real one)
 
 const opentype = require("opentype.js");
 const fs = require("fs");
 
+const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
+const WORDMARK_FONT_FILES = {
+  decorative: "./CinzelDecorative-Bold.ttf",
+  cinzel: "./Cinzel-Bold-static.ttf",
+  marcellus: "./Marcellus-Regular.ttf",
+};
 const decorativeFont = opentype.parse(
-  fs.readFileSync("./CinzelDecorative-Bold.ttf").buffer,
+  fs.readFileSync(WORDMARK_FONT_FILES[WORDMARK_FONT_CHOICE]).buffer,
 );
 const cinzelFont = opentype.parse(
   fs.readFileSync("./Cinzel-Bold-static.ttf").buffer,
@@ -84,6 +87,41 @@ function computeArcChars(text, font, fontSize, { centerX, centerY, radiusX, radi
   });
 }
 
+// Rounds every corner of a closed polygon by a fixed radius: each vertex is
+// replaced with a short straight cut-back along both adjacent edges (capped
+// at half that edge's length, so short edges can't overlap), joined by a
+// quadratic curve through the original vertex. Kept deliberately simple —
+// a fixed small radius, not a full arc-based rounding — since the ask is
+// just to soften the cross's corners "ever so slightly", not rebuild it.
+function roundedPolygonPath(points, radius) {
+  const n = points.length;
+  const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  const cuts = points.map((p, i) => {
+    const prev = points[(i - 1 + n) % n];
+    const next = points[(i + 1) % n];
+    const rPrev = Math.min(radius, dist(p, prev) / 2);
+    const rNext = Math.min(radius, dist(p, next) / 2);
+    const dPrev = dist(p, prev);
+    const dNext = dist(p, next);
+    const before = [
+      p[0] + ((prev[0] - p[0]) / dPrev) * rPrev,
+      p[1] + ((prev[1] - p[1]) / dPrev) * rPrev,
+    ];
+    const after = [
+      p[0] + ((next[0] - p[0]) / dNext) * rNext,
+      p[1] + ((next[1] - p[1]) / dNext) * rNext,
+    ];
+    return { vertex: p, before, after };
+  });
+  const fmt = (pt) => `${pt[0].toFixed(2)} ${pt[1].toFixed(2)}`;
+  let d = `M ${fmt(cuts[0].after)} `;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    d += `L ${fmt(cuts[j].before)} Q ${fmt(cuts[j].vertex)} ${fmt(cuts[j].after)} `;
+  }
+  return `${d}Z`;
+}
+
 function glyphPathD(font, char, fontSize) {
   if (char === " ") return null;
   return font.getPath(char, 0, 0, fontSize).toPathData(2);
@@ -105,31 +143,48 @@ function charPathElement(font, char, fontSize, x, y, rotation, fill) {
 // --- Wordmark: arced above the cross ---
 // The exact circle that touches the cross's top tip (100,8) and both
 // crossbar tips (35,66)/(165,66) has center (100, 73.42) and radius 65.42.
-// To add padding — instead of touching, clear the cross by the same gap
-// "Ministries" has below it — both the radius is expanded *and* the center
-// is shifted up. Expanding the radius alone pushes the peak up correctly
-// but relocates the endpoints far past the crossbar tips (a bigger circle
-// spreads the same fixed arc length over a smaller angle); translating
-// alone keeps the endpoints x-aligned with the tips but is really just the
-// same circle sliding, not padding. Solving for both together (radius
-// 65.42->66.73, center 73.42->54.39) gives the peak and both endpoints the
-// same ~20-unit gap from where they used to touch.
+// To add padding — instead of touching, clear the cross by a gap — both
+// the radius is expanded *and* the center is shifted up. Expanding the
+// radius alone pushes the peak up correctly but relocates the endpoints
+// far past the crossbar tips (a bigger circle spreads the same fixed arc
+// length over a smaller angle); translating alone keeps the endpoints
+// x-aligned with the tips but is really just the same circle sliding, not
+// padding. Solving for both together gives the peak and both endpoints
+// the same ~10-unit gap from where they'd otherwise touch, then the
+// radius is nudged out a little further (see CROSS-MARK.md) so the
+// endpoint letters clear the crossbar's flared tips instead of clipping
+// into them.
+//
+// Font size and radius/center are specific to each font's own letter
+// widths (a wider or narrower typeface needs different numbers to land in
+// the same place), so they're looked up per WORDMARK_FONT_CHOICE rather
+// than being one shared constant. See CROSS-MARK.md for how these
+// were derived and how to redo it for a new font.
 const WORDMARK_TEXT = "KNIGHTS OF THE HIGHER ORDER";
-const WORDMARK_FONT_SIZE = 10.5;
-const WORDMARK_RADIUS = 66.73;
-const WORDMARK_CENTER_Y = 54.39;
-const wordmarkChars = computeArcChars(WORDMARK_TEXT, decorativeFont, WORDMARK_FONT_SIZE, {
-  centerX: 100,
-  centerY: WORDMARK_CENTER_Y,
-  radiusX: WORDMARK_RADIUS,
-  radiusY: WORDMARK_RADIUS,
-});
+const WORDMARK_GEOMETRY = {
+  decorative: { fontSize: 10.5, radius: 71.68, centerY: 69.51 },
+  cinzel: { fontSize: 10.5, radius: 71.68, centerY: 69.51 }, // approximate; not tuned for Cinzel's own widths
+  marcellus: { fontSize: 12.65, radius: 71.66, centerY: 69.49 },
+};
+const wordmarkGeometry =
+  WORDMARK_GEOMETRY[WORDMARK_FONT_CHOICE] || WORDMARK_GEOMETRY.decorative;
+const wordmarkChars = computeArcChars(
+  WORDMARK_TEXT,
+  decorativeFont,
+  wordmarkGeometry.fontSize,
+  {
+    centerX: 100,
+    centerY: wordmarkGeometry.centerY,
+    radiusX: wordmarkGeometry.radius,
+    radiusY: wordmarkGeometry.radius,
+  },
+);
 const wordmarkPaths = wordmarkChars
   .map((p) =>
     charPathElement(
       decorativeFont,
       p.char,
-      WORDMARK_FONT_SIZE,
+      wordmarkGeometry.fontSize,
       p.x,
       p.y,
       p.rotation,
@@ -154,33 +209,104 @@ const ministriesPaths = ministriesChars
     const advance = cinzelFont.getAdvanceWidth(char, MINISTRIES_FONT_SIZE);
     const x = 100 + ministriesCumulative + advance / 2;
     ministriesCumulative += ministriesWidths[i];
-    return charPathElement(cinzelFont, char, MINISTRIES_FONT_SIZE, x, 228, 0, "#c9a876");
+    return charPathElement(cinzelFont, char, MINISTRIES_FONT_SIZE, x, 217.83, 0, "#c9a876");
   })
   .join("\n      ");
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 -25 165 280">
+// --- Cross body ---
+// Each arm is a flared octagon — wide at the tip, narrowing toward the
+// crossbar — with corners rounded ever so slightly. The taper is more
+// pronounced than earlier passes: tip half-width/height roughly 1.8x the
+// width at the crossbar, instead of the previous ~1.2x.
+const CROSS_CORNER_RADIUS = 2.5;
+const VERTICAL_ARM_POINTS = [
+  [100 - 16, 8],
+  [100 + 16, 8],
+  [100 + 9, 53],
+  [100 + 9, 79],
+  [100 + 16, 194],
+  [100 - 16, 194],
+  [100 - 9, 79],
+  [100 - 9, 53],
+];
+const HORIZONTAL_ARM_POINTS = [
+  [35, 66 - 18],
+  [35, 66 + 18],
+  [91, 66 + 10],
+  [109, 66 + 10],
+  [165, 66 + 18],
+  [165, 66 - 18],
+  [109, 66 - 10],
+  [91, 66 - 10],
+];
+const verticalArmPath = roundedPolygonPath(VERTICAL_ARM_POINTS, CROSS_CORNER_RADIUS);
+const horizontalArmPath = roundedPolygonPath(HORIZONTAL_ARM_POINTS, CROSS_CORNER_RADIUS);
+
+// --- Starburst: a filled, jagged sunburst silhouette behind the cross ---
+// A handful of thin separated ray lines reads as scattered streaks rather
+// than a burst that fills the space — there's too much bare background
+// between them. Instead this is one continuous star-shaped polygon per
+// layer: vertices alternate between an outer (spike tip) and inner
+// (valley) radius all the way around, so there are no gaps for the
+// background to show through between rays. Two layers at different sizes
+// and a slight rotation offset (plus a soft blur) give it some depth
+// without needing more than 2 shapes total — nowhere near "a thousand
+// lines". Both stay well inside the viewBox's tightest clearance from the
+// center (100,66) in any direction, so nothing gets clipped.
+function starPolygonPoints(cx, cy, spikeCount, outerRadius, innerRadius, rotationDeg) {
+  const points = [];
+  const vertexCount = spikeCount * 2;
+  for (let i = 0; i < vertexCount; i++) {
+    const r = i % 2 === 0 ? outerRadius : innerRadius;
+    const angle = (Math.PI * i) / spikeCount + (rotationDeg * Math.PI) / 180;
+    points.push(`${(cx + r * Math.sin(angle)).toFixed(2)},${(cy - r * Math.cos(angle)).toFixed(2)}`);
+  }
+  return points.join(" ");
+}
+const starburstLayers = [
+  { spikes: 22, outer: 64, inner: 30, rotation: 0, opacity: 0.09 },
+  { spikes: 22, outer: 46, inner: 16, rotation: 360 / 44, opacity: 0.13 },
+]
+  .map(
+    (s) =>
+      `<polygon points="${starPolygonPoints(100, 66, s.spikes, s.outer, s.inner, s.rotation)}" fill="#f4efe6" fill-opacity="${s.opacity}" />`,
+  )
+  .join("\n    ");
+
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="17 -15 166 260">
   <defs>
     <radialGradient id="hotspot" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="15%" stop-color="#ffffff" stop-opacity="0.85" />
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.55" />
+      <stop offset="65%" stop-color="#ffffff" stop-opacity="0.18" />
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </radialGradient>
     <filter id="soften" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="3.2" />
     </filter>
+    <filter id="starburstBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.6" />
+    </filter>
   </defs>
+
+  <!-- Subtle starburst behind the cross -->
+  <g filter="url(#starburstBlur)">
+    ${starburstLayers}
+  </g>
 
   <!-- Soft glow hugging the edges of the cross -->
   <g filter="url(#soften)">
-    <rect x="86" y="6" width="28" height="190" fill="#f4efe6" />
-    <rect x="30" y="50" width="140" height="32" fill="#f4efe6" />
+    <path fill="#f4efe6" d="${verticalArmPath}" />
+    <path fill="#f4efe6" d="${horizontalArmPath}" />
   </g>
 
   <!-- Crisp cross body -->
-  <polygon fill="#f4efe6" points="87,8 113,8 111,53 111,79 113,194 87,194 89,79 89,53" />
-  <polygon fill="#f4efe6" points="35,51 35,81 89,79 111,79 165,81 165,51 111,53 89,53" />
+  <path fill="#f4efe6" d="${verticalArmPath}" />
+  <path fill="#f4efe6" d="${horizontalArmPath}" />
 
   <!-- Bright hotspot at the intersection -->
-  <circle cx="100" cy="66" r="34" fill="url(#hotspot)" />
+  <circle cx="100" cy="66" r="58" fill="url(#hotspot)" />
 
   <!-- Wordmark arced above the cross -->
   <g>
@@ -194,5 +320,12 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 -25 165 280">
 </svg>
 `;
 
-fs.writeFileSync("public/kothom-mark.svg", svg);
-console.log("wrote public/kothom-mark.svg,", svg.length, "bytes");
+// Only the default font choice writes over the real production file;
+// previewing a different font (WORDMARK_FONT=... set explicitly) writes to
+// a separate file instead so a preview run can't clobber it by accident.
+const isDefaultFont = !process.env.WORDMARK_FONT;
+const outPath = isDefaultFont
+  ? "public/kothom-mark.svg"
+  : `kothom-mark-preview-${WORDMARK_FONT_CHOICE}.svg`;
+fs.writeFileSync(outPath, svg);
+console.log("wrote", outPath + ",", svg.length, "bytes");
