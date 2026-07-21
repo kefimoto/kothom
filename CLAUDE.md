@@ -68,7 +68,7 @@ Also deliberate:
 The GitHub repo (`kefimoto/kothom`) is **public**, made so on 2026-07-21 specifically to unlock GitHub branch protection on `main` (a free-tier limitation — private repos require GitHub Pro for protection rules). Checked git history for secrets before flipping visibility; found none.
 
 `main` requires **two** status checks to pass before any push lands, **including from admins** (`enforce_admins` is on) — there is no bypass:
-- **`quality-gate`** — the GitHub Actions workflow at `.github/workflows/ci.yml` (lint, typecheck, `next build` in a plain Ubuntu runner).
+- **`quality-gate`** — the GitHub Actions workflow at `.github/workflows/ci.yml` (content validation, lint, typecheck, unit tests, `next build`, and Playwright e2e in a plain Ubuntu runner). Content-only PRs run just the content validation step — see "CI performance" below.
 - **`Vercel`** — the commit status Vercel's own GitHub App integration posts once *its* build (and, for PRs, the resulting preview deployment) actually succeeds. This is a separate build environment from `quality-gate` (Vercel's own container/Node version/env vars), so it's the real guarantee that what will actually deploy does deploy successfully — a PR can't merge on a broken preview.
 
 Force-pushes and branch deletion are blocked as part of the same protection rule.

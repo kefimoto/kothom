@@ -4,10 +4,24 @@ The site's signature mark — cream cross, "Knights of the Higher Order" arced
 above it, "Ministries" below — lives at `public/kothom-mark.svg`. It's a
 **fully static vector file**: every letter is a real glyph outline `<path>`
 (extracted from actual font files), not live `<text>`. There is no runtime
-layout code — `CrossMark` in `src/app/page.tsx` just renders this file via
-`next/image`. This was a deliberate requirement: the mark needs to be
+layout code — `CrossMark` in `src/components/cross-mark.tsx` just renders this
+file via `next/image`. This was a deliberate requirement: the mark needs to be
 print-ready (business cards, letterhead, etc.), and a font-dependent or
 JS-computed version isn't portable to a print shop.
+
+## Where it appears — and where it deliberately doesn't
+
+Two placements, both at a size where the arced wordmark stays readable: the
+homepage hero (`size="large"`) and the footer of every page (`size="small"`,
+in `src/components/site-footer.tsx`).
+
+**It is deliberately absent from the site header.** A nav bar can only give it
+around 44px of height, and at that size the arced lettering and the starburst
+collapse into a grey smudge that reads as a broken image — which is exactly the
+"simplified into a flat icon" outcome `DESIGN.md` §5 forbids. The header uses a
+Cinzel text wordmark instead. If you're tempted to add the mark back to the
+header, the constraint to solve isn't the CSS, it's that this mark has too much
+detail to survive below roughly 100px.
 
 `scripts/generate-kothom-mark.cjs` regenerates the file from a set of
 geometry constants. This doc explains the setup, the geometry, and how to
@@ -113,7 +127,8 @@ closed form, so the script numerically integrates length-vs-angle once
 into a lookup table, then inverts that table to find the angle for each
 character's target distance along the arc. This is the same math the
 `CrossMark` component itself used before it was replaced with the static
-file — see git history on `src/app/page.tsx` if you want the React
+file — see git history on `src/app/page.tsx` (the component lived there
+before it moved to `src/components/cross-mark.tsx`) if you want the React
 version of this for reference.
 
 **The starburst** behind the cross is deliberately *not* a bunch of
