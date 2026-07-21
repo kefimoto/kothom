@@ -11,8 +11,12 @@ bun install
 bun dev        # start the dev server at localhost:3000
 bun run lint       # Biome
 bun run typecheck  # tsc --noEmit
+bun run test       # Vitest unit tests
+bun run test:e2e   # Playwright e2e smoke tests
 bun run build      # next build
 ```
+
+A pre-commit hook (husky + lint-staged) auto-formats staged files with Biome, so most formatting issues never reach a commit.
 
 Read `AGENTS.md` before touching framework-level code — this repo pins a Next.js version with breaking changes from what's in most models' training data, and `node_modules/next/dist/docs/` is the source of truth over prior knowledge.
 
@@ -43,7 +47,7 @@ A few things look like bugs but are intentional and tracked — check `CLAUDE.md
 
 - The phone number (`689-123-4567`) is a known placeholder, not a typo.
 - "Become a Knight" / "Legacy Donations" intentionally link to `mailto:` — there's no live Stripe checkout yet.
-- No test framework, no Dependabot, no pre-commit hooks — each was a deliberate call for a single static marketing page maintained by one person; see `CLAUDE.md` for the reasoning and what would change that calculus.
+- No commitlint, no Dependabot — each is still a deliberate call; see `CLAUDE.md` for the reasoning and what would change that calculus.
 
 ## Reliability principle
 
