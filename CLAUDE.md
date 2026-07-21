@@ -52,6 +52,15 @@ The GitHub repo (`kefimoto/kothom`) is **public**, made so on 2026-07-21 specifi
 
 Force-pushes and branch deletion are blocked as part of the same protection rule.
 
+### CI performance
+
+`quality-gate` runs in ~40s (down from ~58s) after caching Playwright's Chromium binary (`~/.cache/ms-playwright`, keyed on `bun.lock`) and dropping `--with-deps` — `ubuntu-latest` already ships every OS lib Chromium needs, so `--with-deps`'s `apt-get update` was ~35s of pure no-op overhead. The workflow also cancels a still-running CI job when a newer commit lands on the same ref (`concurrency` block) and does a shallow checkout (`fetch-depth: 1`).
+
+Further optimizations considered and deliberately deferred — revisit when their trigger condition below is actually true, not preemptively:
+- **`.next/cache` build caching.** `next build` is ~9s today; only worth caching once route/page count grows enough (blog content landing) that build time becomes a meaningful share of the job.
+- **Skip CI on content-only changes.** Once the non-technical contributor is regularly pushing markdown edits, running full lint/typecheck/e2e for a copy fix is wasteful — but this needs the actual blog content pipeline built first, so the path filter can target the right directories without accidentally skipping validation for content that affects the build.
+- **Splitting `quality-gate` into parallel jobs.** Only pays off once the job is meaningfully longer than ~40s — each additional job pays ~5-10s of runner setup overhead, which would currently erase the gain. Also requires updating branch protection to require multiple check names instead of the current single `quality-gate` name.
+
 Since the repo is public, anyone can open a PR from a fork. Two independent approval gates stop that from reaching maintainer-controlled infrastructure unauthorized: GitHub Actions requires manual approval to run `quality-gate` on a first-time fork contributor's PR, and Vercel's project-level **Git Fork Protection** is enabled (confirmed 2026-07-21 via `vercel project protection kothom`), which holds fork-originated preview builds pending until a maintainer approves them in the Vercel dashboard — this prevents both unauthorized deploys and build-time env var exfiltration via a malicious build script. See `CONTRIBUTING.md` for the contributor-facing explanation.
 
 ## Deployment
