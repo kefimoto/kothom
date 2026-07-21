@@ -5,12 +5,18 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -24,5 +30,23 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Unit tests
+        run: bun run test
+
       - name: Build
         run: bun run build
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      # No --with-deps: ubuntu-latest already ships every OS lib Chromium
+      # needs (verified in job logs). Adding it back re-runs `apt-get
+      # update` on every job for no-op installs, costing ~35s.
+      - name: Install Playwright browsers
+        run: bunx playwright install chromium
+
+      - name: E2E tests
+        run: bun run test:e2e
