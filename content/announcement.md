@@ -1,5 +1,5 @@
 ---
-active: false
+active: true
 title: Christmas Toy Drive — Donations Open
 cta:
   label: Learn More
