@@ -26,6 +26,16 @@ typography:
     fontSize: "1.125rem"
     fontWeight: 400
     lineHeight: 1.6
+  proseH2:
+    fontFamily: "'Cinzel', Georgia, serif"
+    fontSize: "1.75rem"
+    fontWeight: 600
+    lineHeight: 1.1
+  proseH3:
+    fontFamily: "'Cinzel', Georgia, serif"
+    fontSize: "1.375rem"
+    fontWeight: 600
+    lineHeight: 1.1
 rounded:
   none: "0px"
   sm: "2px"
@@ -87,6 +97,16 @@ A black-and-cream duotone carries the whole system; one warm terracotta accent m
 - **Body** (400, 1.125rem, 1.6): Mission prose, service descriptions. Cap line length at 65–75ch; never smaller than 18px base given the audience.
 - **Label** (600, 1rem, uppercase optional): Button and caption-bar text (Learn More, Join the Ranks, Pastoral Services).
 
+#### Long-form prose steps (added 2026-07-21)
+
+The ramp above was written for a single landing page, where the only headings are full-width section titles. Markdown-authored pages (news posts, legal pages, `/about`) need intermediate steps between the Headline clamp and Body. These are Cinzel at weight 600, and they are the **only** additional sizes permitted — anything else is drift:
+
+- **Prose H2** (`1.75rem`): the lower bound of the Headline clamp, reused rather than invented. The largest heading allowed *inside* a prose body.
+- **Prose H3** (`1.375rem`): 22px — one step down, a major-third-ish interval from Body.
+- **Prose H4**: no new size. Reuses the **Label** treatment (uppercase, tracked) at Body size.
+
+Table cells inside prose take the Body size, not a step down — the 18px floor is an accessibility rule for this audience, and it applies to tabular data too.
+
 ### Named Rules
 **The Legibility-First Rule.** Any typographic decision that trades readability for ornament is wrong for this audience. The decorative display face is reserved for short headline moments only — never body copy, never more than one line where avoidable.
 
@@ -114,7 +134,23 @@ Flat by default, matching the source materials exactly: no shadows, no glass, no
 A glowing white cross with radiating light rays on a black ground, with the wordmark arced above it and "Ministries" set below. This is the signature component: it anchors the hero at the top of the page and repeats in the footer/contact section. Do not simplify it into a flat icon — the glow/radiance is core to the mark's identity.
 
 ### Navigation
-Not yet established in the source materials; when built, keep it flat, cream-or-black (matching the section it sits over), with terracotta only on the active/hover state of links — never a terracotta background bar.
+Built 2026-07-21 (`src/components/site-header.tsx`), following the constraints previously sketched here: flat, no elevation, always ink — every page opens on an ink band, so the bar reads as part of it — and never a terracotta background bar.
+
+**No hamburger menu.** With five links, mobile gets a wrapped row instead. PRODUCT.md's audience skews older and less tech-savvy, and `/get-help` serves people in an active crisis; hiding the most important link behind an icon that has to be discovered and tapped is the wrong trade. It also keeps the header free of client-side JS apart from the current-page marker.
+
+**Accent on ink is `terracotta-swatch`, never `terracotta`.** Measured against ink black `#0a0a0a`:
+
+| | ratio | usable as text on ink |
+|---|---|---|
+| `terracotta` `#764634` | 2.54:1 | no |
+| `terracotta-swatch` `#a86a52` | 4.57:1 | yes, but only just clears AA |
+| `tan-gold` `#c9a876` | 8.81:1 | yes |
+| `cream` `#f4efe6` | 17.29:1 | yes |
+
+The darkening that produced `terracotta` was for *cream text on a terracotta background*; the reverse situation — terracotta as text on ink — is where it fails. In the header the link text therefore stays cream in every state and the accent is carried by the **underline** instead: text never drops below 17.29:1 (PRODUCT.md asks to exceed AA, not scrape past it), while an underline is a non-text element needing only 3:1.
+
+### Long-form prose
+`.prose-kothom` in `globals.css` styles markdown bodies compiled by Velite. Hand-written rather than `@tailwindcss/typography`, which ships opinions this system rejects (rounded corners, its own type scale and link colors) — adopting it would mean a dependency plus overriding most of it. Prose renders on cream surfaces only; it is never set on an ink section.
 
 ## 6. Do's and Don'ts
 

@@ -9,6 +9,13 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# NOTE: deliberately no top-level `paths-ignore`.
+#
+# `main`'s branch protection requires a status check named exactly
+# `quality-gate`, with enforce_admins on. A workflow filtered out by
+# `paths-ignore` never runs, so it never posts that status, and the PR sits on
+# "Expected — Waiting for status" forever with no way to merge. The job must
+# always run; only its *steps* are conditional.
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
@@ -18,25 +25,80 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Which parts of the tree changed. Only consulted on pull_request events:
+      # a push to main always runs the full gate regardless, both because main
+      # deserves it and because deriving a base commit for a push needs a deeper
+      # checkout than the shallow one above.
+      #
+      # The negation list is arranged so any doubt resolves toward `true`. A
+      # false positive costs ~25 seconds; a false negative would skip real
+      # checks on real code, so the failure direction matters more than the
+      # saving.
+      - name: Detect changed areas
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**'
+              - '!content/**'
+              - '!**/*.md'
+
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Always runs, including for content-only pull requests. This is the
+      # content gate: it validates every markdown file in content/ against the
+      # Zod schemas in velite.config.ts and fails on a bad or missing field,
+      # naming the file and the field. Takes ~2s and needs no Next build.
+      #
+      # --strict is load-bearing and must not be removed: Velite's CLI declares
+      # the flag with `default: false`, which overrides `strict: true` in the
+      # config file, and without it a malformed file is silently dropped from
+      # the output while the build still reports success and exits 0.
+      - name: Validate content
+        run: bunx velite --clean --strict
+
+      # ---------------------------------------------------------------------
+      # Everything below is skipped for content-only pull requests. Those are
+      # still fully validated: by the content gate above, and by Vercel's own
+      # build, which is a separately required status check and runs regardless.
+      # ---------------------------------------------------------------------
       - name: Lint
+        if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         run: bun run lint
 
       - name: Typecheck
+        if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         run: bun run typecheck
 
       - name: Unit tests
+        if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         run: bun run test
 
+      # Restores Next's compilation cache between runs. Worth turning on now
+      # that the route count has grown past a single page. Keyed on the lockfile
+      # plus the source tree, with looser prefixes so an unrelated edit still
+      # gets a warm partial cache instead of a cold build.
+      - name: Cache Next.js build
+        if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ hashFiles('src/**', 'content/**') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-
+            nextjs-${{ runner.os }}-
+
       - name: Build
+        if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         run: bun run build
 
       - name: Cache Playwright browsers
+        if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
@@ -46,7 +108,12 @@ jobs:
       # needs (verified in job logs). Adding it back re-runs `apt-get
       # update` on every job for no-op installs, costing ~35s.
       - name: Install Playwright browsers
+        if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         run: bunx playwright install chromium
 
+      # playwright.config.ts serves the app with `bun run start` under CI,
+      # reusing the build produced above instead of building the app a second
+      # time inside Playwright's webServer.
       - name: E2E tests
+        if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         run: bun run test:e2e
