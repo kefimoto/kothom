@@ -1,0 +1,7 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": ["__tests__/reveal.test.tsx"],
+    "ignoreValues": []
+  }
+}
