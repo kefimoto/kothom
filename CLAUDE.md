@@ -33,6 +33,16 @@ These were considered during a 2026-07-21 tooling audit and intentionally skippe
 - **Phone number is a placeholder**: `689-123-4567` appears throughout the site (hero, footer, Pastoral Services). The source Canva deck had two conflicting real numbers and the client confirmed neither is currently correct (2026-07-20). Replace every occurrence with the real number once confirmed — grep for `689-123-4567` in `src/app/page.tsx` and `src/app/layout.tsx`.
 - **No payment processing yet.** "Become a Knight" and "Legacy Donations" buttons currently link to `mailto:` (not a real Stripe checkout). Donations are not actually collectible through the site yet — don't describe this as a working donation flow until Stripe (or similar) is wired up.
 
+## Repository & CI
+
+The GitHub repo (`kefimoto/kothom`) is **public**, made so on 2026-07-21 specifically to unlock GitHub branch protection on `main` (a free-tier limitation — private repos require GitHub Pro for protection rules). Checked git history for secrets before flipping visibility; found none.
+
+`main` requires **two** status checks to pass before any push lands, **including from admins** (`enforce_admins` is on) — there is no bypass:
+- **`quality-gate`** — the GitHub Actions workflow at `.github/workflows/ci.yml` (lint, typecheck, `next build` in a plain Ubuntu runner).
+- **`Vercel`** — the commit status Vercel's own GitHub App integration posts once *its* build (and, for PRs, the resulting preview deployment) actually succeeds. This is a separate build environment from `quality-gate` (Vercel's own container/Node version/env vars), so it's the real guarantee that what will actually deploy does deploy successfully — a PR can't merge on a broken preview.
+
+Force-pushes and branch deletion are blocked as part of the same protection rule.
+
 ## Deployment
 
 Live at **https://kothoministries.org** (the real customer-facing domain — already wired up as a custom domain on the Vercel project, confirmed 2026-07-21). `https://kothom.vercel.app` is the underlying Vercel deployment URL/infra alias; customers never see or use it. Auto-deploys from `main` via Vercel's GitHub App integration (confirmed working 2026-07-20). The Vercel project lives under the **`kothom`** team.
