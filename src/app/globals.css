@@ -63,8 +63,8 @@
   animation-delay: 400ms;
 }
 
-/* Scroll reveal: content is already visible in the DOM (opacity/clip-path
- * only — nothing is display:none), so anything that never gets an
+/* Scroll reveal: content is already visible in the DOM (opacity only —
+ * nothing is display:none), so anything that never gets an
  * IntersectionObserver callback still ships fully visible. */
 .reveal {
   opacity: 0;
@@ -79,16 +79,22 @@
   transform: translateY(0);
 }
 
-/* Image cards unveil top-down via clip-path rather than fading, distinct
+/* Image cards pop in with a subtle scale rather than translateY, distinct
  * enough from the text reveals to read as deliberate rather than repeated
- * section grammar. */
+ * section grammar — without clip-path's edge cases (see Reveal's comment):
+ * it silently deadlocks IntersectionObserver on the element it's applied to,
+ * and separately blocks native loading="lazy" on any descendant image. */
 .reveal-image {
-  clip-path: inset(0 0 100% 0);
-  transition: clip-path 800ms var(--ease-out-expo);
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity 500ms var(--ease-out-quart),
+    transform 500ms var(--ease-out-quart);
 }
 
 .reveal-image.is-visible {
-  clip-path: inset(0 0 0% 0);
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* Typographic treatment for markdown bodies coming out of Velite.

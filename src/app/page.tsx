@@ -105,15 +105,24 @@ export default function Home() {
           <h2 className="mb-12 text-center font-headline text-3xl text-charcoal sm:text-4xl">
             How You Can Help
           </h2>
+          {/* All three image-pop photos below use loading="eager" rather
+              than native lazy-loading: Reveal already waits on the image's
+              own load event before popping it in (see reveal.tsx), so lazy
+              would just mean the photo usually hasn't started downloading
+              until the same scroll moment the reveal fires, making the pop
+              land later than it needs to for no benefit — these are a small,
+              deliberate set of CTA photos, not a long gallery where lazy
+              loading's page-weight savings would matter. */}
           <div className="grid gap-12 sm:grid-cols-2 sm:gap-10">
             <div className="flex flex-col gap-5">
               <figure className="m-0">
-                <Reveal variant="image-wipe">
+                <Reveal variant="image-pop">
                   <Image
                     src="/images/become-a-knight.jpg"
                     alt="A family sitting together in a church pew"
                     width={800}
                     height={533}
+                    loading="eager"
                     className="block w-full"
                   />
                 </Reveal>
@@ -142,12 +151,13 @@ export default function Home() {
             </div>
             <div className="flex flex-col gap-5">
               <figure className="m-0">
-                <Reveal variant="image-wipe" delay={120}>
+                <Reveal variant="image-pop" delay={120}>
                   <Image
                     src="/images/legacy-donations.jpg"
                     alt="An ornate, aged chapel interior with stained glass windows"
                     width={800}
                     height={533}
+                    loading="eager"
                     className="block w-full"
                   />
                 </Reveal>
@@ -182,12 +192,13 @@ export default function Home() {
       {/* Pastoral Services */}
       <section id="pastoral-services" className="bg-ink px-6 py-20 sm:py-28">
         <div className="mx-auto grid max-w-5xl items-center gap-10 sm:grid-cols-2 sm:gap-16">
-          <Reveal variant="image-wipe">
+          <Reveal variant="image-pop">
             <Image
               src="/images/pastoral-services.jpg"
               alt="Hands folded in prayer over an open Bible"
               width={800}
               height={533}
+              loading="eager"
               className="block w-full"
             />
           </Reveal>
