@@ -24,6 +24,13 @@ export function Reveal({
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+    // Environments with no IntersectionObserver at all (old browsers, and
+    // Vitest's jsdom test environment, which doesn't implement it) skip
+    // straight to visible rather than staying permanently at opacity: 0.
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
