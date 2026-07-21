@@ -38,10 +38,22 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   async headers() {
+    // HSTS is actively dangerous over the plain-HTTP dev server: a browser
+    // that ever sees this header over HTTPS for a given host caches "always
+    // upgrade to HTTPS" for up to 2 years (`includeSubDomains`, `preload`).
+    // Reaching the dev server through a tunnel (Tailscale, ngrok, etc.) over
+    // plain HTTP then silently breaks with no visible error the moment that
+    // host is ever touched over HTTPS — the dev server has no TLS listener
+    // to upgrade to. CSP and the rest stay on in dev; they're useful for
+    // catching real violations early and don't have this one-way failure mode.
+    const devHeaders = securityHeaders.filter(
+      (header) => header.key !== "Strict-Transport-Security",
+    );
     return [
       {
         source: "/(.*)",
-        headers: securityHeaders,
+        headers:
+          process.env.NODE_ENV === "production" ? securityHeaders : devHeaders,
       },
     ];
   },
