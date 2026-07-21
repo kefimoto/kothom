@@ -102,6 +102,13 @@ function securityHeadersFor(isProduction: boolean) {
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  // The repo is public (kefimoto/kothom on GitHub), so shipped sourcemaps
+  // don't expose anything a `git clone` doesn't already give away — the
+  // usual "don't leak proprietary source" argument against this doesn't
+  // apply here. Trades a slightly larger deploy artifact and marginally
+  // longer build for real production stack traces and working DevTools for
+  // anyone debugging the live site, not just the dev server.
+  productionBrowserSourceMaps: true,
   // Lets the dev server be reached from a phone over Tailscale for on-device
   // checks. Next.js's dev server independently rejects cross-origin requests
   // to dev-only endpoints (this is a server-side Origin-header check, not a
@@ -114,10 +121,29 @@ const nextConfig: NextConfig = {
   // Dev-only — has no effect on `next build` or the production server.
   allowedDevOrigins: getTailscaleDevOrigins(),
   async headers() {
+    const isProduction = process.env.NODE_ENV === "production";
     return [
       {
         source: "/(.*)",
-        headers: securityHeadersFor(process.env.NODE_ENV === "production"),
+        headers: securityHeadersFor(isProduction),
+      },
+      // Applies in both dev and prod now that productionBrowserSourceMaps is
+      // on — the repo being public means there's no confidentiality reason
+      // to restrict who can fetch a .map file either. Remote DevTools (e.g.
+      // the real Chrome DevTools frontend used to debug iOS Safari via
+      // remotedebug-ios-webkit-adapter — see IOS-DEBUGGING.md) fetches a
+      // chunk's .map file as its own top-level cross-origin request,
+      // separate from the inspected page's own same-origin JS engine — so
+      // it's subject to CORS, and Next's static file server sends no
+      // Access-Control-Allow-Origin by default. That silently fails the
+      // fetch, which DevTools reports as "failed to parse SourceMap" even
+      // though the file itself is valid — confirmed directly via curl with
+      // a cross-origin Origin header (no ACAO in the response). A normal
+      // same-origin browser tab never hits this, since its own engine
+      // parses sourcemaps in-process with no separate fetch.
+      {
+        source: "/_next/static/(.*).map",
+        headers: [{ key: "Access-Control-Allow-Origin", value: "*" }],
       },
     ];
   },
