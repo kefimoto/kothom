@@ -4,6 +4,7 @@ import { announcement } from "#site/content";
 import { AnnouncementBand } from "@/components/announcement-band";
 import { CrossMark } from "@/components/cross-mark";
 import { ctaClassName } from "@/components/cta";
+import { Reveal } from "@/components/reveal";
 import { MINISTRY } from "@/lib/ministry";
 
 const PHONE_DISPLAY = MINISTRY.phone.display;
@@ -35,11 +36,12 @@ export default function Home() {
       {/* Hero */}
       <section className="bg-ink px-6 py-24 text-center sm:py-32">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-10">
-          <CrossMark size="large" />
+          <div className="hero-mark">
+            <CrossMark size="large" />
+          </div>
           <h1 className="text-balance font-display text-4xl leading-tight tracking-[0.01em] text-cream [text-shadow:0_2px_0_rgba(0,0,0,0.4)] sm:text-6xl">
-            Spreading His Word,
-            <br />
-            One Family At A Time
+            <span className="hero-heading-line">Spreading His Word,</span>
+            <span className="hero-heading-line">One Family At A Time</span>
           </h1>
         </div>
       </section>
@@ -49,7 +51,7 @@ export default function Home() {
       {/* Split action zone: Get Help / Give */}
       <section id="get-help" className="bg-cream px-6 py-20 sm:py-28">
         <div className="mx-auto grid max-w-5xl gap-12 sm:grid-cols-2 sm:gap-10">
-          <div className="flex flex-col items-start gap-4">
+          <Reveal className="flex flex-col items-start gap-4">
             <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
               Need Help?
             </h2>
@@ -59,8 +61,8 @@ export default function Home() {
               person will answer.
             </p>
             <CtaLink href={PHONE_TEL}>Call {PHONE_DISPLAY}</CtaLink>
-          </div>
-          <div className="flex flex-col items-start gap-4">
+          </Reveal>
+          <Reveal className="flex flex-col items-start gap-4" delay={120}>
             <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
               Want to Give?
             </h2>
@@ -69,13 +71,13 @@ export default function Home() {
               single-parent families in Central Florida, and makes you a Knight.
             </p>
             <CtaLink href="#give">See How to Give</CtaLink>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Mission */}
       <section className="bg-ink px-6 py-20 sm:py-28">
-        <div className="mx-auto grid max-w-5xl gap-10 sm:grid-cols-2 sm:gap-16">
+        <Reveal className="mx-auto grid max-w-5xl gap-10 sm:grid-cols-2 sm:gap-16">
           <h2 className="text-balance font-headline text-3xl leading-tight text-cream sm:text-4xl">
             A Ministry Built On Salvation With A Desire To Help Single Parents
             And Their Children.
@@ -94,7 +96,7 @@ export default function Home() {
               costs, food, and housing expenses — but not limited to these.
             </p>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* How You Can Help */}
@@ -106,60 +108,72 @@ export default function Home() {
           <div className="grid gap-12 sm:grid-cols-2 sm:gap-10">
             <div className="flex flex-col gap-5">
               <figure className="m-0">
-                <Image
-                  src="/images/become-a-knight.jpg"
-                  alt="A family sitting together in a church pew"
-                  width={800}
-                  height={533}
-                  className="block w-full"
-                />
+                <Reveal variant="image-wipe">
+                  <Image
+                    src="/images/become-a-knight.jpg"
+                    alt="A family sitting together in a church pew"
+                    width={800}
+                    height={533}
+                    className="block w-full"
+                  />
+                </Reveal>
                 <figcaption className="bg-terracotta px-6 py-4">
                   <span className="font-headline text-lg text-cream">
                     Become a Knight
                   </span>
                 </figcaption>
               </figure>
-              <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
-                An annual gift of $25 or more goes directly to helping
-                single-parent families — and makes you a Knight. Members receive
-                a Knights of the Higher Order T-shirt.
-              </p>
-              <CtaLink
-                href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-                  "Become a Knight",
-                )}`}
-              >
-                Join the Ranks
-              </CtaLink>
+              <Reveal delay={150}>
+                <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
+                  An annual gift of $25 or more goes directly to helping
+                  single-parent families — and makes you a Knight. Members
+                  receive a Knights of the Higher Order T-shirt.
+                </p>
+                <div className="mt-5">
+                  <CtaLink
+                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+                      "Become a Knight",
+                    )}`}
+                  >
+                    Join the Ranks
+                  </CtaLink>
+                </div>
+              </Reveal>
             </div>
             <div className="flex flex-col gap-5">
               <figure className="m-0">
-                <Image
-                  src="/images/legacy-donations.jpg"
-                  alt="An ornate, aged chapel interior with stained glass windows"
-                  width={800}
-                  height={533}
-                  className="block w-full"
-                />
+                <Reveal variant="image-wipe" delay={120}>
+                  <Image
+                    src="/images/legacy-donations.jpg"
+                    alt="An ornate, aged chapel interior with stained glass windows"
+                    width={800}
+                    height={533}
+                    className="block w-full"
+                  />
+                </Reveal>
                 <figcaption className="bg-terracotta px-6 py-4">
                   <span className="font-headline text-lg text-cream">
                     Legacy Donations
                   </span>
                 </figcaption>
               </figure>
-              <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
-                Include a legacy gift in your will, living trust, or as a
-                beneficiary designation, and make a lasting impact on
-                single-parent households in Central Florida. Legacy donors are
-                Knights too.
-              </p>
-              <CtaLink
-                href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-                  "Legacy Donations Inquiry",
-                )}`}
-              >
-                Learn More
-              </CtaLink>
+              <Reveal delay={270}>
+                <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
+                  Include a legacy gift in your will, living trust, or as a
+                  beneficiary designation, and make a lasting impact on
+                  single-parent households in Central Florida. Legacy donors are
+                  Knights too.
+                </p>
+                <div className="mt-5">
+                  <CtaLink
+                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+                      "Legacy Donations Inquiry",
+                    )}`}
+                  >
+                    Learn More
+                  </CtaLink>
+                </div>
+              </Reveal>
             </div>
           </div>
         </div>
@@ -168,14 +182,16 @@ export default function Home() {
       {/* Pastoral Services */}
       <section id="pastoral-services" className="bg-ink px-6 py-20 sm:py-28">
         <div className="mx-auto grid max-w-5xl items-center gap-10 sm:grid-cols-2 sm:gap-16">
-          <Image
-            src="/images/pastoral-services.jpg"
-            alt="Hands folded in prayer over an open Bible"
-            width={800}
-            height={533}
-            className="block w-full"
-          />
-          <div className="flex flex-col items-start gap-5">
+          <Reveal variant="image-wipe">
+            <Image
+              src="/images/pastoral-services.jpg"
+              alt="Hands folded in prayer over an open Bible"
+              width={800}
+              height={533}
+              className="block w-full"
+            />
+          </Reveal>
+          <Reveal delay={150} className="flex flex-col items-start gap-5">
             <h2 className="font-headline text-3xl text-cream sm:text-4xl">
               Pastoral Services
             </h2>
@@ -185,7 +201,7 @@ export default function Home() {
               hours a day, 7 days a week, 365 days a year.
             </p>
             <CtaLink href={PHONE_TEL}>Call {PHONE_DISPLAY}</CtaLink>
-          </div>
+          </Reveal>
         </div>
       </section>
     </main>
