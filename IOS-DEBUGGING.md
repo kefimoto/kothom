@@ -121,6 +121,18 @@ the exact same symptom as a genuine protocol incompatibility — that's what
 cost real time this session. Get `idevicepair validate` to SUCCESS with
 nothing else running first, then move on.
 
+**Restarting `usbmuxd` while `ios_webkit_debug_proxy` is already running
+leaves the proxy silently stale.** Its connection to `usbmuxd` dies (its log
+shows `ssl recv failed: Broken pipe`), but the process itself doesn't exit —
+it keeps listening on its own ports, so every symptom looks identical to "the
+phone isn't unlocked yet": ports all show listeners, `idevice_id -l` works
+fine, but no tab ever shows up. `scripts/debug-ios-safari.sh` detects this
+automatically now (it checks that a reused proxy actually lists the paired
+UDID at `http://localhost:9221/json` before trusting it, and restarts it if
+not) — but if you're doing this by hand instead of via the script, the fix
+is just: kill the existing `ios_webkit_debug_proxy` process(es) and start a
+fresh one.
+
 ## Starting the proxy and adapter
 
 ```bash

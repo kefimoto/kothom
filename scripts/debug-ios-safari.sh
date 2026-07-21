@@ -13,7 +13,6 @@
 
 set -uo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Deliberately OUTSIDE the repo tree, not scripts/.tools/. TypeScript's type
 # acquisition walks up parent directories collecting every node_modules/@types
 # it finds, not just the closest one — cloning the adapter inside kothom's own
@@ -94,16 +93,29 @@ port_owner() {
   ss -ltnp 2>/dev/null | awk -v p=":$1" '$4 ~ p"$" {print}'
 }
 
+# PID actually holding a port, straight from the same ss output port_owner
+# uses. Used instead of `pkill -f <pattern>` for the restart-if-stale path:
+# a pattern match against the adapter's argv is fragile (it's launched as
+# `node out/index.js` with a relative path, via `cd "$ADAPTER_DIR" &&`, so a
+# pattern built from $ADAPTER_DIR never matches — confirmed live, the first
+# version of this restart logic silently failed to kill the old adapter,
+# which then blocked the new one from binding the port with a swallowed
+# EADDRINUSE). The actual listening PID is unambiguous regardless of how the
+# process was invoked.
+port_pid() {
+  port_owner "$1" | grep -o 'pid=[0-9]*' | head -n1 | cut -d= -f2
+}
+
 proxy_already_running=false
 adapter_already_running=false
 
 if [ -n "$(port_owner "$PROXY_PORT")" ]; then
-  yellow "Port $PROXY_PORT already has a listener (likely ios_webkit_debug_proxy already running — possibly the udev auto-launched instance). Reusing it."
+  yellow "Port $PROXY_PORT already has a listener (likely ios_webkit_debug_proxy already running — possibly its own internal --config=null helper fork, not a udev rule — nothing in /etc/udev/rules.d or /usr/lib/udev/rules.d actually launches it). Reusing it."
   proxy_already_running=true
 fi
 
 if [ -n "$(port_owner "$UDEV_PORT")" ]; then
-  yellow "Port $UDEV_PORT has a listener too — that's the udev-auto-launched ios_webkit_debug_proxy instance (--config=null:9100,...). If you also start one manually you'll get two competing proxies. This script will NOT start a second proxy if one is already listening on $PROXY_PORT."
+  yellow "Port $UDEV_PORT has a listener too — that's ios_webkit_debug_proxy's own internal --config=null:9100,... helper fork. If you also start one manually you'll get two competing proxies. This script will NOT start a second proxy if one is already listening on $PROXY_PORT."
 fi
 
 if [ -n "$(port_owner "$TAB_PORT")" ]; then
@@ -113,6 +125,59 @@ fi
 if [ -n "$(port_owner "$ADAPTER_PORT")" ]; then
   yellow "Port $ADAPTER_PORT already has a listener (likely remotedebug-ios-webkit-adapter already running). Reusing it."
   adapter_already_running=true
+fi
+
+# --- 3b. Detect a stale (listening but dead-inside) proxy --------------------
+#
+# A listening port on $PROXY_PORT is not proof the proxy actually works: if
+# usbmuxd gets restarted (e.g. per the pairing troubleshooting in
+# IOS-DEBUGGING.md) while an existing ios_webkit_debug_proxy is already
+# running, its usbmuxd connection dies (iwdp's own log shows "ssl recv
+# failed: Broken pipe") but the process keeps running and keeps listening —
+# it just never sees the device again. Every symptom looks identical to "the
+# phone isn't unlocked yet": ports all show listeners, but no tab ever shows
+# up, right up until the 30s timeout. This cost real time diagnosing live,
+# since `ss -ltnp` alone can't tell a healthy proxy from a stale one.
+#
+# The fix: $PROXY_PORT/json lists attached devices by UDID as soon as iwdp
+# sees them via usbmuxd — independent of whether Safari's tab is even open,
+# well before $TAB_PORT is populated. If idevice_id already sees the phone
+# but a *reused* proxy doesn't list it within a few seconds, the proxy is
+# stale, not the phone. Restart it rather than waiting out the full timeout
+# only to report a misleading "is your phone unlocked?" checklist.
+if [ "$proxy_already_running" = true ]; then
+  udid="$(idevice_id -l 2>/dev/null | head -n1)"
+  if [ -n "$udid" ]; then
+    echo "Checking existing proxy already sees paired device $udid ..."
+    proxy_sees_device=false
+    for _ in $(seq 1 5); do
+      if curl -s --max-time 2 "http://localhost:$PROXY_PORT/json" 2>/dev/null | grep -qF "$udid"; then
+        proxy_sees_device=true
+        break
+      fi
+      sleep 1
+    done
+
+    if [ "$proxy_sees_device" = false ]; then
+      yellow "Existing proxy on port $PROXY_PORT doesn't see device $udid even though idevice_id does — it's almost certainly stale (a dead usbmuxd connection from before a restart; check $IWDP_LOG for 'Broken pipe'). Restarting it instead of reusing it."
+      # ios_webkit_debug_proxy also runs a second --config=null helper
+      # process (on $UDEV_PORT) that needs killing too, so this kills by
+      # port rather than assuming a single PID.
+      for p in "$PROXY_PORT" "$UDEV_PORT"; do
+        pid="$(port_pid "$p")"
+        [ -n "$pid" ] && kill "$pid" 2>/dev/null
+      done
+      # The adapter's own tab list is downstream of the proxy, so a stale
+      # proxy leaves it just as stuck — restart both together.
+      adapter_pid="$(port_pid "$ADAPTER_PORT")"
+      [ -n "$adapter_pid" ] && kill "$adapter_pid" 2>/dev/null
+      sleep 1
+      proxy_already_running=false
+      adapter_already_running=false
+    else
+      green "Existing proxy already sees the device. Reusing it."
+    fi
+  fi
 fi
 
 # --- 4. Start ios_webkit_debug_proxy if needed -------------------------------
@@ -147,7 +212,6 @@ found=false
 frontend_url=""
 
 while [ "$elapsed" -lt "$POLL_TIMEOUT" ]; do
-  proxy_json="$(curl -s "http://localhost:$TAB_PORT/json" 2>/dev/null)"
   adapter_json="$(curl -s "http://localhost:$ADAPTER_PORT/json" 2>/dev/null)"
 
   if [ -n "$adapter_json" ] && [ "$adapter_json" != "[]" ]; then
