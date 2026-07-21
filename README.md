@@ -31,3 +31,11 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 This project is deployed on [Vercel](https://vercel.com). Keep that in mind for any infra-adjacent decisions (image remote patterns, environment variables, edge vs. serverless functions) — favor Vercel-native patterns over host-agnostic workarounds.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Contributing
+
+See `CONTRIBUTING.md` for local setup and how CI/CD and PR approval work, including the extra approval steps for PRs from forks.
+
+## License
+
+Licensed under [Apache License 2.0](LICENSE.md) — the code is free to reuse and modify for any purpose. The KOTHOM name and logo are not covered and shouldn't be reused; see the Trademark & Brand Notice at the top of `LICENSE.md`.
