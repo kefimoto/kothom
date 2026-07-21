@@ -1,22 +1,21 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+KOTHOM (Knights of the Higher Order Ministries) — a Next.js site for a Christian non-profit assisting single-parent families in Central Florida. See `PRODUCT.md` for strategy/audience/mission and `DESIGN.md` for the visual system.
 
 ## Getting Started
 
-First, run the development server:
+This project uses [Bun](https://bun.sh). First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
 bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+
+## Project Status
+
+- **Phone number is a placeholder** (`689-123-4567`) — the source material had two conflicting real numbers and neither was confirmed correct as of 2026-07-20. Replace it everywhere before this goes live for real.
+- **No payment processing yet.** "Become a Knight" and "Legacy Donations" currently link to `mailto:`, not a real Stripe checkout — donations aren't actually collectible through the site yet.
 
 ## Learn More
 
