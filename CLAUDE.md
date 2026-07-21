@@ -43,6 +43,8 @@ The GitHub repo (`kefimoto/kothom`) is **public**, made so on 2026-07-21 specifi
 
 Force-pushes and branch deletion are blocked as part of the same protection rule.
 
+Since the repo is public, anyone can open a PR from a fork. Two independent approval gates stop that from reaching maintainer-controlled infrastructure unauthorized: GitHub Actions requires manual approval to run `quality-gate` on a first-time fork contributor's PR, and Vercel's project-level **Git Fork Protection** is enabled (confirmed 2026-07-21 via `vercel project protection kothom`), which holds fork-originated preview builds pending until a maintainer approves them in the Vercel dashboard — this prevents both unauthorized deploys and build-time env var exfiltration via a malicious build script. See `CONTRIBUTING.md` for the contributor-facing explanation.
+
 ## Deployment
 
 Live at **https://kothoministries.org** (the real customer-facing domain — already wired up as a custom domain on the Vercel project, confirmed 2026-07-21). `https://kothom.vercel.app` is the underlying Vercel deployment URL/infra alias; customers never see or use it. Auto-deploys from `main` via Vercel's GitHub App integration (confirmed working 2026-07-20). The Vercel project lives under the **`kothom`** team.
