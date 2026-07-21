@@ -30,17 +30,33 @@ jobs:
       # deserves it and because deriving a base commit for a push needs a deeper
       # checkout than the shallow one above.
       #
-      # The negation list is arranged so any doubt resolves toward `true`. A
-      # false positive costs ~25 seconds; a false negative would skip real
-      # checks on real code, so the failure direction matters more than the
-      # saving.
+      # `predicate-quantifier: every` is load-bearing, not decoration.
+      #
+      # By default this action ORs a filter's patterns together — a file matches
+      # if it matches *at least one*. Under that default, an intuitive-looking
+      # list of `'**'` plus negations is always true, because `'**'` alone
+      # matches everything and the negations are evaluated as separate
+      # alternatives rather than as exclusions. That was the original bug here:
+      # the filter reported `code=true` on a documentation-only PR and the fast
+      # path never engaged (verified against run 29841139707, where every step
+      # ran on a four-file markdown change).
+      #
+      # With `every`, a file must satisfy *all* patterns to match, so a list of
+      # pure negations means "changed files that are neither content nor
+      # markdown" — which is the actual question. The filter is then true when
+      # at least one such file exists.
+      #
+      # Keep the pattern list minimal. Under `every`, each pattern added makes
+      # `code` *harder* to satisfy, which biases toward skipping checks — the
+      # dangerous direction. Verify on a real PR after changing it; a wrong
+      # filter here fails silently behind a green check.
       - name: Detect changed areas
         uses: dorny/paths-filter@v3
         id: filter
         with:
+          predicate-quantifier: "every"
           filters: |
             code:
-              - '**'
               - '!content/**'
               - '!**/*.md'
 
