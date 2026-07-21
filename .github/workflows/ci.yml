@@ -25,6 +25,14 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Always runs, unconditionally: needs no bun/node setup, takes a
+      # fraction of a second, and ubuntu-latest ships shellcheck preinstalled
+      # (no extra action/install step needed). Only shell script in the repo
+      # today is scripts/debug-ios-safari.sh, but this covers any future ones
+      # too without needing an update here.
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh
+
       # Which parts of the tree changed. Only consulted on pull_request events:
       # a push to main always runs the full gate regardless, both because main
       # deserves it and because deriving a base commit for a push needs a deeper
@@ -133,3 +141,20 @@ jobs:
       - name: E2E tests
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         run: bun run test:e2e
+
+      # Informational only, deliberately: no lighthouserc/budget file is
+      # configured, so the action only collects and uploads results rather
+      # than asserting against thresholds, and continue-on-error is a second,
+      # explicit belt-and-suspenders guarantee that a bad score can never
+      # fail quality-gate. There's no real performance budget defined yet, so
+      # blocking on one now risks false-failing legitimate PRs on an
+      # untuned number. Revisit once there's an actual budget worth enforcing.
+      - name: Lighthouse CI
+        if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: http://localhost:3000/
+          startServerCommand: bun run start
+          uploadArtifacts: true
+          temporaryPublicStorage: true
