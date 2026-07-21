@@ -1,3 +1,4 @@
+import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Cinzel, Cinzel_Decorative, PT_Serif } from "next/font/google";
 import { OrganizationSchema } from "@/components/organization-schema";
@@ -60,6 +61,8 @@ export const metadata: Metadata = {
   },
 };
 
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -82,6 +85,7 @@ export default function RootLayout({
         {children}
         <SiteFooter />
       </body>
+      {GA_MEASUREMENT_ID ? <GoogleAnalytics gaId={GA_MEASUREMENT_ID} /> : null}
     </html>
   );
 }
