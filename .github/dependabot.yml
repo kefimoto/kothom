@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Grouped into one weekly PR per group instead of Dependabot's default of
+  # one PR per dependency per bump — the whole point of choosing Dependabot
+  # over Renovate here was accepting its native (no third-party GitHub App)
+  # tradeoff, and grouping is what makes that not mean a flood of individual
+  # PRs to review. Major bumps are excluded from the routine groups and land
+  # as their own PR, since those are the ones most likely to need an actual
+  # human look rather than a rubber-stamp merge.
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+      production-dependencies:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        update-types: ["minor", "patch"]
