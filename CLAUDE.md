@@ -37,10 +37,31 @@ Current test coverage is intentionally thin (robots/sitemap logic + one page smo
 - **Commitlint.** Skipped even though husky/lint-staged were adopted: a non-technical contributor is joining to edit markdown content, and enforcing conventional-commit message format on them is friction with no real payoff yet. Reconsider if the contributor base grows technical enough for commit-message conventions to pay for themselves (e.g. automated changelogs).
 - **Security headers/CSP.** Skipped for now: no user input or payment processing is actually wired up yet (see placeholders below). Revisit once Stripe (or similar) goes live for real donations, or once the login flow lands — don't let this slip once auth is real.
 
+## Content pipeline (added 2026-07-21)
+
+Markdown in `content/` is compiled to typed JSON at build time by **Velite** (`velite.config.ts`), and the app imports it from `#site/content`. A non-technical contributor edits those markdown files through GitHub's web UI; `CONTENT-GUIDE.md` is the document written for them.
+
+**Velite runs as its own sequential script, not from a `next.config.ts` hook.** `"build": "velite --clean --strict && next build"`. Velite's own docs warn its webpack hook breaks on Vercel, and the alternative `import('velite').then(...)` trick in `next.config.ts` is a floating promise that lets `next build` start reading `.velite/` before Velite finishes writing it. Don't "simplify" this into the config.
+
+**⚠️ Never remove `--strict` from a velite invocation.** Velite resolves the flag as `options.strict ?? loadedConfig.strict ?? false`, and its CLI declares `strict` with `default: false` — so the CLI's `false` *always* overrides `strict: true` in `velite.config.ts`. Without the flag, a markdown file with a bad or missing frontmatter field is silently **dropped from the output** while the build prints "build finished" and exits 0. That's a green CI run with a missing page. Verified 2026-07-21 against velite 0.4.0.
+
+Also deliberate:
+- **`isodate()` in `velite.config.ts` is hand-rolled, not Velite's `s.isodate()`.** The built-in calls `.toISOString()` on whatever it's given, so a typo escapes Zod as a raw `RangeError: Invalid time value` with no filename and no field name. The replacement coerces through a Zod date so the failure is reported as `content/news/foo.md → error … date` with a message written for a non-developer.
+- **The homepage announcement uses a manual `active` boolean, not an expiry date.** A statically-generated page can't un-render itself when a date passes, so an `expires` field would keep showing a finished event until the next unrelated deploy.
+- **The filename is the URL.** `content/news/foo.md` → `/news/foo`. Don't add date prefixes to filenames.
+- Content pages are a **hybrid**: page chrome (CTAs, image panels, layout) stays in TSX, prose comes from markdown. The contributor controls the words and can't break a layout.
+
+## Legal & compliance
+
+**`COMPLIANCE.md` is the single home for the ministry's legal reasoning.** Code comments point at it rather than repeating it, because it's written to be read and corrected by the ministry, not by developers. If you're tempted to explain a statute in a TSX comment, put it in COMPLIANCE.md and link instead.
+
+`LEGAL_STATUS` in `src/lib/ministry.ts` is the switchboard: every value is `null`/`false` until the corresponding filing is genuinely complete, and components suppress their own UI while unset. **Never fill one in to "see how it looks"** — that's what makes the site print a fabricated EIN or an invented Florida registration number. As of 2026-07-21 none of the four filings are confirmed, so no page may claim tax-deductibility.
+
 ## Known placeholders / not-yet-implemented
 
-- **Phone number is a placeholder**: `689-123-4567` appears throughout the site (hero, footer, Pastoral Services). The source Canva deck had two conflicting real numbers and the client confirmed neither is currently correct (2026-07-20). Replace every occurrence with the real number once confirmed — grep for `689-123-4567` in `src/app/page.tsx` and `src/app/layout.tsx`.
-- **No payment processing yet.** "Become a Knight" and "Legacy Donations" buttons currently link to `mailto:` (not a real Stripe checkout). Donations are not actually collectible through the site yet — don't describe this as a working donation flow until Stripe (or similar) is wired up.
+- **Phone number is a placeholder**: `689-123-4567`. The source Canva deck had two conflicting real numbers and the client confirmed neither is currently correct (2026-07-20). It now lives in **one place** — `MINISTRY.phone` in `src/lib/ministry.ts` — so replacing it is a one-line change. Markdown in `content/` spells it out in prose and can't import the constant, so `__tests__/content-integrity.test.ts` fails the build if any content file names a number that disagrees with it.
+- **No payment processing yet.** "Become a Knight" and "Legacy Donations" go through `<DonateButton>` (`src/components/donate-button.tsx`), which currently opens a `mailto:`. That component is the single place real checkout should ever attach. Donations are not collectible through the site yet — don't describe this as a working donation flow.
+- **No auth.** `/membership` is a real, useful page explaining how to change or stop a gift by phone/email; it's where an account portal would attach later.
 
 ## Repository & CI
 
@@ -56,10 +77,19 @@ Force-pushes and branch deletion are blocked as part of the same protection rule
 
 `quality-gate` runs in ~40s (down from ~58s) after caching Playwright's Chromium binary (`~/.cache/ms-playwright`, keyed on `bun.lock`) and dropping `--with-deps` — `ubuntu-latest` already ships every OS lib Chromium needs, so `--with-deps`'s `apt-get update` was ~35s of pure no-op overhead. The workflow also cancels a still-running CI job when a newer commit lands on the same ref (`concurrency` block) and does a shallow checkout (`fetch-depth: 1`).
 
-Further optimizations considered and deliberately deferred — revisit when their trigger condition below is actually true, not preemptively:
-- **`.next/cache` build caching.** `next build` is ~9s today; only worth caching once route/page count grows enough (blog content landing) that build time becomes a meaningful share of the job.
-- **Skip CI on content-only changes.** Once the non-technical contributor is regularly pushing markdown edits, running full lint/typecheck/e2e for a copy fix is wasteful — but this needs the actual blog content pipeline built first, so the path filter can target the right directories without accidentally skipping validation for content that affects the build.
-- **Splitting `quality-gate` into parallel jobs.** Only pays off once the job is meaningfully longer than ~40s — each additional job pays ~5-10s of runner setup overhead, which would currently erase the gain. Also requires updating branch protection to require multiple check names instead of the current single `quality-gate` name.
+Two of the three deferred optimizations were taken on 2026-07-21, once the content pipeline landed and made their trigger conditions true:
+
+- **`.next/cache` build caching** — now enabled, keyed on `bun.lock` + `src/**` + `content/**`, with looser `restore-keys` so an unrelated edit still gets a warm partial cache.
+- **Content-only fast path** — a `dorny/paths-filter` step sets a `code` output; lint/typecheck/unit/build/e2e are skipped when a pull request touches only `content/**` and `**/*.md`. Such a PR is still fully validated: `bunx velite --clean --strict` always runs (schema-checking every content file, ~2s), and Vercel's own build is a separately required status check that runs regardless.
+- **Also fixed:** `playwright.config.ts` was running `bun run build && bun run start` in its `webServer`, compiling the whole app a *second* time in a job that had already built it. Under CI it now runs `bun run start` only.
+
+Still deliberately deferred:
+- **Splitting `quality-gate` into parallel jobs.** Each additional job pays ~5-10s of runner setup overhead, which would currently erase the gain. Also requires updating branch protection to require multiple check names instead of the current single `quality-gate` name.
+
+### Two CI footguns, both load-bearing
+
+1. **Never add top-level `paths-ignore` to `.github/workflows/ci.yml`.** Branch protection requires a check named exactly `quality-gate` with `enforce_admins` on. A workflow filtered out by `paths-ignore` never runs, so it never posts that status, and the PR sits on "Expected — Waiting for status" forever with no way to merge. The job must always run; only its *steps* are conditional.
+2. **The content-only filter is written to fail toward running more, not less.** A false positive costs ~25 seconds; a false negative would skip real checks on real code. The fast path also only applies to `pull_request` events — a push to `main` always runs the full gate.
 
 Since the repo is public, anyone can open a PR from a fork. Two independent approval gates stop that from reaching maintainer-controlled infrastructure unauthorized: GitHub Actions requires manual approval to run `quality-gate` on a first-time fork contributor's PR, and Vercel's project-level **Git Fork Protection** is enabled (confirmed 2026-07-21 via `vercel project protection kothom`), which holds fork-originated preview builds pending until a maintainer approves them in the Vercel dashboard — this prevents both unauthorized deploys and build-time env var exfiltration via a malicious build script. See `CONTRIBUTING.md` for the contributor-facing explanation.
 

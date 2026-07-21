@@ -16,6 +16,156 @@
   --radius-none: 0px;
 }
 
+/* Typographic treatment for markdown bodies coming out of Velite.
+ *
+ * Hand-written rather than @tailwindcss/typography on purpose: that plugin
+ * ships opinions this design system explicitly rejects (rounded corners on code
+ * blocks, its own type scale, its own link colors), so adopting it would mean
+ * adding a dependency and then overriding most of it. DESIGN.md's rules are
+ * narrow enough to state directly.
+ *
+ * Assumes a cream surface with charcoal text — the light half of the Duotone
+ * Rule. Markdown prose is never rendered on an ink section. */
+.prose-kothom {
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--color-charcoal);
+}
+
+.prose-kothom > * + * {
+  margin-top: 1.25em;
+}
+
+.prose-kothom p,
+.prose-kothom li {
+  max-width: 70ch;
+  text-wrap: pretty;
+}
+
+.prose-kothom h2,
+.prose-kothom h3,
+.prose-kothom h4 {
+  font-family: var(--font-headline);
+  font-weight: 600;
+  line-height: 1.1;
+  text-wrap: balance;
+  color: var(--color-charcoal);
+}
+
+.prose-kothom h2 {
+  margin-top: 2.5em;
+  font-size: 1.75rem; /* typography.proseH2 */
+}
+
+.prose-kothom h3 {
+  margin-top: 2em;
+  font-size: 1.375rem; /* typography.proseH3 */
+}
+
+.prose-kothom h4 {
+  margin-top: 1.75em;
+  font-size: 1.125rem; /* Label treatment (DESIGN.md §3) */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* The Legibility-First Rule: the first heading shouldn't push the body down
+ * when it opens the document. */
+.prose-kothom > :first-child {
+  margin-top: 0;
+}
+
+/* The One Accent Rule — terracotta marks things you can click, and nothing
+ * else. Underlined rather than color-only, so the link is distinguishable
+ * without relying on hue (WCAG 1.4.1). */
+.prose-kothom a {
+  color: var(--color-terracotta);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+.prose-kothom a:hover {
+  color: var(--color-terracotta-dark);
+  text-decoration-thickness: 2px;
+}
+
+.prose-kothom a:focus-visible {
+  outline: 2px solid var(--color-terracotta);
+  outline-offset: 2px;
+}
+
+.prose-kothom strong {
+  font-weight: 700;
+}
+
+.prose-kothom ul,
+.prose-kothom ol {
+  padding-left: 1.5em;
+}
+
+.prose-kothom ul {
+  list-style: disc;
+}
+
+.prose-kothom ol {
+  list-style: decimal;
+}
+
+.prose-kothom li + li {
+  margin-top: 0.5em;
+}
+
+.prose-kothom blockquote {
+  border-left: 2px solid var(--color-tan-gold);
+  padding-left: 1.25em;
+  font-style: italic;
+}
+
+.prose-kothom hr {
+  border: 0;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-charcoal) 20%, transparent);
+  margin-top: 2.5em;
+  margin-bottom: 2.5em;
+}
+
+/* Wide tables must scroll inside their own container rather than making the
+ * page scroll sideways on a phone. */
+.prose-kothom table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.prose-kothom th,
+.prose-kothom td {
+  border: 1px solid color-mix(in srgb, var(--color-charcoal) 20%, transparent);
+  padding: 0.5em 0.75em;
+  text-align: left;
+  /* No font-size step-down: DESIGN.md §3 sets an 18px floor for this audience,
+   * so table cells inherit the body size rather than shrinking. */
+}
+
+.prose-kothom th {
+  font-family: var(--font-headline);
+  font-weight: 600;
+}
+
+.prose-kothom img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* rehype-slug gives every heading an id so a clause can be linked directly;
+ * offset the jump target so a linked heading isn't flush against the viewport
+ * edge. */
+.prose-kothom :is(h2, h3, h4)[id] {
+  scroll-margin-top: 5rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import { Cinzel, Cinzel_Decorative, PT_Serif } from "next/font/google";
+import { OrganizationSchema } from "@/components/organization-schema";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { MINISTRY, SITE_URL } from "@/lib/ministry";
 import "./globals.css";
 
 const cinzelDecorative = Cinzel_Decorative({
@@ -21,18 +25,23 @@ const ptSerif = PT_Serif({
   variable: "--font-pt-serif",
 });
 
-const TITLE = "Knights of the Higher Order Ministries";
+const TITLE = MINISTRY.name;
 const DESCRIPTION =
   "Knights of the Higher Order Ministries (KOTHOM) — spreading His word, one family at a time. Get help, or become a Knight through an annual gift or a legacy gift.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kothoministries.org"),
-  title: TITLE,
+  metadataBase: new URL(SITE_URL),
+  // Interior pages set their own title; this template frames it. The homepage
+  // overrides with `absolute` so it doesn't read "Home | Knights of the...".
+  title: {
+    default: TITLE,
+    template: `%s | ${TITLE}`,
+  },
   description: DESCRIPTION,
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: "https://kothoministries.org",
+    url: SITE_URL,
     type: "website",
     images: [
       {
@@ -61,7 +70,18 @@ export default function RootLayout({
       lang="en"
       className={`${cinzelDecorative.variable} ${cinzel.variable} ${ptSerif.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <OrganizationSchema />
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-none focus:bg-cream focus:px-4 focus:py-2 focus:font-headline focus:text-ink"
+        >
+          Skip to main content
+        </a>
+        <SiteHeader />
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }
