@@ -33,7 +33,9 @@ function buildEllipseArcLengthTable(radiusX, radiusY, maxAngleRad, steps) {
   const cumulative = [0];
   const step = (2 * maxAngleRad) / steps;
   const speedAt = (theta) =>
-    Math.sqrt((radiusX * Math.cos(theta)) ** 2 + (radiusY * Math.sin(theta)) ** 2);
+    Math.sqrt(
+      (radiusX * Math.cos(theta)) ** 2 + (radiusY * Math.sin(theta)) ** 2,
+    );
   let prevSpeed = speedAt(-maxAngleRad);
   angles.push(-maxAngleRad);
   for (let i = 1; i <= steps; i++) {
@@ -62,11 +64,21 @@ function angleForArcLength(table, targetLength) {
   return angles[lo] + t * (angles[hi] - angles[lo]);
 }
 
-function computeArcChars(text, font, fontSize, { centerX, centerY, radiusX, radiusY }) {
+function computeArcChars(
+  text,
+  font,
+  fontSize,
+  { centerX, centerY, radiusX, radiusY },
+) {
   const chars = text.split("");
   const widths = chars.map((c) => font.getAdvanceWidth(c, fontSize));
   const total = widths.reduce((s, w) => s + w, 0);
-  const table = buildEllipseArcLengthTable(radiusX, radiusY, Math.PI * 0.98, 4000);
+  const table = buildEllipseArcLengthTable(
+    radiusX,
+    radiusY,
+    Math.PI * 0.98,
+    4000,
+  );
   const halfTableLength = table.cumulative[table.cumulative.length >> 1];
 
   let cumulative = 0;
@@ -74,14 +86,21 @@ function computeArcChars(text, font, fontSize, { centerX, centerY, radiusX, radi
     const centerCumulative = cumulative + widths[i] / 2;
     cumulative += widths[i];
     const distanceFromCenter = centerCumulative - total / 2;
-    const angleRad = angleForArcLength(table, halfTableLength + distanceFromCenter);
+    const angleRad = angleForArcLength(
+      table,
+      halfTableLength + distanceFromCenter,
+    );
     return {
       char,
       width: widths[i],
       x: centerX + radiusX * Math.sin(angleRad),
       y: centerY - radiusY * Math.cos(angleRad),
       rotation:
-        (Math.atan2(radiusX * Math.sin(angleRad), radiusY * Math.cos(angleRad)) * 180) /
+        (Math.atan2(
+          radiusX * Math.sin(angleRad),
+          radiusY * Math.cos(angleRad),
+        ) *
+          180) /
         Math.PI,
     };
   });
@@ -199,7 +218,9 @@ const MINISTRIES_FONT_SIZE = 19;
 const MINISTRIES_LETTER_SPACING = 3; // matches letterSpacing="3" in page.tsx
 const ministriesChars = MINISTRIES_TEXT.split("");
 const ministriesWidths = ministriesChars.map(
-  (c) => cinzelFont.getAdvanceWidth(c, MINISTRIES_FONT_SIZE) + MINISTRIES_LETTER_SPACING,
+  (c) =>
+    cinzelFont.getAdvanceWidth(c, MINISTRIES_FONT_SIZE) +
+    MINISTRIES_LETTER_SPACING,
 );
 const ministriesTotal =
   ministriesWidths.reduce((s, w) => s + w, 0) - MINISTRIES_LETTER_SPACING; // no trailing gap
@@ -209,7 +230,15 @@ const ministriesPaths = ministriesChars
     const advance = cinzelFont.getAdvanceWidth(char, MINISTRIES_FONT_SIZE);
     const x = 100 + ministriesCumulative + advance / 2;
     ministriesCumulative += ministriesWidths[i];
-    return charPathElement(cinzelFont, char, MINISTRIES_FONT_SIZE, x, 217.83, 0, "#c9a876");
+    return charPathElement(
+      cinzelFont,
+      char,
+      MINISTRIES_FONT_SIZE,
+      x,
+      217.83,
+      0,
+      "#c9a876",
+    );
   })
   .join("\n      ");
 
@@ -239,8 +268,14 @@ const HORIZONTAL_ARM_POINTS = [
   [109, 66 - 10],
   [91, 66 - 10],
 ];
-const verticalArmPath = roundedPolygonPath(VERTICAL_ARM_POINTS, CROSS_CORNER_RADIUS);
-const horizontalArmPath = roundedPolygonPath(HORIZONTAL_ARM_POINTS, CROSS_CORNER_RADIUS);
+const verticalArmPath = roundedPolygonPath(
+  VERTICAL_ARM_POINTS,
+  CROSS_CORNER_RADIUS,
+);
+const horizontalArmPath = roundedPolygonPath(
+  HORIZONTAL_ARM_POINTS,
+  CROSS_CORNER_RADIUS,
+);
 
 // --- Starburst: a filled, jagged sunburst silhouette behind the cross ---
 // A handful of thin separated ray lines reads as scattered streaks rather
@@ -253,13 +288,22 @@ const horizontalArmPath = roundedPolygonPath(HORIZONTAL_ARM_POINTS, CROSS_CORNER
 // without needing more than 2 shapes total — nowhere near "a thousand
 // lines". Both stay well inside the viewBox's tightest clearance from the
 // center (100,66) in any direction, so nothing gets clipped.
-function starPolygonPoints(cx, cy, spikeCount, outerRadius, innerRadius, rotationDeg) {
+function starPolygonPoints(
+  cx,
+  cy,
+  spikeCount,
+  outerRadius,
+  innerRadius,
+  rotationDeg,
+) {
   const points = [];
   const vertexCount = spikeCount * 2;
   for (let i = 0; i < vertexCount; i++) {
     const r = i % 2 === 0 ? outerRadius : innerRadius;
     const angle = (Math.PI * i) / spikeCount + (rotationDeg * Math.PI) / 180;
-    points.push(`${(cx + r * Math.sin(angle)).toFixed(2)},${(cy - r * Math.cos(angle)).toFixed(2)}`);
+    points.push(
+      `${(cx + r * Math.sin(angle)).toFixed(2)},${(cy - r * Math.cos(angle)).toFixed(2)}`,
+    );
   }
   return points.join(" ");
 }

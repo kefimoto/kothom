@@ -21,10 +21,34 @@ const ptSerif = PT_Serif({
   variable: "--font-pt-serif",
 });
 
+const TITLE = "Knights of the Higher Order Ministries";
+const DESCRIPTION =
+  "Knights of the Higher Order Ministries (KOTHOM) — spreading His word, one family at a time. Get help, or become a Knight through an annual gift or a legacy gift.";
+
 export const metadata: Metadata = {
-  title: "Knights of the Higher Order Ministries",
-  description:
-    "Knights of the Higher Order Ministries (KOTHOM) — spreading His word, one family at a time. Get help, or become a Knight through an annual gift or a legacy gift.",
+  metadataBase: new URL("https://kothoministries.org"),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "https://kothoministries.org",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: TITLE,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({

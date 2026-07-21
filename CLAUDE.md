@@ -19,6 +19,15 @@ This site should keep working untouched for years with no maintenance. Concretel
 - **No runtime dependency on external services for core functionality.** Don't hotlink images or other assets from third-party CDNs (e.g. `images.unsplash.com`) — download and self-host them in `public/` instead (see `.impeccable/assets/image-credits.md` for sourcing/licensing records). If a third-party service goes down or changes its API, the site should be unaffected.
 - Apply this same standard to future dependencies: prefer self-contained, self-hosted solutions over ones that assume an always-available external service, unless the feature genuinely requires live external data (e.g. Stripe for payments).
 
+## Tooling deliberately not adopted
+
+These were considered during a 2026-07-21 tooling audit and intentionally skipped for now. Revisit if the project's shape changes (e.g. it grows beyond a single static page, gains real interactivity/business logic, or gains other contributors).
+
+- **Automated test framework (Vitest/Playwright).** Skipped: this is one static marketing page with no client-side logic or state to unit test; a build+lint CI gate catches the failure modes that actually matter here. Reconsider if the site gains real interactivity (forms with validation, the eventual Stripe checkout flow) worth regression-testing.
+- **Dependabot/Renovate.** Skipped deliberately, not just unnoticed: automated dependency-bump PRs create *recurring maintenance work* (reviewing, merging, re-testing) on a site whose whole design goal is running untouched for years. Reconsider only if a dependency has an active security-advisory track record, or once someone is checking in on this repo regularly anyway.
+- **Pre-commit hooks (husky/lint-staged), commitlint, CODEOWNERS, LICENSE, `.editorconfig`.** Skipped: solo-dev repo, no collaborators to coordinate with, low payoff for the setup/maintenance cost. Reconsider if a second contributor joins.
+- **Security headers/CSP.** Skipped for now: no user input or payment processing is actually wired up yet (see placeholders below). Revisit once Stripe (or similar) goes live for real donations.
+
 ## Known placeholders / not-yet-implemented
 
 - **Phone number is a placeholder**: `689-123-4567` appears throughout the site (hero, footer, Pastoral Services). The source Canva deck had two conflicting real numbers and the client confirmed neither is currently correct (2026-07-20). Replace every occurrence with the real number once confirmed — grep for `689-123-4567` in `src/app/page.tsx` and `src/app/layout.tsx`.
@@ -26,7 +35,9 @@ This site should keep working untouched for years with no maintenance. Concretel
 
 ## Deployment
 
-Live at https://kothom.vercel.app, auto-deploying from `main` via Vercel's GitHub App integration (confirmed working 2026-07-20). The Vercel project lives under the **`kothom`** team.
+Live at **https://kothoministries.org** (the real customer-facing domain — already wired up as a custom domain on the Vercel project, confirmed 2026-07-21). `https://kothom.vercel.app` is the underlying Vercel deployment URL/infra alias; customers never see or use it. Auto-deploys from `main` via Vercel's GitHub App integration (confirmed working 2026-07-20). The Vercel project lives under the **`kothom`** team.
+
+**Any customer-facing URL in code (metadata, canonical links, sitemap, robots.txt, OG images, JSON-LD, etc.) must use `kothoministries.org`, never `kothom.vercel.app`.**
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands
