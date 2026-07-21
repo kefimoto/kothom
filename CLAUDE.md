@@ -1,124 +1,17 @@
 @AGENTS.md
 
-## Design Context
+# AI docs index
 
-This project has `PRODUCT.md` (strategy: audiences, mission, giving paths, brand personality) and `DESIGN.md` (visual system: colors, typography, components) at the project root, generated and maintained by the `impeccable` skill. Read both before making UI/design decisions — `DESIGN.md` wins on visual choices, `PRODUCT.md` wins on strategic/voice choices. The visual identity (black-and-cream duotone, terracotta accent, Cinzel + PT Serif typography, the radiant cross mark) is sourced from the ministry's existing Canva materials (`.impeccable/assets/`) — preserve it rather than redesigning from scratch.
+Project-specific context is split into topic files under `docs/ai/`. Read the relevant one(s) before working in that area — don't load them all up front.
 
-**The radiant cross mark is a generated static asset**, not hand-edited or computed at runtime: `public/kothom-mark.svg` has every letter baked in as a real glyph outline path, rendered via `next/image` in `CrossMark` (`src/app/page.tsx`). See `CROSS-MARK.md` at the project root for setup, regeneration, and how its geometry was derived — read it before touching the mark, and don't hand-edit the SVG or reintroduce runtime arc-layout JS for it.
-
-**Font split is deliberate, not an inconsistency:** the mark's wordmark uses Marcellus (Cinzel Decorative was tried and rejected there — too ornate/"swoopy" once tightly arced), while the sitewide `font-display` CSS variable (used only for the hero tagline, nowhere else) is still Cinzel Decorative. Don't "fix" these to match each other.
-
-## Working style on this project
-
-- **Minimize screenshot-taking.** Don't reach for a browser screenshot to check a visual result when avoidable — the user can pull up the running dev server and look themselves. Only take one when it's actually necessary to verify something before finishing a change (e.g. confirming no regression right before a commit), not after every minor tweak in an iterative round.
-
-## Reliability principles
-
-This site should keep working untouched for years with no maintenance. Concretely:
-
-- **No runtime dependency on external services for core functionality.** Don't hotlink images or other assets from third-party CDNs (e.g. `images.unsplash.com`) — download and self-host them in `public/` instead (see `.impeccable/assets/image-credits.md` for sourcing/licensing records). If a third-party service goes down or changes its API, the site should be unaffected.
-- Apply this same standard to future dependencies: prefer self-contained, self-hosted solutions over ones that assume an always-available external service, unless the feature genuinely requires live external data (e.g. Stripe for payments).
-
-## Tooling adopted 2026-07-21 (revised)
-
-The 2026-07-21 audit originally skipped a test framework, pre-commit hooks, CODEOWNERS, and `.editorconfig` on "one static page, solo maintainer" grounds. That condition changed the same day: the site is about to grow blog/news content (markdown transformed into static pages), a login flow, and subscription-cancellation (real billing), and a non-technical contributor is joining to edit content directly. So these are now in place:
-
-- **Vitest** (`vitest.config.mts`, `__tests__/`) for unit tests — `bun run test` / `bun run test:watch`.
-- **Playwright** (`playwright.config.ts`, `e2e/`) for e2e smoke tests — `bun run test:e2e`. Both run in CI as part of the required `quality-gate` check.
-- **husky + lint-staged** — a pre-commit hook (`.husky/pre-commit`) runs `biome check --write` on staged files.
-- **`.github/CODEOWNERS`** — `* @kefimoto`. Lets "Require review from Code Owners" be turned on later in GitHub's branch protection UI without another repo change.
-- **`.editorconfig`** — consistent whitespace/line-endings regardless of what editor a contributor uses, which matters once someone other than the primary maintainer is editing files.
-
-Current test coverage is intentionally thin (robots/sitemap logic + one page smoke test) — the point was having the harness and CI wiring ready *before* the login/subscription forms land, not retrofitting it after.
-
-## Tooling still deliberately not adopted
-
-- **Commitlint.** Skipped even though husky/lint-staged were adopted: a non-technical contributor is joining to edit markdown content, and enforcing conventional-commit message format on them is friction with no real payoff yet. Reconsider if the contributor base grows technical enough for commit-message conventions to pay for themselves (e.g. automated changelogs).
-- ~~Security headers/CSP~~ — enabled 2026-07-21 (see below), ahead of the original "wait for Stripe/auth" plan. The ministry decided not to wait.
-- ~~Dependabot/Renovate~~ — adopted 2026-07-21 (see below), reversing the original "recurring maintenance work" objection now that someone (the maintainer, working with Claude Code) is actively in this repo regularly — exactly the condition the original note said would justify revisiting it.
-
-## CI/CD hardening (added 2026-07-21)
-
-- **Dependabot** (`.github/dependabot.yml`) — grouped, weekly, not the default one-PR-per-dependency-per-bump: minor/patch bumps land as one batched PR per ecosystem (`bun`, `github-actions`); major bumps land individually since those are the ones most likely to need an actual human look rather than a rubber-stamp merge. Chose Dependabot over Renovate specifically to avoid installing a third-party GitHub App with repo write access — Dependabot's grouping feature closes most of the gap that used to be Renovate's main edge. Also enabled **Dependabot security updates** (a separate, narrower toggle from version-bump automation — only fires on an actual CVE in a dependency, effectively zero routine noise) and GitHub's **vulnerability alerts**.
-- **GitHub default CodeQL setup** and **secret scanning + push protection** — both repo *settings* (Settings → Code security), not workflow files; both free for public repos. Enabled via the GitHub API rather than a committed file.
-- **shellcheck** — a required, unconditional step in `quality-gate` (`.github/workflows/ci.yml`). Runs on every PR regardless of the content/code fast-path filter, since it needs no bun/node setup and takes a fraction of a second; `ubuntu-latest` ships it preinstalled.
-- **Lighthouse CI** — runs in `quality-gate` for code-changed PRs, but is **informational only, not blocking** (`continue-on-error: true`, no `lighthouserc`/budget file, so nothing is actually asserted). Checked the real production baseline on 2026-07-21 against `kothoministries.org`: Accessibility/Best Practices/SEO are all 100, but **Performance is 69** — driven almost entirely by Total Blocking Time (1,010ms) and Time to Interactive (6.1s), not LCP or CLS (both solid). A standard 90-threshold budget would fail every PR starting today, which is exactly why this isn't blocking yet. **Revisit turning this into a real gate once (a) the TBT/TTI regression above is actually investigated and fixed, and (b) a deliberate budget number is chosen** — not a default like "90" copy-pasted without evidence it's achievable here.
-
-## Security headers & CSP (added 2026-07-21)
-
-Set in `next.config.ts`'s `headers()` — applies to every route, not a per-page opt-in.
-
-- **CSP has no nonce.** The site is entirely statically generated (no login, no dynamic pages yet); a nonce-based CSP requires per-request dynamic rendering on every page, which trades away static generation/CDN caching for a site whose explicit reliability goal is running untouched for years. `script-src` therefore keeps `'unsafe-inline'` (needed for `OrganizationSchema`'s inline JSON-LD script and Next's own hydration script) plus `https://www.googletagmanager.com` for GA4. Revisit with a proxy-based nonce (see Next's CSP guide, `node_modules/next/dist/docs/01-app/02-guides/content-security-policy.md`) once a real login or payment form needs stricter script-src.
-- `connect-src`/`img-src` allow `google-analytics.com` (and `region1.google-analytics.com`, a regional GA4 collection endpoint) for the GA4 beacon wired up in `src/app/layout.tsx`.
-- `frame-ancestors 'none'` and `object-src 'none'` block clickjacking/plugin-embed vectors outright — nothing on the site needs to be framed or needs Flash/plugin content.
-- `Strict-Transport-Security` uses the two-year `preload` form; this only takes effect once the domain is actually submitted to the [HSTS preload list](https://hstspreload.org) (not done as part of this change — submitting it is a one-way action since browsers ship the list, so treat that as a separate, deliberate step).
-- **DNSSEC is not in this list, and can't be added while DNS stays on Vercel.** `kothoministries.org`'s nameservers currently point at Vercel (registrar is third-party, per `vercel domains ls`), but **Vercel's own DNS does not support DNSSEC signing** (confirmed 2026-07-21 — no such option exists in the Domains dashboard, despite the earlier note in this file claiming otherwise). Getting DNSSEC would require moving the zone's nameservers off Vercel to a DNS provider that does sign zones (e.g. Cloudflare, or the registrar's own DNS if it supports it), then re-pointing Vercel's project domain to use that provider's records instead of Vercel nameservers. That's a live-DNS migration for the production domain, not a settings toggle — it's a deliberate call for the ministry to make, not something to do inline while adding headers. Not attempted as part of the 2026-07-21 security-headers pass.
-
-## Content pipeline (added 2026-07-21)
-
-Markdown in `content/` is compiled to typed JSON at build time by **Velite** (`velite.config.ts`), and the app imports it from `#site/content`. A non-technical contributor edits those markdown files through GitHub's web UI; `CONTENT-GUIDE.md` is the document written for them.
-
-**Velite runs as its own sequential script, not from a `next.config.ts` hook.** `"build": "velite --clean --strict && next build"`. Velite's own docs warn its webpack hook breaks on Vercel, and the alternative `import('velite').then(...)` trick in `next.config.ts` is a floating promise that lets `next build` start reading `.velite/` before Velite finishes writing it. Don't "simplify" this into the config.
-
-**⚠️ Never remove `--strict` from a velite invocation.** Velite resolves the flag as `options.strict ?? loadedConfig.strict ?? false`, and its CLI declares `strict` with `default: false` — so the CLI's `false` *always* overrides `strict: true` in `velite.config.ts`. Without the flag, a markdown file with a bad or missing frontmatter field is silently **dropped from the output** while the build prints "build finished" and exits 0. That's a green CI run with a missing page. Verified 2026-07-21 against velite 0.4.0.
-
-Also deliberate:
-- **`isodate()` in `velite.config.ts` is hand-rolled, not Velite's `s.isodate()`.** The built-in calls `.toISOString()` on whatever it's given, so a typo escapes Zod as a raw `RangeError: Invalid time value` with no filename and no field name. The replacement coerces through a Zod date so the failure is reported as `content/news/foo.md → error … date` with a message written for a non-developer.
-- **The homepage announcement uses a manual `active` boolean, not an expiry date.** A statically-generated page can't un-render itself when a date passes, so an `expires` field would keep showing a finished event until the next unrelated deploy.
-- **The filename is the URL.** `content/news/foo.md` → `/news/foo`. Don't add date prefixes to filenames.
-- Content pages are a **hybrid**: page chrome (CTAs, image panels, layout) stays in TSX, prose comes from markdown. The contributor controls the words and can't break a layout.
-
-## Legal & compliance
-
-**`COMPLIANCE.md` is the single home for the ministry's legal reasoning.** Code comments point at it rather than repeating it, because it's written to be read and corrected by the ministry, not by developers. If you're tempted to explain a statute in a TSX comment, put it in COMPLIANCE.md and link instead.
-
-`LEGAL_STATUS` in `src/lib/ministry.ts` is the switchboard: every value is `null`/`false` until the corresponding filing is genuinely complete, and components suppress their own UI while unset. **Never fill one in to "see how it looks"** — that's what makes the site print a fabricated EIN or an invented Florida registration number. As of 2026-07-21 none of the four filings are confirmed, so no page may claim tax-deductibility.
-
-## Known placeholders / not-yet-implemented
-
-- **Phone number is a placeholder**: `689-123-4567`. The source Canva deck had two conflicting real numbers and the client confirmed neither is currently correct (2026-07-20). It now lives in **one place** — `MINISTRY.phone` in `src/lib/ministry.ts` — so replacing it is a one-line change. Markdown in `content/` spells it out in prose and can't import the constant, so `__tests__/content-integrity.test.ts` fails the build if any content file names a number that disagrees with it.
-- **No payment processing yet.** "Become a Knight" and "Legacy Donations" go through `<DonateButton>` (`src/components/donate-button.tsx`), which currently opens a `mailto:`. That component is the single place real checkout should ever attach. Donations are not collectible through the site yet — don't describe this as a working donation flow.
-- **No auth.** `/membership` is a real, useful page explaining how to change or stop a gift by phone/email; it's where an account portal would attach later.
-
-## Repository & CI
-
-The GitHub repo (`kefimoto/kothom`) is **public**, made so on 2026-07-21 specifically to unlock GitHub branch protection on `main` (a free-tier limitation — private repos require GitHub Pro for protection rules). Checked git history for secrets before flipping visibility; found none.
-
-`main` requires **two** status checks to pass before any push lands, **including from admins** (`enforce_admins` is on) — there is no bypass:
-- **`quality-gate`** — the GitHub Actions workflow at `.github/workflows/ci.yml` (content validation, lint, typecheck, unit tests, `next build`, and Playwright e2e in a plain Ubuntu runner). Content-only PRs run just the content validation step — see "CI performance" below.
-- **`Vercel`** — the commit status Vercel's own GitHub App integration posts once *its* build (and, for PRs, the resulting preview deployment) actually succeeds. This is a separate build environment from `quality-gate` (Vercel's own container/Node version/env vars), so it's the real guarantee that what will actually deploy does deploy successfully — a PR can't merge on a broken preview.
-
-Force-pushes and branch deletion are blocked as part of the same protection rule.
-
-### CI performance
-
-`quality-gate` runs in ~40s (down from ~58s) after caching Playwright's Chromium binary (`~/.cache/ms-playwright`, keyed on `bun.lock`) and dropping `--with-deps` — `ubuntu-latest` already ships every OS lib Chromium needs, so `--with-deps`'s `apt-get update` was ~35s of pure no-op overhead. The workflow also cancels a still-running CI job when a newer commit lands on the same ref (`concurrency` block) and does a shallow checkout (`fetch-depth: 1`).
-
-Two of the three deferred optimizations were taken on 2026-07-21, once the content pipeline landed and made their trigger conditions true:
-
-- **`.next/cache` build caching** — now enabled, keyed on `bun.lock` + `src/**` + `content/**`, with looser `restore-keys` so an unrelated edit still gets a warm partial cache.
-- **Content-only fast path** — a `dorny/paths-filter` step sets a `code` output; lint/typecheck/unit/build/e2e are skipped when a pull request touches only `content/**` and `**/*.md`. Such a PR is still fully validated: `bunx velite --clean --strict` always runs (schema-checking every content file, ~2s), and Vercel's own build is a separately required status check that runs regardless.
-- **Also fixed:** `playwright.config.ts` was running `bun run build && bun run start` in its `webServer`, compiling the whole app a *second* time in a job that had already built it. Under CI it now runs `bun run start` only.
-
-Still deliberately deferred:
-- **Splitting `quality-gate` into parallel jobs.** Each additional job pays ~5-10s of runner setup overhead, which would currently erase the gain. Also requires updating branch protection to require multiple check names instead of the current single `quality-gate` name.
-
-### Two CI footguns, both load-bearing
-
-1. **Never add top-level `paths-ignore` to `.github/workflows/ci.yml`.** Branch protection requires a check named exactly `quality-gate` with `enforce_admins` on. A workflow filtered out by `paths-ignore` never runs, so it never posts that status, and the PR sits on "Expected — Waiting for status" forever with no way to merge. The job must always run; only its *steps* are conditional.
-2. **`dorny/paths-filter` ORs a filter's patterns by default, so `predicate-quantifier: "every"` is load-bearing.** The filter first shipped as `['**', '!content/**', '!**/*.md']`, which reads like "everything except content and markdown" but isn't: under the default `some` quantifier, `'**'` alone matches every file and the negations act as alternatives rather than exclusions. `code` was therefore *always* true and the fast path never engaged — verified against run `29841139707`, where every step ran on a four-file markdown-only PR, behind a green check.
-
-   With `every`, a file must satisfy all patterns, so a list of pure negations means "changed files that are neither content nor markdown" — the actual question. **Keep the pattern list minimal:** under `every`, each added pattern makes `code` *harder* to satisfy, which biases toward skipping checks, the dangerous direction. `__tests__/ci-path-filter.test.ts` parses the real workflow and reproduces the action's matching against both directions; it exists because this bug's signature is CI staying green while doing nothing.
-
-   The fast path also only applies to `pull_request` events — a push to `main` always runs the full gate.
-
-Since the repo is public, anyone can open a PR from a fork. Two independent approval gates stop that from reaching maintainer-controlled infrastructure unauthorized: GitHub Actions requires manual approval to run `quality-gate` on a first-time fork contributor's PR, and Vercel's project-level **Git Fork Protection** is enabled (confirmed 2026-07-21 via `vercel project protection kothom`), which holds fork-originated preview builds pending until a maintainer approves them in the Vercel dashboard — this prevents both unauthorized deploys and build-time env var exfiltration via a malicious build script. See `CONTRIBUTING.md` for the contributor-facing explanation.
-
-## Deployment
-
-Live at **https://kothoministries.org** (the real customer-facing domain — already wired up as a custom domain on the Vercel project, confirmed 2026-07-21). `https://kothom.vercel.app` is the underlying Vercel deployment URL/infra alias; customers never see or use it. Auto-deploys from `main` via Vercel's GitHub App integration (confirmed working 2026-07-20). The Vercel project lives under the **`kothom`** team.
-
-**Any customer-facing URL in code (metadata, canonical links, sitemap, robots.txt, OG images, JSON-LD, etc.) must use `kothoministries.org`, never `kothom.vercel.app`.**
+- `docs/ai/design.md` — design context (PRODUCT.md/DESIGN.md, the cross mark, font split), working style (screenshots)
+- `docs/ai/reliability.md` — no runtime dependency on external services for core functionality
+- `docs/ai/tooling.md` — test/lint/pre-commit tooling adopted 2026-07-21, and what was deliberately skipped
+- `docs/ai/ci-cd.md` — Dependabot, CodeQL, secret scanning, shellcheck, Lighthouse, branch protection, CI performance, and the two CI footguns
+- `docs/ai/security.md` — CSP/security headers in `next.config.ts`, HSTS preload, DNSSEC status
+- `docs/ai/content-pipeline.md` — Velite markdown→JSON pipeline, the `--strict` footgun, content authoring rules
+- `docs/ai/legal-compliance.md` — `LEGAL_STATUS` switchboard, known placeholders (phone number, no payments, no auth)
+- `docs/ai/deployment.md` — production domain, Vercel project, URL rules
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands
