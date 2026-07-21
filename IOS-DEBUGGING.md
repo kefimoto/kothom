@@ -96,9 +96,8 @@ preflight_worker_handle_device_add: ERROR: Could not connect to lockdownd on dev
 not "protocol incompatibility."** It's tempting to jump straight to
 "iOS 17+'s USB-C pairing protocol isn't supported by classic
 `libimobiledevice`/`usbmuxd`" — that's a real, documented, unresolved class of
-issue upstream (see e.g. libimobiledevice/libimobiledevice#1491, #1567), and
-`pymobiledevice3` is the legitimate modern replacement if you actually hit it.
-But try the cheap fix first:
+issue upstream (see e.g. libimobiledevice/libimobiledevice#1491, #1567). But
+try the cheap fix first:
 
 ```bash
 sudo systemctl restart usbmuxd
@@ -116,12 +115,11 @@ idevicepair validate    # should say SUCCESS
 ```
 
 **Only run one tool against the device at a time while establishing initial
-pairing.** Running `idevice_id`, `pymobiledevice3`, and
-`ios_webkit_debug_proxy` concurrently starves/confuses `usbmuxd`'s single
-connection to the device and reproduces the exact same symptom as a genuine
-protocol incompatibility — that's what cost real time this session. Get
-`idevicepair validate` to SUCCESS with nothing else running first, then move
-on.
+pairing.** Running `idevice_id` and `ios_webkit_debug_proxy` concurrently
+starves/confuses `usbmuxd`'s single connection to the device and reproduces
+the exact same symptom as a genuine protocol incompatibility — that's what
+cost real time this session. Get `idevicepair validate` to SUCCESS with
+nothing else running first, then move on.
 
 ## Starting the proxy and adapter
 
