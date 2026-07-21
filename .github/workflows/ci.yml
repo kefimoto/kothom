@@ -31,19 +31,16 @@ jobs:
         run: bun run build
 
       - name: Cache Playwright browsers
-        id: playwright-cache
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
 
+      # No --with-deps: ubuntu-latest already ships every OS lib Chromium
+      # needs (verified in job logs). Adding it back re-runs `apt-get
+      # update` on every job for no-op installs, costing ~35s.
       - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: bunx playwright install --with-deps chromium
-
-      - name: Install Playwright OS dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: bunx playwright install-deps chromium
+        run: bunx playwright install chromium
 
       - name: E2E tests
         run: bun run test:e2e
