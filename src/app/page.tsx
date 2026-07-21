@@ -4,42 +4,152 @@ const PHONE_DISPLAY = "689-123-4567";
 const PHONE_TEL = "tel:+16891234567";
 const CONTACT_EMAIL = "Knightsofthehigherorder@gmail.com";
 
+// iOS Safari's support for textPath + textLength/lengthAdjust is unreliable
+// (it can both truncate the text and shift it off-center), so the arced
+// wordmark is laid out by hand: each character gets its own x/y and rotation
+// computed from a circle, rather than relying on <textPath>.
+//
+// Per-character advance widths (measured via getComputedTextLength() in
+// Chrome at font-size 20 in the "Cinzel Decorative" font) so letters are
+// spaced by their real rendered width instead of an approximate average —
+// using an average caused wide letters to overlap and narrow ones to gap.
+const WORDMARK_TEXT = "KNIGHTS OF THE HIGHER ORDER";
+const WORDMARK_CHAR_WIDTHS_AT_20 = [
+  15.23, 17.31, 9.13, 17.23, 17.23, 13.97, 12.47, 5, 18.61, 13.14, 5, 13.97,
+  17.23, 13.41, 5, 17.23, 9.13, 17.23, 17.23, 13.41, 14.63, 5, 18.61, 14.63,
+  17.25, 13.41, 14.63,
+];
+
+function computeArcChars(
+  text: string,
+  charWidthsAtFontSize20: number[],
+  fontSize: number,
+  config: { centerX: number; centerY: number; radius: number },
+) {
+  const { centerX, centerY, radius } = config;
+  const scale = fontSize / 20;
+  const widths = charWidthsAtFontSize20.map((w) => w * scale);
+  const total = widths.reduce((sum, w) => sum + w, 0);
+  let cumulative = 0;
+  return text.split("").map((char, i) => {
+    const centerCumulative = cumulative + widths[i] / 2;
+    cumulative += widths[i];
+    const distanceFromCenter = centerCumulative - total / 2;
+    const angleRad = distanceFromCenter / radius;
+    return {
+      char,
+      x: centerX + radius * Math.sin(angleRad),
+      y: centerY - radius * Math.cos(angleRad),
+      rotation: (angleRad * 180) / Math.PI,
+    };
+  });
+}
+
 function CrossMark({ size = "large" }: { size?: "large" | "small" }) {
-  const dimension = size === "large" ? 140 : 88;
-  const wordmarkSize =
-    size === "large" ? "text-sm sm:text-base" : "text-xs sm:text-sm";
-  const subSize = size === "large" ? "text-xl sm:text-2xl" : "text-base";
+  // Crossbar intersection point.
+  const cx = 100;
+  const cy = 66;
+
+  const hotspotId = `hotspot-${size}`;
+  const softenId = `soften-${size}`;
+
+  // The arc's two ends dip down closer to the cross than its curved middle
+  // does (that's what curving means), so "the same distance from the cross"
+  // can't hold at every point along it. What a viewer actually compares is
+  // the gap directly above the cross's centerline — the peak of the arc —
+  // against the flat gap below to "Ministries", so that's the pair this is
+  // tuned to match, rather than the arc's (much closer) outer endpoints.
+  //
+  // Curvature (radius 184, ~60° half-span) is calibrated against the source
+  // logo, where the wordmark wraps in a pronounced dome with its two ends
+  // dipping down to nearly crossbar height.
+  const wordmarkChars = computeArcChars(
+    WORDMARK_TEXT,
+    WORDMARK_CHAR_WIDTHS_AT_20,
+    21,
+    { centerX: cx, centerY: 176, radius: 184 },
+  );
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center">
       <svg
-        width={dimension}
-        height={dimension}
-        viewBox="0 0 200 200"
+        width={350}
+        height={275}
+        viewBox="-75 -25 350 275"
         aria-hidden="true"
-        className="shrink-0"
+        className={`h-auto shrink-0 ${size === "large" ? "w-[280px] sm:w-[360px]" : "w-[155px] sm:w-[200px]"}`}
       >
         <defs>
-          <radialGradient id={`glow-${size}`} cx="50%" cy="50%" r="50%">
+          <radialGradient id={hotspotId} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-            <stop offset="60%" stopColor="#ffffff" stopOpacity="0.35" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
           </radialGradient>
+          <filter id={softenId} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3.2" />
+          </filter>
         </defs>
-        <circle cx="100" cy="100" r="95" fill={`url(#glow-${size})`} />
-        <rect x="85" y="35" width="30" height="130" rx="4" fill="#f4efe6" />
-        <rect x="50" y="82" width="100" height="30" rx="4" fill="#f4efe6" />
+
+        {/* Soft glow hugging the edges of the cross (not a background wash) */}
+        <g filter={`url(#${softenId})`}>
+          <rect x="86" y="6" width="28" height="190" fill="#f4efe6" />
+          <rect x="30" y="50" width="140" height="32" fill="#f4efe6" />
+        </g>
+
+        {/* Crisp cross body — each arm flares slightly at the tip and
+            tapers narrower as it approaches the center. */}
+        <polygon
+          fill="#f4efe6"
+          points={`
+            ${cx - 13},8 ${cx + 13},8
+            ${cx + 11},53 ${cx + 11},79
+            ${cx + 13},194 ${cx - 13},194
+            ${cx - 11},79 ${cx - 11},53
+          `}
+        />
+        <polygon
+          fill="#f4efe6"
+          points={`
+            35,${cy - 15} 35,${cy + 15}
+            89,${cy + 13} 111,${cy + 13}
+            165,${cy + 15} 165,${cy - 15}
+            111,${cy - 13} 89,${cy - 13}
+          `}
+        />
+
+        {/* Bright hotspot at the intersection */}
+        <circle cx={cx} cy={cy} r="34" fill={`url(#${hotspotId})`} />
+
+        {/* Wordmark arced above the cross */}
+        <g fill="#f4efe6" fontSize="21" textAnchor="middle" className="font-display">
+          {wordmarkChars.map(
+            (p, i) =>
+              p.char !== " " && (
+                <text
+                  key={i}
+                  x={p.x}
+                  y={p.y}
+                  transform={`rotate(${p.rotation} ${p.x} ${p.y})`}
+                >
+                  {p.char}
+                </text>
+              ),
+          )}
+        </g>
+
+        {/* "Ministries" set below the cross */}
+        <text
+          x={cx}
+          y="228"
+          fontSize="19"
+          letterSpacing="3"
+          fill="#c9a876"
+          textAnchor="middle"
+          className="font-headline uppercase"
+        >
+          Ministries
+        </text>
       </svg>
-      <p
-        className={`font-display uppercase tracking-[0.15em] text-cream ${wordmarkSize}`}
-      >
-        Knights of the Higher Order
-      </p>
-      <p
-        className={`font-headline uppercase tracking-[0.2em] text-tan-gold ${subSize}`}
-      >
-        Ministries
-      </p>
+      <span className="sr-only">Knights of the Higher Order Ministries</span>
     </div>
   );
 }
