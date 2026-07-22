@@ -273,7 +273,12 @@ function getThemeColors(theme) {
   switch (theme) {
     case "dark":
       return {
-        crossFill: "#0a0a0a",
+        // The cross stays light — a solid dark silhouette read as an
+        // inverted/negative cross ("devilish"). Contrast against the light
+        // backdrop comes from glowFill (a dark shadow blurred behind it),
+        // not from darkening the cross body itself.
+        crossFill: "#ffffff",
+        glowFill: "#0a0a0a",
         starburstFill: "#764634",
         starburstOpacity1: 0.15,
         starburstOpacity2: 0.22,
@@ -288,6 +293,7 @@ function getThemeColors(theme) {
     case "monochrome-light":
       return {
         crossFill: "#ffffff",
+        glowFill: "#ffffff",
         starburstFill: "#ffffff",
         starburstOpacity1: 0.2,
         starburstOpacity2: 0.3,
@@ -302,6 +308,7 @@ function getThemeColors(theme) {
     case "monochrome-dark":
       return {
         crossFill: "#000000",
+        glowFill: "#000000",
         starburstFill: "#000000",
         starburstOpacity1: 0.2,
         starburstOpacity2: 0.3,
@@ -317,6 +324,7 @@ function getThemeColors(theme) {
     default:
       return {
         crossFill: "#f4efe6",
+        glowFill: "#f4efe6",
         starburstFill: "#f4efe6",
         starburstOpacity1: 0.09,
         starburstOpacity2: 0.13,
@@ -422,20 +430,22 @@ function generateMarkSvg(
     ${starburstLayers}
   </g>
 
-  <!-- Soft glow hugging the edges of the cross -->
+  <!-- Soft glow/shadow hugging the edges of the cross -->
   <g filter="url(#soften)">
-    <path fill="${colors.crossFill}" d="${verticalArmPath}" />
-    <path fill="${colors.crossFill}" d="${horizontalArmPath}" />
+    <path fill="${colors.glowFill}" d="${verticalArmPath}" />
+    <path fill="${colors.glowFill}" d="${horizontalArmPath}" />
   </g>
 `;
 
   const renderCrossBody = `
+  <!-- Bright hotspot at the intersection, behind the cross body so the
+       cross reads as the solid, topmost shape — only visible through the
+       small gaps between the tapered arms, not washed over the top of them -->
+  <circle cx="100" cy="66" r="58" fill="url(#hotspot)" />
+
   <!-- Crisp cross body -->
   <path fill="${colors.crossFill}" d="${verticalArmPath}" />
   <path fill="${colors.crossFill}" d="${horizontalArmPath}" />
-
-  <!-- Bright hotspot at the intersection -->
-  <circle cx="100" cy="66" r="58" fill="url(#hotspot)" />
 `;
 
   const renderWordmark = `
@@ -460,10 +470,16 @@ function generateMarkSvg(
     contentMarkup = `${renderCrossGlowAndStarburst}${renderCrossBody}`;
   } else if (layout === "simple") {
     viewBox = "35 8 130 186";
+    // Deliberately flat, no glow — unaffected by the "dark" theme's
+    // light-cross-plus-shadow treatment above, which only applies to the
+    // full/symbol layouts that actually have a glow layer to shadow with.
+    // A solid dark cross reads fine here; it never had the "devilish"
+    // inversion problem that prompted that change.
+    const simpleCrossFill = theme === "dark" ? "#0a0a0a" : colors.crossFill;
     contentMarkup = `
   <!-- Clean flat cross body -->
-  <path fill="${colors.crossFill}" d="${verticalArmPath}" />
-  <path fill="${colors.crossFill}" d="${horizontalArmPath}" />
+  <path fill="${simpleCrossFill}" d="${verticalArmPath}" />
+  <path fill="${simpleCrossFill}" d="${horizontalArmPath}" />
 `;
   } else if (layout === "favicon") {
     viewBox = "0 0 512 512";
