@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { pages } from "#site/content";
 import { DonateButton } from "@/components/donate-button";
 import { DonorPortalForm } from "@/components/donor-portal-form";
+import { GivingForm } from "@/components/giving-form";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
+import { RollOfHonor } from "@/components/roll-of-honor";
 
 function getPage() {
   const found = pages.find((p) => p.slug === "give");
@@ -25,6 +27,8 @@ export default function GivePage() {
       <div className="bg-cream px-6 py-16 sm:py-20">
         <Prose html={page.body} className="mx-auto max-w-3xl" />
       </div>
+
+      <GivingForm />
 
       <section id="become-a-knight" className="bg-ink px-6 py-20 sm:py-28">
         <div className="mx-auto flex max-w-3xl flex-col items-start gap-5">
@@ -68,6 +72,8 @@ export default function GivePage() {
           <DonorPortalForm />
         </div>
       </section>
+
+      <RollOfHonor />
     </main>
   );
 }
