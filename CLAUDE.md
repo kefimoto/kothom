@@ -1,5 +1,9 @@
 @AGENTS.md
 
+## Naming
+
+Never call this organization "Kothom Ministries." The correct names are **KOTHOM** or **Knights of the Higher Order Ministries** — use one of those, not an invented hybrid.
+
 # AI docs index
 
 Project-specific context is split into topic files under `docs/ai/`. Read the relevant one(s) before working in that area — don't load them all up front.
