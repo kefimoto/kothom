@@ -6,25 +6,35 @@
 // Full instructions (one-time setup, how the geometry was derived, how to
 // change the font or re-tune anything) are in CROSS-MARK.md — read
 // that before editing this file. Quick start, once the 3 .ttf files this
-// needs are sitting alongside this script (see the doc for how to fetch
-// them):
+// needs are sitting in the OS tmp cache dir below (see the doc for how to
+// fetch them — they live outside the repo tree on purpose, so there's
+// nothing to gitignore and no risk of committing them):
 //   node scripts/generate-kothom-mark.cjs
 //   WORDMARK_FONT=decorative node scripts/generate-kothom-mark.cjs   (preview a different font — writes to a separate file, not the real one)
+//
+// Always run this from the repo root — it writes to public/kothom-mark.svg
+// relative to cwd, while fonts resolve from an absolute tmpdir path.
 
 const opentype = require("opentype.js");
 const fs = require("fs");
+const os = require("os");
+const path = require("path");
+
+const FONT_CACHE_DIR = path.join(os.tmpdir(), "kothom-mark-fonts");
 
 const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
 const WORDMARK_FONT_FILES = {
-  decorative: "./CinzelDecorative-Bold.ttf",
-  cinzel: "./Cinzel-Bold-static.ttf",
-  marcellus: "./Marcellus-Regular.ttf",
+  decorative: "CinzelDecorative-Bold.ttf",
+  cinzel: "Cinzel-Bold-static.ttf",
+  marcellus: "Marcellus-Regular.ttf",
 };
 const decorativeFont = opentype.parse(
-  fs.readFileSync(WORDMARK_FONT_FILES[WORDMARK_FONT_CHOICE]).buffer,
+  fs.readFileSync(
+    path.join(FONT_CACHE_DIR, WORDMARK_FONT_FILES[WORDMARK_FONT_CHOICE]),
+  ).buffer,
 );
 const cinzelFont = opentype.parse(
-  fs.readFileSync("./Cinzel-Bold-static.ttf").buffer,
+  fs.readFileSync(path.join(FONT_CACHE_DIR, "Cinzel-Bold-static.ttf")).buffer,
 );
 
 // --- Same ellipse arc-length math as computeArcChars in page.tsx ---
@@ -318,6 +328,7 @@ const starburstLayers = [
   .join("\n    ");
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="17 -15 166 260">
+  <title>Kothom Ministries radiant cross mark</title>
   <defs>
     <radialGradient id="hotspot" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />

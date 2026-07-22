@@ -14,8 +14,7 @@
       "!dist",
       "!build",
       "!.claude",
-      "!.impeccable",
-      "!public/kothom-mark.svg"
+      "!.impeccable"
     ]
   },
   "formatter": {
