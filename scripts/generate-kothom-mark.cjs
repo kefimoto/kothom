@@ -459,7 +459,7 @@ function generateMarkSvg(
     viewBox = "17 2 166 200";
     contentMarkup = `${renderCrossGlowAndStarburst}${renderCrossBody}`;
   } else if (layout === "simple") {
-    viewBox = "65 8 70 186";
+    viewBox = "35 8 130 186";
     contentMarkup = `
   <!-- Clean flat cross body -->
   <path fill="${colors.crossFill}" d="${verticalArmPath}" />

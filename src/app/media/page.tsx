@@ -67,7 +67,7 @@ const ASSETS: Asset[] = [
     description:
       "A minimal, flat vector cross with no glow or text. For small icons and UI use.",
     background: "ink",
-    width: 70,
+    width: 130,
     height: 186,
   },
   {
@@ -75,7 +75,7 @@ const ASSETS: Asset[] = [
     label: "Simple cross — for light backgrounds",
     description: "The same minimal cross, inverted for light backgrounds.",
     background: "cream",
-    width: 70,
+    width: 130,
     height: 186,
   },
   {

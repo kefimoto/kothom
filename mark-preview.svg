@@ -280,7 +280,7 @@
   
   <clipPath id="clip-kothom-mark-simple-svg"><rect width="260" height="312" /></clipPath>
   <g clip-path="url(#clip-kothom-mark-simple-svg)">
-    <svg x="16" y="42" width="228" height="228" viewBox="65 8 70 186" preserveAspectRatio="xMidYMid meet">
+    <svg x="16" y="42" width="228" height="228" viewBox="35 8 130 186" preserveAspectRatio="xMidYMid meet">
   <title>Knights of the Higher Order Ministries brand mark (simple - light)</title>
   <defs>
     <radialGradient id="hotspot" cx="50%" cy="50%" r="50%">
@@ -311,7 +311,7 @@
   
   <clipPath id="clip-kothom-mark-simple-dark-svg"><rect width="260" height="312" /></clipPath>
   <g clip-path="url(#clip-kothom-mark-simple-dark-svg)">
-    <svg x="16" y="42" width="228" height="228" viewBox="65 8 70 186" preserveAspectRatio="xMidYMid meet">
+    <svg x="16" y="42" width="228" height="228" viewBox="35 8 130 186" preserveAspectRatio="xMidYMid meet">
   <title>Knights of the Higher Order Ministries brand mark (simple - dark)</title>
   <defs>
     <radialGradient id="hotspot" cx="50%" cy="50%" r="50%">
