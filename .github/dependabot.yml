@@ -18,6 +18,16 @@ updates:
       production-dependencies:
         dependency-type: "production"
         update-types: ["minor", "patch"]
+    ignore:
+      # TypeScript 7.0 is the native Go port ("tsgo") and does not expose
+      # the classic JS compiler API — its package.json root export is
+      # version-info only, with the real API moved to "./unstable/*". Next.js
+      # 16 does `require("typescript")` expecting the classic API, so `next
+      # build` hard-fails on 7.x (verified 2026-07-21, see PR #27, closed).
+      # REMOVE THIS once Next.js ships native-compiler support — don't leave
+      # it ignored out of habit after that lands.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
