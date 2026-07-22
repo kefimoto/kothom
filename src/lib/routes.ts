@@ -44,6 +44,7 @@ export const FOOTER_NAV: { heading: string; links: Route[] }[] = [
       { href: "/about", label: "Our Story" },
       { href: "/transparency", label: "Transparency" },
       { href: "/news", label: "News & Updates" },
+      { href: "/media", label: "Logos & Media" },
     ],
   },
 ];
@@ -62,4 +63,5 @@ export const STATIC_ROUTES: string[] = [
   "/transparency",
   "/membership",
   "/news",
+  "/media",
 ];
