@@ -13,6 +13,8 @@ Project-specific context is split into topic files under `docs/ai/`. Read the re
 - `docs/ai/legal-compliance.md` — `LEGAL_STATUS` switchboard, known placeholders (phone number, no payments, no auth)
 - `docs/ai/deployment.md` — production domain, Vercel project, URL rules
 
+**These docs describe behavior tied to real files (`next.config.ts`, `.github/workflows/ci.yml`, `vercel.json`, `package.json`, etc.).** Before relying on a specific claim for a CI/build/config decision, check `git log` on the file(s) it describes — a doc can go stale the moment the underlying config changes without anyone thinking to update it (this happened once already: `ci-cd.md` didn't mention `vercel.json`'s `ignoreCommand` until it was added after the doc was written).
+
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands
 

@@ -1,5 +1,25 @@
 {
   "enabledPlugins": {
     "vercel@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(rtk git status)",
+      "Bash(rtk git log*)",
+      "Bash(rtk git diff*)",
+      "Bash(rtk git show*)",
+      "Bash(rtk git branch*)",
+      "Bash(rtk git fetch*)",
+      "Bash(rtk git worktree*)",
+      "Bash(rtk gh pr view*)",
+      "Bash(rtk gh pr checks*)",
+      "Bash(rtk gh pr list*)",
+      "Bash(rtk gh run list*)",
+      "Bash(rtk read*)",
+      "Bash(rtk ls*)",
+      "Bash(rtk find*)",
+      "Bash(rtk grep*)",
+      "Bash(rtk rg*)"
+    ]
   }
 }
