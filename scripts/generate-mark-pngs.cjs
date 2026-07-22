@@ -13,12 +13,15 @@
 // backdrop color, not toward nothing, so a transparent render looks washed
 // out and shows visible blur artifacts rather than a clean logo cutout.
 //
-// Uses Playwright (already a devDependency for e2e tests, so this adds no
-// new dependency) to render each SVG in a real browser engine at an exact
-// target pixel size, screenshotting the result — the same rendering path
-// already verified elsewhere in this project to handle the marks' gradients
-// and blur filters correctly, unlike some lighter-weight SVG-to-PNG
-// libraries.
+// Uses sharp (already present — an optional dependency of both Next.js's
+// image optimization and Velite, so this adds nothing new) to rasterize
+// each SVG at an exact target pixel size. Verified directly against this
+// project's specific radialGradient + feGaussianBlur glow filter (the part
+// most likely for a lighter SVG renderer to get wrong) before choosing it —
+// output is pixel-for-pixel consistent with a real browser's rendering.
+// Deliberately not Playwright: launching a full browser to rasterize a
+// static SVG couples asset generation to a testing tool that exists for an
+// unrelated reason and could reasonably be swapped out later.
 //
 // generate-kothom-mark.cjs calls generatePngs() (exported below)
 // automatically after writing public/*.svg, so these can't go stale
@@ -56,33 +59,33 @@ const TARGETS = [
 ];
 
 async function generatePngs() {
-  const { chromium } = require("@playwright/test");
-  const browser = await chromium.launch();
-  try {
-    for (const [file, width, height] of TARGETS) {
-      const svgPath = path.join(PUBLIC_DIR, file);
-      const svg = fs
-        .readFileSync(svgPath, "utf8")
-        .replace("<svg ", `<svg width="${width}" height="${height}" `);
-      const page = await browser.newPage({ viewport: { width, height } });
+  const sharp = require("sharp");
+  for (const [file, width, height] of TARGETS) {
+    const svgPath = path.join(PUBLIC_DIR, file);
+    const svg = fs
+      .readFileSync(svgPath, "utf8")
+      .replace("<svg ", `<svg width="${width}" height="${height}" `);
+    const outputPath = path.join(PUBLIC_DIR, file.replace(/\.svg$/, ".png"));
+    const background = FILE_BACKGROUNDS[file];
+    let image = sharp(Buffer.from(svg));
+    if (background) {
       // NOT a transparent PNG: the glow/gradient content is designed to
-      // fade into a solid backdrop, not into nothing. Rendering it against
-      // a transparent page background was tried first and looked
-      // genuinely broken — washed-out, with visible edge artifacts on the
-      // blur — because that's not the surface this artwork was drawn for.
-      await page.setContent(
-        `<html><body style="margin:0;background:${FILE_BACKGROUNDS[file]}">${svg}</body></html>`,
-      );
-      const outputPath = path.join(PUBLIC_DIR, file.replace(/\.svg$/, ".png"));
-      await page.screenshot({ path: outputPath });
-      await page.close();
-      const { size } = fs.statSync(outputPath);
-      console.log(
-        `  ✓ Wrote ${path.relative(process.cwd(), outputPath)} (${width}x${height}, ${size} bytes)`,
-      );
+      // fade into a solid backdrop, not into nothing. Rendering it
+      // transparent was tried first and looked genuinely broken —
+      // washed-out, with visible edge artifacts on the blur — because
+      // that's not the surface this artwork was drawn for. flatten()
+      // composites onto that real backdrop.
+      image = image.flatten({ background });
     }
-  } finally {
-    await browser.close();
+    // background === null (favicon, social avatar): these already draw
+    // their own opaque card in the SVG itself, so left un-flattened on
+    // purpose — the favicon's rounded corners need to stay transparent to
+    // actually read as rounded rather than blending into a flattened square.
+    await image.png().toFile(outputPath);
+    const { size } = fs.statSync(outputPath);
+    console.log(
+      `  ✓ Wrote ${path.relative(process.cwd(), outputPath)} (${width}x${height}, ${size} bytes)`,
+    );
   }
 }
 

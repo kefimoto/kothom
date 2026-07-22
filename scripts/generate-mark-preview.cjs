@@ -138,14 +138,18 @@ ${cells.join("\n")}
   );
 }
 
-// The background each variant is actually designed to sit on — none of
-// these marks are transparent-safe: the glow/gradient content in
-// particular assumes a solid backdrop (it fades toward that color, not
-// toward nothing) and looks washed out or artifact-prone without one.
-// Shared with generate-mark-pngs.cjs so both stay in agreement about which
-// background belongs with which file.
+// The background each variant is actually designed to sit on, or null for
+// the two (favicon, social avatar) that already draw their own opaque card
+// and should be left transparent outside it (the favicon's rounded corners
+// in particular need to stay transparent to actually read as rounded,
+// rather than blending into a flattened square). Every other variant here
+// has no background of its own: the glow/gradient content assumes a solid
+// backdrop (it fades toward that color, not toward nothing) and looks
+// washed out or artifact-prone without one. Shared with
+// generate-mark-pngs.cjs so both stay in agreement about which background
+// belongs with which file.
 const FILE_BACKGROUNDS = Object.fromEntries(
-  ROWS.flat().map(([file, , bg]) => [file, bg ?? INK]),
+  ROWS.flat().map(([f, , bg]) => [f, bg]),
 );
 
 module.exports = { generatePreview, FILE_BACKGROUNDS };
