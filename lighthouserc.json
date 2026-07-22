@@ -2,7 +2,11 @@
   "ci": {
     "collect": {
       "numberOfRuns": 3,
-      "url": ["/", "/about", "/give"]
+      "url": [
+        "https://kothoministries.org/",
+        "https://kothoministries.org/about",
+        "https://kothoministries.org/give"
+      ]
     },
     "assert": {
       "preset": "lighthouse:recommended",

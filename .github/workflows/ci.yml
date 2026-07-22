@@ -145,13 +145,13 @@ jobs:
       # Lighthouse CI with performance budgets for older audience (WCAG AAA
       # accessibility, 75+ performance floor, 85+ best practices). Runs 3 times
       # and takes median to dampen GitHub runner variance. Config in
-      # lighthouserc.json; assertions block merge if Accessibility < 95 or
-      # Performance < 75. See CLAUDE.md and docs/ai/ci-cd.md for thresholds.
+      # lighthouserc.json; assertions currently in warn mode to measure baselines.
+      # Once measured, will promote Accessibility to error (95+ hard requirement),
+      # Performance to error (75+ floor), and other categories to warn.
       #
-      # Note: The treosh/lighthouse-ci-action uses Lighthouse internally to
-      # start servers, so this step measures performance of the built site
-      # (same artifact used by E2E tests above). Temporal storage means results
-      # expire after 7 days but are sufficient for PR feedback and CI gating.
+      # Tests production site at kothoministries.org (uses real deployed domain,
+      # not localhost or preview builds). Temporal storage means results expire
+      # after 7 days but are sufficient for performance trend monitoring.
       - name: Lighthouse CI
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         uses: treosh/lighthouse-ci-action@v12
@@ -159,4 +159,3 @@ jobs:
           configPath: ./lighthouserc.json
           uploadArtifacts: true
           temporaryPublicStorage: true
-          startServerCommand: bun run start
