@@ -2,11 +2,7 @@
   "ci": {
     "collect": {
       "numberOfRuns": 3,
-      "url": [
-        "https://kothoministries.org/",
-        "https://kothoministries.org/about",
-        "https://kothoministries.org/give"
-      ]
+      "url": ["/", "/about", "/give"]
     },
     "assert": {
       "assertions": {
