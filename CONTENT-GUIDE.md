@@ -56,7 +56,7 @@ You'll see these words below. Here's what each one means, in plain terms:
 2. Go to the repository: **github.com/kefimoto/kothom**
 3. Click into the **`content`** folder, then click into the **`news`**
    folder. You'll see the existing posts sitting there as files, for
-   example `welcome.md` and `back-to-school-drive.md`.
+   example `welcome.md`.
 4. Click the **"Add file"** button (top right of the file list), then
    choose **"Create new file."**
 5. In the box that appears for the file name, type a short, web-friendly
