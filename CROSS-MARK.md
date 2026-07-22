@@ -40,6 +40,16 @@ Running `node scripts/generate-kothom-mark.cjs` outputs the following production
 | ![Favicon](./public/favicon.svg) | `public/favicon.svg` | **Favicon** | Square `512x512` Ink card with centered emblem | Browser tab icon, PWA icon. |
 | ![Social Avatar](./public/kothom-social-avatar.svg) | `public/kothom-social-avatar.svg` | **Avatar** | Square `1080x1080` Ink card with centered mark | Social media profile picture (Instagram, X, Facebook). |
 
+### PNG fallbacks
+
+Every variant above also has a `.png` alongside it in `public/` (e.g.
+`kothom-mark.png` next to `kothom-mark.svg`), generated automatically by the
+same command. **Use the SVG, not the PNG, anywhere the SVG actually
+works** — printing especially: a vector stays sharp at any size a print
+shop needs, a PNG doesn't. The PNGs exist only for tools that can't take an
+SVG at all (pasting into a Word document, an email signature, some social
+media upload fields).
+
 ### All variants at a glance
 
 ![Every brand mark variant, paired with the background it's designed to sit on](./mark-preview.svg)
@@ -92,14 +102,19 @@ vendored in `scripts/fonts/`, committed to the repo. Just run:
 node scripts/generate-kothom-mark.cjs
 ```
 
-That command also writes `mark-preview.svg` (repo root) — a single labeled
-grid with every variant compared side by side, each on the background it's
-actually meant to sit on, generated automatically every time so it can't go
-stale relative to the marks it depicts. Committed, not a site asset, so
-anyone can open it on GitHub without running anything locally. Run
-`node scripts/generate-mark-preview.cjs` on its own only to rebuild just the
-preview from whatever's currently in `public/`, without regenerating the
-marks themselves (e.g. after hand-editing one).
+That command also writes, automatically and every time so neither can go
+stale relative to the marks they depict:
+
+- `mark-preview.svg` (repo root) — a single labeled grid with every variant
+  compared side by side, each on the background it's actually meant to sit
+  on. Committed, not a site asset, so anyone can open it on GitHub without
+  running anything locally. Run `node scripts/generate-mark-preview.cjs` on
+  its own only to rebuild just the preview from whatever's currently in
+  `public/`, without regenerating the marks themselves (e.g. after
+  hand-editing one).
+- a `.png` next to every variant's `.svg` in `public/` — see
+  [PNG fallbacks](#png-fallbacks). Run
+  `node scripts/generate-mark-pngs.cjs` on its own to rebuild just these.
 
 ### Why the fonts are vendored files, not a dependency or a fetch
 

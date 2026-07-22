@@ -27,14 +27,17 @@
 // verified to actually differ from the default/Regular weight, unlike the
 // @fontsource file above.
 //
-// Also regenerates mark-preview.svg (repo root) afterward via
-// generate-mark-preview.cjs's generatePreview(), so the two can never drift
-// out of sync with each other.
+// Also regenerates, afterward, so neither can ever drift out of sync with
+// the marks they depict:
+//   - mark-preview.svg (repo root), via generate-mark-preview.cjs
+//   - a PNG fallback of every variant in public/, via generate-mark-pngs.cjs
+//     (for tools that can't take an SVG — the SVG is still the source of
+//     truth and should be preferred anywhere it works, see CROSS-MARK.md)
 //
 // Full documentation is in CROSS-MARK.md.
 //
 // Usage:
-//   node scripts/generate-kothom-mark.cjs            # Generates every brand asset into public/, then mark-preview.svg
+//   node scripts/generate-kothom-mark.cjs            # Generates every brand asset into public/, then mark-preview.svg and the PNGs
 //   WORDMARK_FONT=marcellus node scripts/generate-kothom-mark.cjs # Font preview mode (writes a standalone comparison file, doesn't touch public/ or mark-preview.svg)
 
 const opentype = require("opentype.js");
@@ -42,6 +45,7 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { generatePreview } = require("./generate-mark-preview.cjs");
+const { generatePngs } = require("./generate-mark-pngs.cjs");
 
 const FONT_DIR = path.join(__dirname, "fonts");
 
@@ -555,7 +559,7 @@ const BRAND_ASSET_MANIFEST = [
 ];
 
 // --- Main Execution Flow ---
-function main() {
+async function main() {
   warnIfFontsChanged();
 
   const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
@@ -604,16 +608,15 @@ function main() {
     }
     console.log("All brand mark variants generated successfully in public/");
 
-    // Keeps mark-preview.svg from ever going stale relative to the files it
-    // depicts — it's regenerated every time these are, not on a separate
-    // manual step someone can forget.
+    // Keeps mark-preview.svg and the PNG fallbacks from ever going stale
+    // relative to the files they depict — both are regenerated every time
+    // these are, not on a separate manual step someone can forget.
     generatePreview();
+    await generatePngs();
   }
 }
 
-try {
-  main();
-} catch (err) {
+main().catch((err) => {
   console.error("Error generating brand mark suite:", err);
   process.exit(1);
-}
+});

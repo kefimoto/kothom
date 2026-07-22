@@ -138,7 +138,17 @@ ${cells.join("\n")}
   );
 }
 
-module.exports = { generatePreview };
+// The background each variant is actually designed to sit on — none of
+// these marks are transparent-safe: the glow/gradient content in
+// particular assumes a solid backdrop (it fades toward that color, not
+// toward nothing) and looks washed out or artifact-prone without one.
+// Shared with generate-mark-pngs.cjs so both stay in agreement about which
+// background belongs with which file.
+const FILE_BACKGROUNDS = Object.fromEntries(
+  ROWS.flat().map(([file, , bg]) => [file, bg ?? INK]),
+);
+
+module.exports = { generatePreview, FILE_BACKGROUNDS };
 
 // Runnable standalone (`node scripts/generate-mark-preview.cjs`, e.g. after
 // hand-editing a file in public/) as well as required by
