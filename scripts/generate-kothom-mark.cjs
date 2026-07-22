@@ -328,7 +328,7 @@ const starburstLayers = [
   .join("\n    ");
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="17 -15 166 260">
-  <title>Kothom Ministries radiant cross mark</title>
+  <title>Knights of the Higher Order Ministries radiant cross mark</title>
   <defs>
     <radialGradient id="hotspot" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
