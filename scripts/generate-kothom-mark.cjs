@@ -27,17 +27,21 @@
 // verified to actually differ from the default/Regular weight, unlike the
 // @fontsource file above.
 //
+// Also regenerates mark-preview.svg (repo root) afterward via
+// generate-mark-preview.cjs's generatePreview(), so the two can never drift
+// out of sync with each other.
+//
 // Full documentation is in CROSS-MARK.md.
 //
 // Usage:
-//   node scripts/generate-kothom-mark.cjs            # Generates all brand assets into public/
-//   node scripts/generate-kothom-mark.cjs --variant=dark  # Generates specific variant
-//   WORDMARK_FONT=marcellus node scripts/generate-kothom-mark.cjs # Font preview mode
+//   node scripts/generate-kothom-mark.cjs            # Generates every brand asset into public/, then mark-preview.svg
+//   WORDMARK_FONT=marcellus node scripts/generate-kothom-mark.cjs # Font preview mode (writes a standalone comparison file, doesn't touch public/ or mark-preview.svg)
 
 const opentype = require("opentype.js");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
+const { generatePreview } = require("./generate-mark-preview.cjs");
 
 const FONT_DIR = path.join(__dirname, "fonts");
 
@@ -457,9 +461,6 @@ function generateMarkSvg(
   <path fill="${colors.crossFill}" d="${verticalArmPath}" />
   <path fill="${colors.crossFill}" d="${horizontalArmPath}" />
 `;
-  } else if (layout === "wordmark") {
-    viewBox = "10 -15 180 260";
-    contentMarkup = `${renderWordmark}${renderMinistries}`;
   } else if (layout === "favicon") {
     viewBox = "0 0 512 512";
     contentMarkup = `
@@ -536,16 +537,6 @@ const BRAND_ASSET_MANIFEST = [
     theme: "dark",
   },
   {
-    filename: "public/kothom-mark-wordmark.svg",
-    layout: "wordmark",
-    theme: "light",
-  },
-  {
-    filename: "public/kothom-mark-wordmark-dark.svg",
-    layout: "wordmark",
-    theme: "dark",
-  },
-  {
     filename: "public/kothom-mark-monochrome-light.svg",
     layout: "full",
     theme: "monochrome-light",
@@ -612,6 +603,11 @@ function main() {
       );
     }
     console.log("All brand mark variants generated successfully in public/");
+
+    // Keeps mark-preview.svg from ever going stale relative to the files it
+    // depicts — it's regenerated every time these are, not on a separate
+    // manual step someone can forget.
+    generatePreview();
   }
 }
 

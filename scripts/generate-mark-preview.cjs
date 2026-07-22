@@ -11,13 +11,17 @@
 //
 // This is a design-review tool, not a site asset — it reads already
 // generated public/*.svg files and never ships to the actual website. Its
-// output (mark-preview.svg, repo root) is committed anyway, so anyone can open
-// it on GitHub without running the generator locally — re-run this after
-// regenerating the marks and commit the result together, or it goes stale.
+// output (mark-preview.svg, repo root) is committed anyway, so anyone can
+// open it on GitHub without running anything locally.
+//
+// generate-kothom-mark.cjs calls generatePreview() (exported below)
+// automatically after writing public/*.svg, so the preview can't go stale
+// relative to the marks it depicts. Run this file directly only if you've
+// hand-edited something in public/ without regenerating it.
 //
 // Usage:
-//   node scripts/generate-kothom-mark.cjs   # generate/refresh public/*.svg first
-//   node scripts/generate-mark-preview.cjs  # then build the preview grid
+//   node scripts/generate-kothom-mark.cjs   # regenerates public/*.svg AND mark-preview.svg
+//   node scripts/generate-mark-preview.cjs  # rebuilds just the preview, from whatever's in public/ right now
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -44,10 +48,6 @@ const ROWS = [
   [
     ["kothom-mark-simple.svg", "simple — light", INK],
     ["kothom-mark-simple-dark.svg", "simple — dark", CREAM],
-  ],
-  [
-    ["kothom-mark-wordmark.svg", "wordmark — light", INK],
-    ["kothom-mark-wordmark-dark.svg", "wordmark — dark", CREAM],
   ],
   [
     ["kothom-mark-monochrome-light.svg", "monochrome — white", INK],
@@ -109,7 +109,7 @@ function cellSvg(file, label, bg) {
 </g>`;
 }
 
-function main() {
+function generatePreview() {
   const cols = 2;
   const totalW = cols * CELL_W + (cols - 1) * GAP;
   const totalH = ROWS.length * CELL_H + (ROWS.length - 1) * GAP;
@@ -126,6 +126,7 @@ function main() {
   });
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalW} ${totalH}" font-family="ui-monospace, Menlo, monospace">
+<title>KOTHOM brand mark preview — every generated variant, paired with the background it's designed to sit on</title>
 <rect width="${totalW}" height="${totalH}" fill="#ffffff" />
 ${cells.join("\n")}
 </svg>
@@ -137,4 +138,12 @@ ${cells.join("\n")}
   );
 }
 
-main();
+module.exports = { generatePreview };
+
+// Runnable standalone (`node scripts/generate-mark-preview.cjs`, e.g. after
+// hand-editing a file in public/) as well as required by
+// generate-kothom-mark.cjs, which calls generatePreview() automatically so
+// the two can't drift out of sync.
+if (require.main === module) {
+  generatePreview();
+}
