@@ -2,7 +2,7 @@ import Link from "next/link";
 import { legal } from "#site/content";
 import { CrossMark } from "@/components/cross-mark";
 import { FdacsDisclosure } from "@/components/fdacs-disclosure";
-import { MINISTRY } from "@/lib/ministry";
+import { CAN_ACCEPT_ONLINE_DONATIONS, MINISTRY } from "@/lib/ministry";
 import { FOOTER_NAV } from "@/lib/routes";
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
@@ -60,13 +60,21 @@ export function SiteFooter() {
             <div key={column.heading}>
               <ColumnHeading>{column.heading}</ColumnHeading>
               <ul className="flex flex-col gap-2 font-body text-base leading-relaxed text-cream/90">
-                {column.links.map((route) => (
-                  <li key={route.href}>
-                    <Link href={route.href} className={linkClassName}>
-                      {route.footerLabel ?? route.label}
-                    </Link>
-                  </li>
-                ))}
+                {column.links.map((route) => {
+                  const isGiveLink = route.href.startsWith("/give");
+                  const targetHref =
+                    isGiveLink && !CAN_ACCEPT_ONLINE_DONATIONS
+                      ? `mailto:${MINISTRY.email}?subject=${encodeURIComponent(route.footerLabel ?? route.label)}`
+                      : route.href;
+
+                  return (
+                    <li key={route.href}>
+                      <Link href={targetHref} className={linkClassName}>
+                        {route.footerLabel ?? route.label}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

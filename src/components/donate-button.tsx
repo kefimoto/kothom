@@ -1,5 +1,5 @@
 import { ctaClassName } from "@/components/cta";
-import { MINISTRY } from "@/lib/ministry";
+import { CAN_ACCEPT_ONLINE_DONATIONS, MINISTRY } from "@/lib/ministry";
 
 // This is the only component that should ever need to change to wire up real
 // checkout. Today every giving path opens a mailto: — see COMPLIANCE.md's
@@ -19,7 +19,10 @@ export function DonateButton({
   intent: "knight" | "legacy";
   children: React.ReactNode;
 }) {
-  const href = `mailto:${MINISTRY.email}?subject=${encodeURIComponent(SUBJECTS[intent])}`;
+  const mailtoHref = `mailto:${MINISTRY.email}?subject=${encodeURIComponent(SUBJECTS[intent])}`;
+  const href = CAN_ACCEPT_ONLINE_DONATIONS
+    ? `/give?intent=${intent}`
+    : mailtoHref;
 
   return (
     <a href={href} className={ctaClassName}>

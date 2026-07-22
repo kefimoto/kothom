@@ -3,7 +3,9 @@ import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { legal } from "#site/content";
 import {
+  CAN_ACCEPT_ONLINE_DONATIONS,
   CAN_CLAIM_TAX_DEDUCTIBLE,
+  canAcceptOnlineDonations,
   LEGAL_STATUS,
   MINISTRY,
 } from "../src/lib/ministry";
@@ -20,6 +22,47 @@ describe("legal status gating", () => {
    */
   test("tax-deductibility claims are gated on the IRS determination", () => {
     expect(CAN_CLAIM_TAX_DEDUCTIBLE).toBe(LEGAL_STATUS.is501c3);
+  });
+
+  test("online donation acceptance is gated on all four legal/tax conditions", () => {
+    expect(CAN_ACCEPT_ONLINE_DONATIONS).toBe(
+      canAcceptOnlineDonations(LEGAL_STATUS),
+    );
+
+    const validStatus = {
+      is501c3: true,
+      isFloridaNonprofitCorp: true,
+      ein: "12-3456789",
+      fdacsRegistration: "CH12345",
+    };
+
+    // True when all 4 are present
+    expect(canAcceptOnlineDonations(validStatus)).toBe(true);
+
+    // False when any of the 4 conditions is missing
+    expect(canAcceptOnlineDonations({ ...validStatus, is501c3: false })).toBe(
+      false,
+    );
+    expect(
+      canAcceptOnlineDonations({
+        ...validStatus,
+        isFloridaNonprofitCorp: false,
+      }),
+    ).toBe(false);
+    expect(canAcceptOnlineDonations({ ...validStatus, ein: null })).toBe(false);
+    expect(canAcceptOnlineDonations({ ...validStatus, ein: "" })).toBe(false);
+    expect(canAcceptOnlineDonations({ ...validStatus, ein: "   " })).toBe(
+      false,
+    );
+    expect(
+      canAcceptOnlineDonations({ ...validStatus, fdacsRegistration: null }),
+    ).toBe(false);
+    expect(
+      canAcceptOnlineDonations({ ...validStatus, fdacsRegistration: "" }),
+    ).toBe(false);
+    expect(
+      canAcceptOnlineDonations({ ...validStatus, fdacsRegistration: "   " }),
+    ).toBe(false);
   });
 
   test("an EIN is never a placeholder string", () => {

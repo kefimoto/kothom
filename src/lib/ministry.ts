@@ -59,19 +59,40 @@ export const MAILING_ADDRESS = `${MINISTRY.address.street}, ${MINISTRY.address.c
  * happen in is documented in **COMPLIANCE.md** — that file, not this one, is
  * the explanation. Update both together.
  */
-export const LEGAL_STATUS = {
+export type LegalStatus = {
+  ein: string | null;
+  fdacsRegistration: string | null;
+  is501c3: boolean;
+  isFloridaNonprofitCorp: boolean;
+};
+
+export const LEGAL_STATUS: LegalStatus = {
   /** IRS Employer Identification Number. COMPLIANCE.md § "Step 2". */
-  ein: null as string | null,
+  ein: null,
 
   /** Florida FDACS registration ("CH12345"). COMPLIANCE.md § "Step 4". */
-  fdacsRegistration: null as string | null,
+  fdacsRegistration: null,
 
   /** True once the IRS determination letter is in hand. COMPLIANCE.md § "Step 3". */
   is501c3: false,
 
   /** True once the corporation exists on Sunbiz. COMPLIANCE.md § "Step 1". */
   isFloridaNonprofitCorp: false,
-} as const;
+};
+
+export function canAcceptOnlineDonations(status: LegalStatus): boolean {
+  return (
+    status.is501c3 === true &&
+    status.isFloridaNonprofitCorp === true &&
+    typeof status.ein === "string" &&
+    status.ein.trim().length > 0 &&
+    typeof status.fdacsRegistration === "string" &&
+    status.fdacsRegistration.trim().length > 0
+  );
+}
+
+export const CAN_ACCEPT_ONLINE_DONATIONS: boolean =
+  canAcceptOnlineDonations(LEGAL_STATUS);
 
 /**
  * Whether the site may describe gifts as tax deductible. Gated on the IRS
