@@ -59,18 +59,22 @@ export const MAILING_ADDRESS = `${MINISTRY.address.street}, ${MINISTRY.address.c
  * happen in is documented in **COMPLIANCE.md** — that file, not this one, is
  * the explanation. Update both together.
  */
+const IS_STAGING =
+  process.env.NEXT_PUBLIC_STAGING === "true" ||
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
+
 export const LEGAL_STATUS = {
   /** IRS Employer Identification Number. COMPLIANCE.md § "Step 2". */
-  ein: null as string | null,
+  ein: IS_STAGING ? "12-3456789" : (null as string | null),
 
   /** Florida FDACS registration ("CH12345"). COMPLIANCE.md § "Step 4". */
-  fdacsRegistration: null as string | null,
+  fdacsRegistration: IS_STAGING ? "CH12345" : (null as string | null),
 
   /** True once the IRS determination letter is in hand. COMPLIANCE.md § "Step 3". */
-  is501c3: false,
+  is501c3: IS_STAGING ? true : false,
 
   /** True once the corporation exists on Sunbiz. COMPLIANCE.md § "Step 1". */
-  isFloridaNonprofitCorp: false,
+  isFloridaNonprofitCorp: IS_STAGING ? true : false,
 } as const;
 
 export type LegalStatus = {
