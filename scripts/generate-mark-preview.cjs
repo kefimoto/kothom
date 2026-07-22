@@ -10,7 +10,10 @@
 // embedded marks) rather than the multi-MB a screenshot-based PNG would be.
 //
 // This is a design-review tool, not a site asset — it reads already
-// generated public/*.svg files and never ships anywhere.
+// generated public/*.svg files and never ships to the actual website. Its
+// output (scripts/mark-preview.svg) is committed anyway, so anyone can open
+// it on GitHub without running the generator locally — re-run this after
+// regenerating the marks and commit the result together, or it goes stale.
 //
 // Usage:
 //   node scripts/generate-kothom-mark.cjs   # generate/refresh public/*.svg first
