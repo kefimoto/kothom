@@ -9,6 +9,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # NOTE: deliberately no top-level `paths-ignore`.
 #
 # `main`'s branch protection requires a status check named exactly
@@ -21,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
@@ -109,7 +112,7 @@ jobs:
       # gets a warm partial cache instead of a cold build.
       - name: Cache Next.js build
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        uses: actions/cache@v6
+        uses: actions/cache@v4
         with:
           path: .next/cache
           key: nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ hashFiles('src/**', 'content/**') }}
@@ -123,7 +126,7 @@ jobs:
 
       - name: Cache Playwright browsers
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        uses: actions/cache@v6
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
