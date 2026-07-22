@@ -1,7 +1,7 @@
 ---
 title: Terms of Use
-description: The terms for using the Knights of the Higher Order Ministries website, including our current legal status and how giving works today.
-lastUpdated: 2026-07-21
+description: The terms for using the Knights of the Higher Order Ministries website.
+lastUpdated: 2026-07-22
 ---
 
 ## Welcome
@@ -11,15 +11,6 @@ These are the terms for using this website, operated by Knights of the Higher Or
 ## What this site is for
 
 This website does two things: helps single-parent families in Central Florida find real help quickly, and gives supporters a real way to give. It also shares our mission, our pastoral care, and how to reach us.
-
-## Our legal status, honestly
-
-Knights of the Higher Order Ministries is in the process of formal recognition as a nonprofit organization. As of the date at the top of this page:
-
-- We have not yet received an IRS determination of tax-exempt status under Section 501(c)(3).
-- We have not yet completed incorporation as a Florida nonprofit corporation, obtained a federal Employer Identification Number, or registered with the Florida Department of Agriculture and Consumer Services to solicit contributions.
-
-Because of that, nothing on this site should be read as saying that a gift to us is tax deductible. Please don't claim a deduction for a gift to KOTHOM until we tell you that has changed. We'll update this page and our giving pages the moment any of that changes.
 
 ## Using this site
 
