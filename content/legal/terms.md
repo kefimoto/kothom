@@ -20,10 +20,6 @@ You're welcome to browse this site, read about our work, and reach out for help 
 - Try to gain unauthorized access to any part of the site or the systems behind it.
 - Use anything on this site to impersonate KOTHOM, Pastor T, or anyone connected with the ministry.
 
-## No payment processing yet
-
-The "Become a Knight" and "Legacy Donations" buttons on this site currently open an email to us. We don't process payments through this website. Any gift you make happens by check, in person, or by direct arrangement with us — never by entering card information into this site.
-
 ## Content and the Knights of the Higher Order mark
 
 The text, images, and the Knights of the Higher Order mark on this site belong to KOTHOM or are used with permission. You're welcome to link to this site or quote it with attribution. Please don't reproduce it wholesale, or use our name or mark to suggest an endorsement, without asking us first.
