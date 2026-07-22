@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
 import { pages } from "#site/content";
 import { ctaClassName } from "@/components/cta";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
+import { buildMetadata } from "@/lib/metadata";
 import { MINISTRY } from "@/lib/ministry";
 
 function getPage() {
@@ -12,11 +12,11 @@ function getPage() {
 }
 const page = getPage();
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: page.title,
   description: page.description,
-  alternates: { canonical: "/get-help" },
-};
+  path: "/get-help",
+});
 
 export default function GetHelpPage() {
   return (

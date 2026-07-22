@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import { ctaClassName } from "@/components/cta";
 import { PageHeader } from "@/components/page-header";
+import { buildMetadata } from "@/lib/metadata";
 import { MINISTRY } from "@/lib/ministry";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: "Logos & Media",
   description:
     "Official Knights of the Higher Order Ministries logo files for press, print, and partners.",
-  alternates: { canonical: "/media" },
-};
+  path: "/media",
+});
 
 type Asset = {
   file: string;

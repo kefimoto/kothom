@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { pages } from "#site/content";
 import { DonateButton } from "@/components/donate-button";
 import { DonorPortalForm } from "@/components/donor-portal-form";
@@ -6,6 +5,7 @@ import { GivingForm } from "@/components/giving-form";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
 import { RollOfHonor } from "@/components/roll-of-honor";
+import { buildMetadata } from "@/lib/metadata";
 import { CAN_ACCEPT_ONLINE_DONATIONS } from "@/lib/ministry";
 
 function getPage() {
@@ -15,11 +15,11 @@ function getPage() {
 }
 const page = getPage();
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: page.title,
   description: page.description,
-  alternates: { canonical: "/give" },
-};
+  path: "/give",
+});
 
 export default function GivePage() {
   const proseHtml = CAN_ACCEPT_ONLINE_DONATIONS

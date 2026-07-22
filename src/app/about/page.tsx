@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
 import { pages } from "#site/content";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
+import { buildMetadata } from "@/lib/metadata";
 import { MINISTRY } from "@/lib/ministry";
 
 function getAboutPage() {
@@ -11,11 +11,11 @@ function getAboutPage() {
 }
 const page = getAboutPage();
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: page.title,
   description: page.description,
-  alternates: { canonical: "/about" },
-};
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (

@@ -44,6 +44,7 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     url: SITE_URL,
     type: "website",
+    siteName: TITLE,
     images: [
       {
         url: "/og-image.png",

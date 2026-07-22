@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { news } from "#site/content";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
+import { buildMetadata } from "@/lib/metadata";
 
 // Mirrors src/app/legal/[slug]/page.tsx. dynamicParams = false makes anything
 // not enumerated below a 404 rather than an on-demand render, which is what
@@ -37,17 +38,17 @@ export async function generateMetadata({
   const post = findPost(slug);
   if (!post) return {};
 
-  return {
+  return buildMetadata({
     title: post.title,
     description: post.summary,
-    alternates: { canonical: `/news/${post.slug}` },
-    openGraph: {
-      type: "article",
+    path: `/news/${post.slug}`,
+    type: "article",
+    article: {
       publishedTime: post.date,
-      title: post.title,
-      description: post.summary,
+      authors: post.author ? [post.author] : undefined,
     },
-  };
+    image: post.cover ? { url: post.cover.src, alt: post.title } : undefined,
+  });
 }
 
 export default async function NewsPostPage({

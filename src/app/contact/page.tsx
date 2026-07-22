@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
 import { ctaClassName } from "@/components/cta";
 import { PageHeader } from "@/components/page-header";
+import { buildMetadata } from "@/lib/metadata";
 import { MINISTRY } from "@/lib/ministry";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: "Contact Us",
   description:
     "Reach Knights of the Higher Order Ministries by phone, email, or mail — and pastoral care, available 24 hours a day, 7 days a week.",
-  alternates: { canonical: "/contact" },
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (
