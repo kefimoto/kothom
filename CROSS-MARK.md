@@ -23,10 +23,26 @@ Cinzel text wordmark instead. If you're tempted to add the mark back to the
 header, the constraint to solve isn't the CSS, it's that this mark has too much
 detail to survive below roughly 100px.
 
-`scripts/generate-kothom-mark.cjs` regenerates the file from a set of
-geometry constants. This doc explains the setup, the geometry, and how to
-change things (including swapping fonts) without having to re-derive it
-all from scratch.
+`scripts/generate-kothom-mark.cjs` regenerates the full suite of static vector brand marks from a set of geometry constants. This doc explains the setup, the geometry, and how to change things (including swapping fonts or generating new mark variants) without having to re-derive it all from scratch.
+
+## Brand Mark Suite Variants Generated
+
+Running `node scripts/generate-kothom-mark.cjs` outputs the following production vectors into `public/`:
+
+| File | Layout | Theme / Colors | Target Use Case |
+|---|---|---|---|
+| `public/kothom-mark.svg` | **Full** | Light (Cream `#f4efe6` on Ink) | **Primary default mark**: Hero section, footer, dark backgrounds. |
+| `public/kothom-mark-dark.svg` | **Full** | Dark (Ink `#0a0a0a` & Terracotta `#764634`) | Print documents, letterheads, light/cream backgrounds. |
+| `public/kothom-mark-symbol.svg` | **Symbol** | Light (Radiant cross & starburst, no text) | Standalone emblem, watermarks, decorative badges. |
+| `public/kothom-mark-symbol-dark.svg` | **Symbol** | Dark (Ink cross, Terracotta glow) | Standalone dark emblem for light cards. |
+| `public/kothom-mark-simple.svg` | **Simple** | Light (Vector cross only, no text/glow) | Minimal UI icon, clean vector cross. |
+| `public/kothom-mark-simple-dark.svg` | **Simple** | Dark (Vector cross only) | Minimal UI icon for light backgrounds. |
+| `public/kothom-mark-wordmark.svg` | **Wordmark** | Light (Arced text + "MINISTRIES") | Header banner typography, standalone text mark. |
+| `public/kothom-mark-wordmark-dark.svg` | **Wordmark** | Dark (Ink text + Terracotta "MINISTRIES") | Light background header typography. |
+| `public/kothom-mark-monochrome-light.svg` | **Full** | Solid White (`#ffffff`) | 1-color white printing, stencils, foil stamping. |
+| `public/kothom-mark-monochrome-dark.svg` | **Full** | Solid Black (`#000000`) | 1-color black printing, rubber stamps, faxes. |
+| `public/favicon.svg` | **Favicon** | Square `512x512` Ink card with centered emblem | Browser tab icon, PWA icon. |
+| `public/kothom-social-avatar.svg` | **Avatar** | Square `1080x1080` Ink card with centered mark | Social media profile picture (Instagram, X, Facebook). |
 
 ## One-time setup
 
