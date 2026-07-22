@@ -73,16 +73,35 @@ export const LEGAL_STATUS = {
   isFloridaNonprofitCorp: false,
 } as const;
 
+export type LegalStatus = {
+  ein: string | null;
+  fdacsRegistration: string | null;
+  is501c3: boolean;
+  isFloridaNonprofitCorp: boolean;
+};
+
+export function canAcceptOnlineDonations(status: LegalStatus): boolean {
+  return (
+    status.is501c3 === true &&
+    status.isFloridaNonprofitCorp === true &&
+    typeof status.ein === "string" &&
+    status.ein.trim().length > 0 &&
+    typeof status.fdacsRegistration === "string" &&
+    status.fdacsRegistration.trim().length > 0
+  );
+}
+
+export const CAN_ACCEPT_ONLINE_DONATIONS: boolean =
+  (LEGAL_STATUS.is501c3 as boolean) === true &&
+  (LEGAL_STATUS.isFloridaNonprofitCorp as boolean) === true &&
+  typeof LEGAL_STATUS.ein === "string" &&
+  LEGAL_STATUS.ein.trim().length > 0 &&
+  typeof LEGAL_STATUS.fdacsRegistration === "string" &&
+  LEGAL_STATUS.fdacsRegistration.trim().length > 0;
+
 /**
  * Whether the site may describe gifts as tax deductible. Gated on the IRS
  * determination letter existing — not on intent, and not on incorporation.
  * COMPLIANCE.md § "Where things stand today".
  */
 export const CAN_CLAIM_TAX_DEDUCTIBLE: boolean = LEGAL_STATUS.is501c3;
-
-/**
- * Whether the site is configured and permitted to accept online donations.
- */
-export const CAN_ACCEPT_ONLINE_DONATIONS: boolean =
-  process.env.CAN_ACCEPT_ONLINE_DONATIONS === "true" ||
-  process.env.NEXT_PUBLIC_CAN_ACCEPT_ONLINE_DONATIONS === "true";
