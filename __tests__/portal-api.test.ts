@@ -1,35 +1,34 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-const mockCustomersList = vi.fn();
-const mockBillingPortalSessionsCreate = vi.fn();
+const mockSend = vi.fn();
 
-vi.mock("stripe", () => {
+vi.mock("resend", () => {
   return {
-    default: class MockStripe {
-      customers = {
-        list: mockCustomersList,
-      };
-      billingPortal = {
-        sessions: {
-          create: mockBillingPortalSessionsCreate,
-        },
-      };
+    Resend: class MockResend {
+      emails = { send: mockSend };
     },
   };
 });
 
 import { POST as portalHandler } from "../src/app/api/portal/route";
 
-describe("Donor Billing Portal API Handler", () => {
-  const originalEnv = process.env.STRIPE_SECRET_KEY;
+const GENERIC_MESSAGE =
+  "If an active donor subscription is associated with this email address, we've sent access instructions to it.";
+
+describe("Donor Portal magic-link request handler", () => {
+  const originalResendKey = process.env.RESEND_API_KEY;
+  const originalTokenSecret = process.env.PORTAL_TOKEN_SECRET;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.STRIPE_SECRET_KEY = "sk_test_12345";
+    process.env.RESEND_API_KEY = "re_test_12345";
+    process.env.PORTAL_TOKEN_SECRET = "test-secret";
+    mockSend.mockResolvedValue({ data: { id: "email_12345" }, error: null });
   });
 
   afterEach(() => {
-    process.env.STRIPE_SECRET_KEY = originalEnv;
+    process.env.RESEND_API_KEY = originalResendKey;
+    process.env.PORTAL_TOKEN_SECRET = originalTokenSecret;
   });
 
   test("returns 400 when email is missing", async () => {
@@ -44,6 +43,7 @@ describe("Donor Billing Portal API Handler", () => {
 
     const data = await res.json();
     expect(data.error).toBe("Please enter a valid email address.");
+    expect(mockSend).not.toHaveBeenCalled();
   });
 
   test("returns 400 when email format is invalid", async () => {
@@ -58,41 +58,10 @@ describe("Donor Billing Portal API Handler", () => {
 
     const data = await res.json();
     expect(data.error).toBe("Please enter a valid email address.");
+    expect(mockSend).not.toHaveBeenCalled();
   });
 
-  test("returns graceful message without leaking sensitive account info when customer is not found", async () => {
-    mockCustomersList.mockResolvedValueOnce({ data: [] });
-
-    const req = new Request("http://localhost:3000/api/portal", {
-      method: "POST",
-      body: JSON.stringify({ email: "nonexistent@example.com" }),
-      headers: { "Content-Type": "application/json" },
-    });
-
-    const res = await portalHandler(req);
-    expect(res.status).toBe(200);
-
-    const data = await res.json();
-    expect(data.url).toBeUndefined();
-    expect(data.message).toBe(
-      "If an active donor subscription is associated with this email address, access instructions have been processed.",
-    );
-
-    expect(mockCustomersList).toHaveBeenCalledWith({
-      email: "nonexistent@example.com",
-      limit: 1,
-    });
-    expect(mockBillingPortalSessionsCreate).not.toHaveBeenCalled();
-  });
-
-  test("creates billing portal session and returns url when customer is found", async () => {
-    mockCustomersList.mockResolvedValueOnce({
-      data: [{ id: "cus_12345" }],
-    });
-    mockBillingPortalSessionsCreate.mockResolvedValueOnce({
-      url: "https://billing.stripe.com/session/bps_12345",
-    });
-
+  test("sends a magic-link email and never returns a portal URL directly", async () => {
     const req = new Request("http://localhost:3000/api/portal", {
       method: "POST",
       body: JSON.stringify({ email: "donor@example.com" }),
@@ -106,22 +75,42 @@ describe("Donor Billing Portal API Handler", () => {
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data.url).toBe("https://billing.stripe.com/session/bps_12345");
+    expect(data.url).toBeUndefined();
+    expect(data.message).toBe(GENERIC_MESSAGE);
 
-    expect(mockCustomersList).toHaveBeenCalledWith({
-      email: "donor@example.com",
-      limit: 1,
-    });
-    expect(mockBillingPortalSessionsCreate).toHaveBeenCalledWith({
-      customer: "cus_12345",
-      return_url: "https://kothoministries.org/membership",
-    });
+    expect(mockSend).toHaveBeenCalledTimes(1);
+    const sentEmail = mockSend.mock.calls[0][0];
+    expect(sentEmail.to).toBe("donor@example.com");
+    expect(sentEmail.html).toContain(
+      "https://kothoministries.org/api/portal/verify?token=",
+    );
   });
 
-  test("returns 500 when Stripe API throws an error", async () => {
-    mockCustomersList.mockRejectedValueOnce(
-      new Error("Stripe network timeout"),
-    );
+  test("returns the same generic message regardless of whether the email exists", async () => {
+    // The handler never queries Stripe — existence is only checked at
+    // /api/portal/verify, after the requester proves control of the inbox.
+    const req1 = new Request("http://localhost:3000/api/portal", {
+      method: "POST",
+      body: JSON.stringify({ email: "unknown@example.com" }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const req2 = new Request("http://localhost:3000/api/portal", {
+      method: "POST",
+      body: JSON.stringify({ email: "donor@example.com" }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const [data1, data2] = await Promise.all([
+      portalHandler(req1).then((r) => r.json()),
+      portalHandler(req2).then((r) => r.json()),
+    ]);
+
+    expect(data1.message).toBe(GENERIC_MESSAGE);
+    expect(data2.message).toBe(GENERIC_MESSAGE);
+  });
+
+  test("returns 500 when sending the email fails", async () => {
+    mockSend.mockRejectedValueOnce(new Error("Resend network timeout"));
 
     const req = new Request("http://localhost:3000/api/portal", {
       method: "POST",
@@ -133,6 +122,6 @@ describe("Donor Billing Portal API Handler", () => {
     expect(res.status).toBe(500);
 
     const data = await res.json();
-    expect(data.error).toBe("Stripe network timeout");
+    expect(data.error).toBe("Resend network timeout");
   });
 });

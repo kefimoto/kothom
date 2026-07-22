@@ -1,6 +1,6 @@
 ---
 title: Terms of Use
-description: The terms for using the Knights of the Higher Order Ministries website.
+description: The terms for using the Knights of the Higher Order Ministries website, including our current legal status and how giving works today.
 lastUpdated: 2026-07-22
 ---
 
@@ -12,6 +12,15 @@ These are the terms for using this website, operated by Knights of the Higher Or
 
 This website does two things: helps single-parent families in Central Florida find real help quickly, and gives supporters a real way to give. It also shares our mission, our pastoral care, and how to reach us.
 
+## Our legal status, honestly
+
+Knights of the Higher Order Ministries is in the process of formal recognition as a nonprofit organization. As of the date at the top of this page:
+
+- We have not yet received an IRS determination of tax-exempt status under Section 501(c)(3).
+- We have not yet completed incorporation as a Florida nonprofit corporation, obtained a federal Employer Identification Number, or registered with the Florida Department of Agriculture and Consumer Services to solicit contributions.
+
+Because of that, nothing on this site should be read as saying that a gift to us is tax deductible. Please don't claim a deduction for a gift to KOTHOM until we tell you that has changed. We'll update this page and our giving pages the moment any of that changes.
+
 ## Using this site
 
 You're welcome to browse this site, read about our work, and reach out for help or to give. Please don't:
@@ -19,6 +28,10 @@ You're welcome to browse this site, read about our work, and reach out for help 
 - Use the site in a way that could damage it, disable it, or interfere with anyone else's use of it.
 - Try to gain unauthorized access to any part of the site or the systems behind it.
 - Use anything on this site to impersonate KOTHOM, Pastor T, or anyone connected with the ministry.
+
+## No payment processing yet
+
+The "Become a Knight" and "Legacy Donations" buttons on this site currently open an email to us. We don't process payments through this website. Any gift you make happens by check, in person, or by direct arrangement with us — never by entering card information into this site.
 
 ## Content and the Knights of the Higher Order mark
 
