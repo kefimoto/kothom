@@ -64,7 +64,7 @@ jobs:
       # dangerous direction. Verify on a real PR after changing it; a wrong
       # filter here fails silently behind a green check.
       - name: Detect changed areas
-        uses: dorny/paths-filter@de0403b2731214732d2c32ee1129aa7e87002abb # v3.0.2
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
           predicate-quantifier: "every"
@@ -74,7 +74,7 @@ jobs:
               - '!**/*.md'
 
       - name: Set up Bun
-        uses: oven-sh/setup-bun@4bc0570500e94e479e4313f8c850efb0e7740e53 # v2.0.1
+        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2.0.1
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -188,7 +188,7 @@ jobs:
       # the lighthouse-trends skill.
       - name: Lighthouse CI
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        uses: treosh/lighthouse-ci-action@994c653d9e03d3c8c7f9914101e4a7ec263158c5 # v12.1.0
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12.1.0
         with:
           configPath: ./lighthouserc.json
           uploadArtifacts: true
