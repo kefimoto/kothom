@@ -22,9 +22,11 @@ permissions:
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
 
@@ -62,7 +64,7 @@ jobs:
       # dangerous direction. Verify on a real PR after changing it; a wrong
       # filter here fails silently behind a green check.
       - name: Detect changed areas
-        uses: dorny/paths-filter@v4
+        uses: dorny/paths-filter@de0403b2731214732d2c32ee1129aa7e87002abb # v3.0.2
         id: filter
         with:
           predicate-quantifier: "every"
@@ -72,7 +74,7 @@ jobs:
               - '!**/*.md'
 
       - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@4bc0570500e94e479e4313f8c850efb0e7740e53 # v2.0.1
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -112,7 +114,7 @@ jobs:
       # gets a warm partial cache instead of a cold build.
       - name: Cache Next.js build
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        uses: actions/cache@v4
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: .next/cache
           key: nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ hashFiles('src/**', 'content/**') }}
@@ -126,7 +128,7 @@ jobs:
 
       - name: Cache Playwright browsers
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        uses: actions/cache@v4
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
@@ -186,7 +188,7 @@ jobs:
       # the lighthouse-trends skill.
       - name: Lighthouse CI
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        uses: treosh/lighthouse-ci-action@v12
+        uses: treosh/lighthouse-ci-action@994c653d9e03d3c8c7f9914101e4a7ec263158c5 # v12.1.0
         with:
           configPath: ./lighthouserc.json
           uploadArtifacts: true
