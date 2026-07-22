@@ -94,6 +94,11 @@ vendored in `scripts/fonts/`, committed to the repo. Just run:
 node scripts/generate-kothom-mark.cjs
 ```
 
+To compare every variant at once — each on the background it's actually
+meant to sit on — run `node scripts/generate-mark-preview.cjs` afterward.
+It writes `scripts/mark-preview.svg` (gitignored, regenerated on demand, not
+a site asset), a labeled grid built from whatever's currently in `public/`.
+
 ### Why the fonts are vendored files, not a dependency or a fetch
 
 Two things were tried first, and both turned out to be worse:
