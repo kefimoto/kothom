@@ -18,9 +18,33 @@ const path = require("node:path");
 
 const FONT_CACHE_DIR = path.join(os.tmpdir(), "kothom-mark-fonts");
 
+// os.tmpdir() is world-writable and shared across every local user on Linux.
+// A predictable path inside it is a classic symlink-planting target: another
+// user could pre-create a symlink at this exact path pointing somewhere this
+// process can write, and a plain existsSync()-then-write would follow it.
+// lstatSync (unlike statSync/existsSync) does not follow symlinks, so this
+// checks what's actually AT the path, not what it points to.
+function assertNotSymlink(targetPath, description) {
+  let stats;
+  try {
+    stats = fs.lstatSync(targetPath);
+  } catch (err) {
+    if (err.code === "ENOENT") return;
+    throw err;
+  }
+  if (stats.isSymbolicLink()) {
+    throw new Error(
+      `Refusing to use ${description} at ${targetPath}: it's a symlink, not a real ${
+        description.includes("directory") ? "directory" : "file"
+      }. Remove it and re-run.`,
+    );
+  }
+}
+
 async function ensureDependenciesAndFonts() {
+  assertNotSymlink(FONT_CACHE_DIR, "font cache directory");
   if (!fs.existsSync(FONT_CACHE_DIR)) {
-    fs.mkdirSync(FONT_CACHE_DIR, { recursive: true });
+    fs.mkdirSync(FONT_CACHE_DIR, { recursive: true, mode: 0o700 });
   }
 
   // 1. Ensure opentype.js is loaded safely from dependencies
@@ -60,6 +84,7 @@ async function ensureDependenciesAndFonts() {
 
   for (const item of FONT_DOWNLOADS) {
     const filePath = path.join(FONT_CACHE_DIR, item.file);
+    assertNotSymlink(filePath, "cached font file");
     if (!fs.existsSync(filePath)) {
       console.log(
         `  Fetching font asset ${item.file} into ${FONT_CACHE_DIR}...`,
@@ -71,7 +96,11 @@ async function ensureDependenciesAndFonts() {
         );
       }
       const arrayBuf = await res.arrayBuffer();
-      fs.writeFileSync(filePath, Buffer.from(arrayBuf));
+      // "wx": create-exclusive, fails instead of following/overwriting if
+      // something now exists at this path — closes the remaining
+      // check-then-write race between the assertNotSymlink check above and
+      // this write.
+      fs.writeFileSync(filePath, Buffer.from(arrayBuf), { flag: "wx" });
     }
   }
 
