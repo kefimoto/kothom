@@ -76,6 +76,6 @@ export const LEGAL_STATUS = {
 /**
  * Whether the site may describe gifts as tax deductible. Gated on the IRS
  * determination letter existing — not on intent, and not on incorporation.
- * COMPLIANCE.md § "What the site may and may not say today".
+ * COMPLIANCE.md § "Where things stand today".
  */
 export const CAN_CLAIM_TAX_DEDUCTIBLE: boolean = LEGAL_STATUS.is501c3;
