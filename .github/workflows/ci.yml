@@ -149,9 +149,38 @@ jobs:
       # Once measured, will promote Accessibility to error (95+ hard requirement),
       # Performance to error (75+ floor), and other categories to warn.
       #
-      # Tests production site at kothoministries.org (uses real deployed domain,
-      # not localhost or preview builds). Temporal storage means results expire
-      # after 7 days but are sufficient for performance trend monitoring.
+      # Audits localhost, not production — a pull_request run must measure
+      # that PR's own code, not whatever happens to be deployed. An earlier
+      # version of this step pointed at kothoministries.org directly, which
+      # meant every PR's Lighthouse score reflected production drift instead
+      # of the PR's diff.
+      #
+      # The server is started by @lhci/cli itself via lighthouserc.json's
+      # collect.startServerCommand ("bun run start"), not by this step —
+      # treosh/lighthouse-ci-action's action.yml doesn't expose
+      # startServerCommand as an input at all (confirmed: passing it here
+      # produces an "Unexpected input(s)" warning, and the server never
+      # starts). collect.startServerCommand is a native @lhci/cli collect
+      # option read straight from the config file regardless of the Action's
+      # own input list (verified in node_modules/@lhci/cli/src/collect/
+      # collect.js): it spawns the command, waits for a `listen|ready`
+      # stdout match, then tears the process down after collection — no
+      # separate "start server" workflow step needed, and no second build
+      # (reuses what `bun run start` already serves from the `Build` step
+      # above).
+      #
+      # lighthouserc.json's collect.url entries are absolute
+      # (http://localhost:3000/...), not relative — verified directly (ran
+      # `lhci collect` against this config locally) that the
+      # startServerCommand code path, unlike the separate staticDistDir
+      # autodiscovery path, does NOT rewrite relative URLs against the
+      # server's port; a relative "/" reaches Lighthouse unresolved and
+      # fails with INVALID_URL.
+      #
+      # Temporary storage means results expire after 7 days but are
+      # sufficient for performance trend monitoring; uploadArtifacts also
+      # keeps a longer-lived (~90 day) copy as a GitHub Actions artifact for
+      # the lighthouse-trends skill.
       - name: Lighthouse CI
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         uses: treosh/lighthouse-ci-action@v12
