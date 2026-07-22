@@ -59,25 +59,25 @@ export const MAILING_ADDRESS = `${MINISTRY.address.street}, ${MINISTRY.address.c
  * happen in is documented in **COMPLIANCE.md** — that file, not this one, is
  * the explanation. Update both together.
  */
-export type LegalStatus = {
-  ein: string | null;
-  fdacsRegistration: string | null;
-  is501c3: boolean;
-  isFloridaNonprofitCorp: boolean;
-};
-
-export const LEGAL_STATUS: LegalStatus = {
+export const LEGAL_STATUS = {
   /** IRS Employer Identification Number. COMPLIANCE.md § "Step 2". */
-  ein: null,
+  ein: null as string | null,
 
   /** Florida FDACS registration ("CH12345"). COMPLIANCE.md § "Step 4". */
-  fdacsRegistration: null,
+  fdacsRegistration: null as string | null,
 
   /** True once the IRS determination letter is in hand. COMPLIANCE.md § "Step 3". */
   is501c3: false,
 
   /** True once the corporation exists on Sunbiz. COMPLIANCE.md § "Step 1". */
   isFloridaNonprofitCorp: false,
+} as const;
+
+export type LegalStatus = {
+  ein: string | null;
+  fdacsRegistration: string | null;
+  is501c3: boolean;
+  isFloridaNonprofitCorp: boolean;
 };
 
 export function canAcceptOnlineDonations(status: LegalStatus): boolean {
@@ -92,7 +92,12 @@ export function canAcceptOnlineDonations(status: LegalStatus): boolean {
 }
 
 export const CAN_ACCEPT_ONLINE_DONATIONS: boolean =
-  canAcceptOnlineDonations(LEGAL_STATUS);
+  (LEGAL_STATUS.is501c3 as boolean) === true &&
+  (LEGAL_STATUS.isFloridaNonprofitCorp as boolean) === true &&
+  typeof LEGAL_STATUS.ein === "string" &&
+  LEGAL_STATUS.ein.trim().length > 0 &&
+  typeof LEGAL_STATUS.fdacsRegistration === "string" &&
+  LEGAL_STATUS.fdacsRegistration.trim().length > 0;
 
 /**
  * Whether the site may describe gifts as tax deductible. Gated on the IRS
