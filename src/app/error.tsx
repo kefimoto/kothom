@@ -16,7 +16,10 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-10 bg-ink px-6 py-24 text-center">
+    <main
+      id="main"
+      className="flex min-h-screen flex-col items-center justify-center gap-10 bg-ink px-6 py-24 text-center"
+    >
       <CrossMark size="small" />
       <div className="flex max-w-lg flex-col items-center gap-5">
         <h1 className="font-headline text-3xl text-cream sm:text-4xl">
