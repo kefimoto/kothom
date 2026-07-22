@@ -18,7 +18,7 @@
 
   <!-- Dark background container for crisp favicon contrast -->
   <rect width="512" height="512" fill="#0a0a0a" rx="64" />
-  <g transform="translate(256 256) scale(2.2) translate(-100 -98)">
+  <g transform="translate(256 256) scale(2.2) translate(-100 -100.5)">
     
   <!-- Subtle starburst behind the cross -->
   <g filter="url(#starburstBlur)">
