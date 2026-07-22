@@ -62,7 +62,7 @@ gh pr checks 37 --watch &
 **Applied in pr-flow scripts**:
 ```bash
 # Use run_in_background: true to free context
-until gh pr checks 37 2>&1 | grep -q "All checks have passed"; do sleep 10; done && gh pr merge 37 --squash --delete-branch
+until rtk gh pr checks 37 2>&1 | grep -q "0 pending" && ! rtk gh pr checks 37 2>&1 | grep -q "FAIL"; do sleep 10; done && rtk gh pr merge 37 --squash --delete-branch
 # ↓ Run in background
 ```
 
