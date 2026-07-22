@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { pages } from "#site/content";
 import { DonateButton } from "@/components/donate-button";
+import { DonorPortalForm } from "@/components/donor-portal-form";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
 
@@ -48,6 +49,23 @@ export default function GivePage() {
             designation. Reach out and we'll talk through what fits your plans.
           </p>
           <DonateButton intent="legacy">Learn More</DonateButton>
+        </div>
+      </section>
+
+      <section
+        id="manage"
+        className="bg-cream border-t border-charcoal/10 px-6 py-20 sm:py-28"
+      >
+        <div className="mx-auto flex max-w-3xl flex-col items-start gap-5">
+          <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
+            Manage Existing Subscription
+          </h2>
+          <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
+            Enter your email address below to access your donor portal where you
+            can update payment methods, pause giving, or cancel your
+            subscription without needing a password.
+          </p>
+          <DonorPortalForm />
         </div>
       </section>
     </main>
