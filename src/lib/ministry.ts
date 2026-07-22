@@ -71,10 +71,10 @@ export const LEGAL_STATUS = {
   fdacsRegistration: IS_STAGING ? "CH12345" : (null as string | null),
 
   /** True once the IRS determination letter is in hand. COMPLIANCE.md § "Step 3". */
-  is501c3: IS_STAGING ? true : false,
+  is501c3: IS_STAGING,
 
   /** True once the corporation exists on Sunbiz. COMPLIANCE.md § "Step 1". */
-  isFloridaNonprofitCorp: IS_STAGING ? true : false,
+  isFloridaNonprofitCorp: IS_STAGING,
 } as const;
 
 export type LegalStatus = {
