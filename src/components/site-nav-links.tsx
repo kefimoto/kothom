@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CAN_ACCEPT_ONLINE_DONATIONS, MINISTRY } from "@/lib/ministry";
 import { PRIMARY_NAV } from "@/lib/routes";
 
 // The only client component in the header. It exists solely to mark the current
@@ -29,19 +28,13 @@ export function SiteNavLinks() {
   return (
     <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 sm:justify-end">
       {PRIMARY_NAV.map((route) => {
-        const isGiveLink = route.href === "/give";
-        const targetHref =
-          isGiveLink && !CAN_ACCEPT_ONLINE_DONATIONS
-            ? `mailto:${MINISTRY.email}?subject=Donation`
-            : route.href;
-
         const isActive =
           pathname === route.href || pathname.startsWith(`${route.href}/`);
 
         return (
           <li key={route.href}>
             <Link
-              href={targetHref}
+              href={route.href}
               aria-current={isActive ? "page" : undefined}
               className={`font-headline text-base tracking-wide text-cream underline-offset-8 decoration-terracotta-swatch transition-[text-decoration-color,text-decoration-thickness] hover:underline hover:decoration-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-tan-gold ${
                 isActive ? "underline decoration-2" : ""
