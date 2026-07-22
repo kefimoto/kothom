@@ -142,19 +142,24 @@ jobs:
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
         run: bun run test:e2e
 
-      # Informational only, deliberately: no lighthouserc/budget file is
-      # configured, so the action only collects and uploads results rather
-      # than asserting against thresholds, and continue-on-error is a second,
-      # explicit belt-and-suspenders guarantee that a bad score can never
-      # fail quality-gate. There's no real performance budget defined yet, so
-      # blocking on one now risks false-failing legitimate PRs on an
-      # untuned number. Revisit once there's an actual budget worth enforcing.
+      # Lighthouse CI with performance budgets for older audience (WCAG AAA
+      # accessibility, 75+ performance floor, 85+ best practices). Runs 3 times
+      # and takes median to dampen GitHub runner variance. Config in
+      # lighthouserc.json; assertions block merge if Accessibility < 95 or
+      # Performance < 75. See CLAUDE.md and docs/ai/ci-cd.md for thresholds.
+      #
+      # Note: The treosh/lighthouse-ci-action uses Lighthouse internally to
+      # start servers, so this step measures performance of the built site
+      # (same artifact used by E2E tests above). Temporal storage means results
+      # expire after 7 days but are sufficient for PR feedback and CI gating.
       - name: Lighthouse CI
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        continue-on-error: true
         uses: treosh/lighthouse-ci-action@v12
         with:
-          urls: http://localhost:3000/
-          startServerCommand: bun run start
+          configPath: ./lighthouserc.json
+          urls: |
+            http://localhost:3000/
+            http://localhost:3000/about
+            http://localhost:3000/give
           uploadArtifacts: true
           temporaryPublicStorage: true
