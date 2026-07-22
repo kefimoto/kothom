@@ -149,22 +149,33 @@ jobs:
       # Once measured, will promote Accessibility to error (95+ hard requirement),
       # Performance to error (75+ floor), and other categories to warn.
       #
-      # Audits the build this job already produced (bun run start on
-      # localhost), not production — a pull_request run must measure that
-      # PR's own code, not whatever happens to be deployed. An earlier
+      # Audits localhost, not production — a pull_request run must measure
+      # that PR's own code, not whatever happens to be deployed. An earlier
       # version of this step pointed at kothoministries.org directly, which
       # meant every PR's Lighthouse score reflected production drift instead
-      # of the PR's diff. No second build: reuses the artifact from the
-      # `Build` step above, same fix already applied to
-      # playwright.config.ts's webServer.
+      # of the PR's diff.
       #
-      # No `urls` input here, deliberately: lighthouserc.json's collect.url
-      # is relative ("/", "/about", "/give"), and @lhci/cli resolves relative
-      # URLs against whatever port startServerCommand's server actually binds
-      # (verified in node_modules/@lhci/cli/src/collect/collect.js). Adding
-      # an `urls` input here would pass a competing --collect.url CLI flag
-      # that could silently override the config file's array down to a
-      # single page.
+      # The server is started by @lhci/cli itself via lighthouserc.json's
+      # collect.startServerCommand ("bun run start"), not by this step —
+      # treosh/lighthouse-ci-action's action.yml doesn't expose
+      # startServerCommand as an input at all (confirmed: passing it here
+      # produces an "Unexpected input(s)" warning, and the server never
+      # starts). collect.startServerCommand is a native @lhci/cli collect
+      # option read straight from the config file regardless of the Action's
+      # own input list (verified in node_modules/@lhci/cli/src/collect/
+      # collect.js): it spawns the command, waits for a `listen|ready`
+      # stdout match, then tears the process down after collection — no
+      # separate "start server" workflow step needed, and no second build
+      # (reuses what `bun run start` already serves from the `Build` step
+      # above).
+      #
+      # lighthouserc.json's collect.url entries are absolute
+      # (http://localhost:3000/...), not relative — verified directly (ran
+      # `lhci collect` against this config locally) that the
+      # startServerCommand code path, unlike the separate staticDistDir
+      # autodiscovery path, does NOT rewrite relative URLs against the
+      # server's port; a relative "/" reaches Lighthouse unresolved and
+      # fails with INVALID_URL.
       #
       # Temporary storage means results expire after 7 days but are
       # sufficient for performance trend monitoring; uploadArtifacts also
@@ -175,6 +186,5 @@ jobs:
         uses: treosh/lighthouse-ci-action@v12
         with:
           configPath: ./lighthouserc.json
-          startServerCommand: bun run start
           uploadArtifacts: true
           temporaryPublicStorage: true
