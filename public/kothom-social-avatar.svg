@@ -18,7 +18,7 @@
 
   <!-- Ink background container for social profile avatars -->
   <rect width="1080" height="1080" fill="#0a0a0a" />
-  <g transform="translate(540 540) scale(4.2) translate(-100 -115)">
+  <g transform="translate(540 540) scale(4.2) translate(-100 -103.45)">
     
   <!-- Subtle starburst behind the cross -->
   <g filter="url(#starburstBlur)">

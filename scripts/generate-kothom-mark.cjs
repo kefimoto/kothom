@@ -466,7 +466,7 @@ function generateMarkSvg(
     contentMarkup = `
   <!-- Dark background container for crisp favicon contrast -->
   <rect width="512" height="512" fill="#0a0a0a" rx="64" />
-  <g transform="translate(256 256) scale(2.2) translate(-100 -98)">
+  <g transform="translate(256 256) scale(2.2) translate(-100 -100.5)">
     ${renderCrossGlowAndStarburst}
     ${renderCrossBody}
   </g>
@@ -476,7 +476,7 @@ function generateMarkSvg(
     contentMarkup = `
   <!-- Ink background container for social profile avatars -->
   <rect width="1080" height="1080" fill="#0a0a0a" />
-  <g transform="translate(540 540) scale(4.2) translate(-100 -115)">
+  <g transform="translate(540 540) scale(4.2) translate(-100 -103.45)">
     ${renderCrossGlowAndStarburst}
     ${renderCrossBody}
     ${renderWordmark}
