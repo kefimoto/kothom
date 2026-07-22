@@ -2,6 +2,9 @@
 // print-ready vectors of the radiant cross mark, wordmarks, symbols, favicons,
 // and social media avatars with text baked in as real glyph outlines.
 //
+// All dependencies (opentype.js and font TTFs) are automatically fetched into
+// the OS temp directory (os.tmpdir()/kothom-mark-fonts) on demand if missing.
+//
 // Full documentation is in CROSS-MARK.md.
 //
 // Usage:
@@ -9,42 +12,71 @@
 //   node scripts/generate-kothom-mark.cjs --variant=dark  # Generates specific variant
 //   WORDMARK_FONT=marcellus node scripts/generate-kothom-mark.cjs # Font preview mode
 
-const opentype = require("opentype.js");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 
 const FONT_CACHE_DIR = path.join(os.tmpdir(), "kothom-mark-fonts");
 
-const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
-const WORDMARK_FONT_FILES = {
-  decorative: "CinzelDecorative-Bold.ttf",
-  cinzel: "Cinzel-Bold-static.ttf",
-  marcellus: "Marcellus-Regular.ttf",
-};
+async function ensureDependenciesAndFonts() {
+  if (!fs.existsSync(FONT_CACHE_DIR)) {
+    fs.mkdirSync(FONT_CACHE_DIR, { recursive: true });
+  }
 
-// Ensure font cache directory exists
-if (!fs.existsSync(FONT_CACHE_DIR)) {
-  fs.mkdirSync(FONT_CACHE_DIR, { recursive: true });
+  // 1. Ensure opentype.js is available (loads local package if available, else downloads to tmp)
+  let opentype;
+  try {
+    opentype = require("opentype.js");
+  } catch (_err) {
+    const tmpOpentypePath = path.join(FONT_CACHE_DIR, "opentype.cjs");
+    if (!fs.existsSync(tmpOpentypePath)) {
+      console.log("  Fetching opentype.js dependency into tmp directory...");
+      const res = await fetch(
+        "https://unpkg.com/opentype.js@2.0.0/dist/opentype.js",
+      );
+      if (!res.ok) {
+        throw new Error(`Failed to fetch opentype.js: ${res.statusText}`);
+      }
+      fs.writeFileSync(tmpOpentypePath, await res.text());
+    }
+    opentype = require(tmpOpentypePath);
+  }
+
+  // 2. Ensure Font TTF files are cached in tmp directory
+  const FONT_DOWNLOADS = [
+    {
+      file: "CinzelDecorative-Bold.ttf",
+      url: "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzeldecorative/CinzelDecorative-Bold.ttf",
+    },
+    {
+      file: "Marcellus-Regular.ttf",
+      url: "https://raw.githubusercontent.com/google/fonts/main/ofl/marcellus/Marcellus-Regular.ttf",
+    },
+    {
+      file: "Cinzel-Bold-static.ttf",
+      url: "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/Cinzel%5Bwght%5D.ttf",
+    },
+  ];
+
+  for (const item of FONT_DOWNLOADS) {
+    const filePath = path.join(FONT_CACHE_DIR, item.file);
+    if (!fs.existsSync(filePath)) {
+      console.log(
+        `  Fetching font asset ${item.file} into ${FONT_CACHE_DIR}...`,
+      );
+      const res = await fetch(item.url);
+      if (!res.ok) {
+        throw new Error(
+          `Failed to download font ${item.file}: ${res.statusText}`,
+        );
+      }
+      const arrayBuf = await res.arrayBuffer();
+      fs.writeFileSync(filePath, Buffer.from(arrayBuf));
+    }
+  }
+
+  return opentype;
 }
-
-const decorativeFontPath = path.join(
-  FONT_CACHE_DIR,
-  WORDMARK_FONT_FILES[WORDMARK_FONT_CHOICE] || "Marcellus-Regular.ttf",
-);
-const cinzelFontPath = path.join(FONT_CACHE_DIR, "Cinzel-Bold-static.ttf");
-
-if (!fs.existsSync(decorativeFontPath) || !fs.existsSync(cinzelFontPath)) {
-  console.error(
-    `Font files missing in ${FONT_CACHE_DIR}. Please see CROSS-MARK.md for setup instructions.`,
-  );
-  process.exit(1);
-}
-
-const decorativeFont = opentype.parse(
-  fs.readFileSync(decorativeFontPath).buffer,
-);
-const cinzelFont = opentype.parse(fs.readFileSync(cinzelFontPath).buffer);
 
 // --- Same ellipse arc-length math as computeArcChars ---
 function buildEllipseArcLengthTable(radiusX, radiusY, maxAngleRad, steps) {
@@ -174,8 +206,6 @@ const WORDMARK_GEOMETRY = {
   cinzel: { fontSize: 10.5, radius: 71.68, centerY: 69.51 },
   marcellus: { fontSize: 12.65, radius: 71.66, centerY: 69.49 },
 };
-const wordmarkGeometry =
-  WORDMARK_GEOMETRY[WORDMARK_FONT_CHOICE] || WORDMARK_GEOMETRY.marcellus;
 
 const MINISTRIES_TEXT = "MINISTRIES";
 const MINISTRIES_FONT_SIZE = 19;
@@ -241,7 +271,6 @@ function getThemeColors(theme) {
         starburstFill: "#764634",
         starburstOpacity1: 0.15,
         starburstOpacity2: 0.22,
-        hotspotStart: "#764634",
         hotspotStop0: "#764634",
         hotspotStop15: "rgba(118,70,52,0.85)",
         hotspotStop35: "rgba(118,70,52,0.55)",
@@ -256,7 +285,6 @@ function getThemeColors(theme) {
         starburstFill: "#ffffff",
         starburstOpacity1: 0.2,
         starburstOpacity2: 0.3,
-        hotspotStart: "#ffffff",
         hotspotStop0: "#ffffff",
         hotspotStop15: "rgba(255,255,255,0.85)",
         hotspotStop35: "rgba(255,255,255,0.55)",
@@ -271,7 +299,6 @@ function getThemeColors(theme) {
         starburstFill: "#000000",
         starburstOpacity1: 0.2,
         starburstOpacity2: 0.3,
-        hotspotStart: "#000000",
         hotspotStop0: "#000000",
         hotspotStop15: "rgba(0,0,0,0.85)",
         hotspotStop35: "rgba(0,0,0,0.55)",
@@ -287,7 +314,6 @@ function getThemeColors(theme) {
         starburstFill: "#f4efe6",
         starburstOpacity1: 0.09,
         starburstOpacity2: 0.13,
-        hotspotStart: "#ffffff",
         hotspotStop0: "#ffffff",
         hotspotStop15: "rgba(255,255,255,0.85)",
         hotspotStop35: "rgba(255,255,255,0.55)",
@@ -300,7 +326,10 @@ function getThemeColors(theme) {
 }
 
 // --- Main SVG Mark Generator ---
-function generateMarkSvg({ theme = "light", layout = "full" } = {}) {
+function generateMarkSvg(
+  { theme = "light", layout = "full" },
+  { decorativeFont, cinzelFont, wordmarkGeometry },
+) {
   const colors = getThemeColors(theme);
 
   // Compute Wordmark Paths
@@ -378,7 +407,6 @@ function generateMarkSvg({ theme = "light", layout = "full" } = {}) {
     )
     .join("\n    ");
 
-  // Layout & ViewBox handling
   let viewBox = "17 -15 166 260";
   let contentMarkup = "";
 
@@ -537,26 +565,62 @@ const BRAND_ASSET_MANIFEST = [
   },
 ];
 
-// CLI / Environment Variable overrides for font preview mode
-const isPreviewFont = !!process.env.WORDMARK_FONT;
+// --- Main Execution Flow ---
+async function main() {
+  console.log(
+    "Checking and pulling all required mark dependencies into tmp...",
+  );
+  const opentype = await ensureDependenciesAndFonts();
 
-if (isPreviewFont) {
-  const svg = generateMarkSvg({ theme: "light", layout: "full" });
-  const outPath = `kothom-mark-preview-${WORDMARK_FONT_CHOICE}.svg`;
-  fs.writeFileSync(outPath, svg);
-  console.log(
-    `[Preview Mode] Wrote ${outPath} (${svg.length} bytes) using font ${WORDMARK_FONT_CHOICE}`,
+  const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
+  const WORDMARK_FONT_FILES = {
+    decorative: "CinzelDecorative-Bold.ttf",
+    cinzel: "Cinzel-Bold-static.ttf",
+    marcellus: "Marcellus-Regular.ttf",
+  };
+
+  const decorativeFontPath = path.join(
+    FONT_CACHE_DIR,
+    WORDMARK_FONT_FILES[WORDMARK_FONT_CHOICE] || "Marcellus-Regular.ttf",
   );
-} else {
-  console.log(
-    "Generating complete Knights of the Higher Order Ministries brand mark suite...",
+  const cinzelFontPath = path.join(FONT_CACHE_DIR, "Cinzel-Bold-static.ttf");
+
+  const decorativeFont = opentype.parse(
+    fs.readFileSync(decorativeFontPath).buffer,
   );
-  for (const asset of BRAND_ASSET_MANIFEST) {
-    const svg = generateMarkSvg({ theme: asset.theme, layout: asset.layout });
-    fs.writeFileSync(asset.filename, svg);
+  const cinzelFont = opentype.parse(fs.readFileSync(cinzelFontPath).buffer);
+  const wordmarkGeometry =
+    WORDMARK_GEOMETRY[WORDMARK_FONT_CHOICE] || WORDMARK_GEOMETRY.marcellus;
+
+  const fontCtx = { decorativeFont, cinzelFont, wordmarkGeometry };
+
+  const isPreviewFont = !!process.env.WORDMARK_FONT;
+  if (isPreviewFont) {
+    const svg = generateMarkSvg({ theme: "light", layout: "full" }, fontCtx);
+    const outPath = `kothom-mark-preview-${WORDMARK_FONT_CHOICE}.svg`;
+    fs.writeFileSync(outPath, svg);
     console.log(
-      `  ✓ Wrote ${asset.filename} (${asset.layout}, ${asset.theme}) - ${svg.length} bytes`,
+      `[Preview Mode] Wrote ${outPath} (${svg.length} bytes) using font ${WORDMARK_FONT_CHOICE}`,
     );
+  } else {
+    console.log(
+      "Generating complete Knights of the Higher Order Ministries brand mark suite...",
+    );
+    for (const asset of BRAND_ASSET_MANIFEST) {
+      const svg = generateMarkSvg(
+        { theme: asset.theme, layout: asset.layout },
+        fontCtx,
+      );
+      fs.writeFileSync(asset.filename, svg);
+      console.log(
+        `  ✓ Wrote ${asset.filename} (${asset.layout}, ${asset.theme}) - ${svg.length} bytes`,
+      );
+    }
+    console.log("All brand mark variants generated successfully in public/");
   }
-  console.log("All brand mark variants generated successfully in public/");
 }
+
+main().catch((err) => {
+  console.error("Error generating brand mark suite:", err);
+  process.exit(1);
+});
