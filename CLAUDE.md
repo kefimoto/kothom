@@ -61,10 +61,22 @@ gh pr checks 37 --watch &
 
 **Applied in pr-flow scripts**:
 ```bash
-# Use run_in_background: true to free context
-until rtk gh pr checks 37 2>&1 | grep -q "0 pending" && ! rtk gh pr checks 37 2>&1 | grep -q "FAIL"; do sleep 10; done && rtk gh pr merge 37 --squash --delete-branch
-# ↓ Run in background
+# Use run_in_background: true to free context. `gh pr checks` already blocks
+# until every check resolves — no polling loop needed.
+gh pr checks 37 --watch && rtk gh pr merge 37 --squash --delete-branch
 ```
+
+**Do not** wrap this in a hand-rolled `until ... grep -q "..."` loop keyed on a
+string like `"0 pending"`. Neither `gh pr checks` nor `rtk gh pr checks`
+ever prints that phrase — not in the raw per-check table, and not in rtk's
+own compact summary (`Passed: N | Failed: N`) — so the loop condition never
+matches and it spins forever even after checks finish (verified 2026-07-22:
+a real PR with all checks resolved, several already failed, still had its
+"until 0 pending" watcher looping). If you need the state programmatically
+instead of `--watch`, use the command's own exit code: 0 = all passed,
+**8 = still pending**, anything else = at least one check failed
+(`gh help exit-codes`; confirmed the same codes pass through `rtk gh pr
+checks` unchanged).
 
 **Token efficiency**: Same time spent waiting, but context available for other work. Enables true parallelization (multiple design audits, multiple fixes running simultaneously).
 
