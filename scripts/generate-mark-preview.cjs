@@ -11,7 +11,7 @@
 //
 // This is a design-review tool, not a site asset — it reads already
 // generated public/*.svg files and never ships to the actual website. Its
-// output (scripts/mark-preview.svg) is committed anyway, so anyone can open
+// output (mark-preview.svg, repo root) is committed anyway, so anyone can open
 // it on GitHub without running the generator locally — re-run this after
 // regenerating the marks and commit the result together, or it goes stale.
 //
@@ -23,7 +23,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const PUBLIC_DIR = path.join(__dirname, "..", "public");
-const OUTPUT_PATH = path.join(__dirname, "mark-preview.svg");
+// Repo root, next to CROSS-MARK.md — a viewable reference doc, not source
+// code, so it doesn't belong under scripts/.
+const OUTPUT_PATH = path.join(__dirname, "..", "mark-preview.svg");
 
 const INK = "#0a0a0a";
 const CREAM = "#f4efe6";

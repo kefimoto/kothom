@@ -96,7 +96,7 @@ node scripts/generate-kothom-mark.cjs
 
 To compare every variant at once — each on the background it's actually
 meant to sit on — run `node scripts/generate-mark-preview.cjs` afterward.
-It writes `scripts/mark-preview.svg`, a labeled grid built from whatever's
+It writes `mark-preview.svg` (repo root), a labeled grid built from whatever's
 currently in `public/`. Committed (not a site asset, but tracked so anyone
 can open it on GitHub without running the generator locally) — re-run after
 regenerating the marks so it doesn't go stale, and include it in the same
