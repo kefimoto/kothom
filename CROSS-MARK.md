@@ -86,40 +86,60 @@ Square-ratio vector graphics centered on an Ink (`#0a0a0a`) background card. `fa
 
 ## One-time setup
 
-The generator needs `opentype.js` (to read font files and extract glyph
-outlines) and three `.ttf` font files. None of these are committed to the
-repo or added as project dependencies — they're design-time tooling only,
-placed by hand into the OS tmp dir (`os.tmpdir()/kothom-mark-fonts`), so
-they live outside the repo tree entirely and there's nothing to gitignore
-or risk committing. The script only ever *reads* from this directory — it
-doesn't fetch or write anything itself, on purpose: an earlier version
-auto-downloaded these on demand, and CodeQL correctly flagged persisting
-fetched network content to disk as a risk worth avoiding rather than just
-mitigating. Populate the directory once, by hand:
-
-```bash
-npm install --no-save opentype.js   # or: bun add opentype.js, then remove it from package.json after
-
-FONT_DIR="$(node -e 'console.log(require("os").tmpdir())')/kothom-mark-fonts"
-mkdir -p "$FONT_DIR"
-curl -o "$FONT_DIR/CinzelDecorative-Bold.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzeldecorative/CinzelDecorative-Bold.ttf"
-curl -o "$FONT_DIR/Cinzel-Variable.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/Cinzel%5Bwght%5D.ttf"
-curl -o "$FONT_DIR/Marcellus-Regular.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/marcellus/Marcellus-Regular.ttf"
-
-python3 -m pip install --user fonttools
-python3 -m fontTools.varLib.instancer "$FONT_DIR/Cinzel-Variable.ttf" wght=700 -o "$FONT_DIR/Cinzel-Bold-static.ttf"
-```
-
-("Ministries" and the crossbar/etc. use Cinzel; the wordmark's font is
-swappable — see below. Cinzel ships as a variable font, so `fonttools`
-instances it down to a static Bold weight, which `opentype.js` can read
-more simply than the variable original.)
-
-Then, from the repo root:
+Nothing to set up — `opentype.js` is a normal devDependency (installed by
+`bun install` like everything else), and the three `.ttf` font files are
+vendored in `scripts/fonts/`, committed to the repo. Just run:
 
 ```bash
 node scripts/generate-kothom-mark.cjs
 ```
+
+### Why the fonts are vendored files, not a dependency or a fetch
+
+Two things were tried first, and both turned out to be worse:
+
+- **Auto-fetching them on demand**, into the OS temp dir. CodeQL flagged
+  persisting fetched network content to disk — a pattern with no
+  code-level fix, since it flags the fetch-then-write itself.
+- **`@fontsource/cinzel` and `@fontsource/cinzel-decorative`** as pinned
+  devDependencies, to get font acquisition through the same trusted
+  `bun install` path as every other dependency. Their "700" (Bold) files
+  turned out to be broken: correct Bold metadata (name table,
+  `usWeightClass: 700`), but glyph outlines byte-for-byte identical to the
+  400/Regular file. Verified directly against version 5.3.0 of both
+  packages — this is exactly the "Bold in name only" bug this whole setup
+  exists to avoid, just relocated into a dependency.
+
+Vendoring the exact bytes avoids both: no network fetch to flag, and no
+floating dependency whose glyph shapes could turn out to be wrong (or
+change on a version bump) without anything in a PR diff calling it out.
+`scripts/generate-kothom-mark.cjs` pins a sha256 for each of the three
+files and prints a loud (non-blocking) warning if one no longer matches —
+since a `.ttf` diff is otherwise unreadable binary noise to a reviewer.
+
+### Reproducing or replacing a vendored font
+
+`CinzelDecorative-Bold.ttf` and `Marcellus-Regular.ttf` are static fonts,
+fetched as-is. `Cinzel-Bold-static.ttf` is instanced from Cinzel's upstream
+**variable** font — verify any replacement actually differs from the
+Regular weight before committing it (see the bug above):
+
+```bash
+curl -o CinzelDecorative-Bold.ttf "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzeldecorative/CinzelDecorative-Bold.ttf"
+curl -o Marcellus-Regular.ttf "https://raw.githubusercontent.com/google/fonts/main/ofl/marcellus/Marcellus-Regular.ttf"
+
+curl -o Cinzel-Variable.ttf "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/Cinzel%5Bwght%5D.ttf"
+python3 -m pip install --user fonttools
+python3 -m fontTools.varLib.instancer Cinzel-Variable.ttf wght=700 -o Cinzel-Bold-static.ttf
+rm Cinzel-Variable.ttf   # intermediate only — not itself vendored
+```
+
+("Ministries" and the crossbar/etc. use Cinzel; the wordmark's font is
+swappable — see below.)
+
+After replacing any file, recompute its hash (`sha256sum scripts/fonts/*.ttf`),
+update `EXPECTED_FONT_HASHES` in `scripts/generate-kothom-mark.cjs`, review
+the resulting visual diff in `public/*.svg`, and commit all of it together.
 
 This overwrites `public/kothom-mark.svg`.
 

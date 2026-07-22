@@ -2,14 +2,30 @@
 // print-ready vectors of the radiant cross mark, wordmarks, symbols, favicons,
 // and social media avatars with text baked in as real glyph outlines.
 //
-// Font TTF files are placed by hand into the OS tmp dir
-// (os.tmpdir()/kothom-mark-fonts) — see CROSS-MARK.md's one-time setup. This
-// script only ever reads them; it doesn't fetch or write anything itself.
-// (An earlier version auto-downloaded them on demand — CodeQL flagged
-// persisting fetched network content to disk, and no amount of checksum or
-// symlink hardening at the call site satisfied that check, since the
-// pattern it flags is the fetch-then-write itself. Removing the auto-fetch
-// removes the risk at the source instead of chasing mitigations for it.)
+// Font TTF files are vendored in scripts/fonts/ — committed to the repo, not
+// fetched at any point, and not an npm dependency either. Three reasons:
+//   - An earlier version auto-downloaded them on demand. CodeQL flagged
+//     persisting fetched network content to disk, a pattern with no
+//     code-level fix (it flags the fetch-then-write itself).
+//   - @fontsource's published static Bold builds for Cinzel and Cinzel
+//     Decorative were tried next, and turned out to be broken: the "700"
+//     weight files carry correct Bold metadata (name table, usWeightClass)
+//     but their actual glyph outlines are byte-for-byte identical to the
+//     400/Regular file — the exact "bold in name only" bug this whole
+//     rework exists to fix, just relocated into a dependency instead of a
+//     bespoke downloader. Verified directly against @fontsource/cinzel and
+//     @fontsource/cinzel-decorative 5.3.0.
+//   - These outlines get baked into a print-ready asset (CROSS-MARK.md: "can
+//     be handed to a print shop as-is"), so a floating font dependency is
+//     its own risk even when it isn't outright broken: a routine version
+//     bump could change glyph shapes with nothing in the diff calling that
+//     out. Vendored bytes only change via an explicit commit that replaces
+//     them.
+//
+// Cinzel-Bold-static.ttf is produced from the upstream variable font via
+// `fonttools varLib.instancer` (see CROSS-MARK.md for the exact recipe) —
+// verified to actually differ from the default/Regular weight, unlike the
+// @fontsource file above.
 //
 // Full documentation is in CROSS-MARK.md.
 //
@@ -18,51 +34,46 @@
 //   node scripts/generate-kothom-mark.cjs --variant=dark  # Generates specific variant
 //   WORDMARK_FONT=marcellus node scripts/generate-kothom-mark.cjs # Font preview mode
 
+const opentype = require("opentype.js");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 
-const FONT_CACHE_DIR = path.join(os.tmpdir(), "kothom-mark-fonts");
+const FONT_DIR = path.join(__dirname, "fonts");
 
-function ensureDependenciesAndFonts() {
-  // 1. Ensure opentype.js is loaded safely from dependencies
-  let opentype;
-  try {
-    opentype = require("opentype.js");
-  } catch (_err) {
-    try {
-      console.log("  Installing opentype.js dev dependency...");
-      require("node:child_process").execSync("bun add -d opentype.js", {
-        stdio: "inherit",
-      });
-      opentype = require("opentype.js");
-    } catch (_e) {
-      console.error(
-        "opentype.js is required to generate vector mark paths. Please run 'bun add -d opentype.js'.",
+// A .ttf is binary, so a PR that changes one of these shows up as "binary
+// file changed" with nothing a reviewer can actually read. These pins turn
+// that invisible change into a loud warning at generation time instead —
+// not a hard failure: a deliberate font swap is legitimate, it just
+// shouldn't be able to silently change every generated mark unnoticed.
+// Recompute with `sha256sum scripts/fonts/*.ttf` and update here once
+// you've reviewed the resulting visual diff and confirmed it's intentional.
+const EXPECTED_FONT_HASHES = {
+  "CinzelDecorative-Bold.ttf":
+    "e854e68a388aa50d742a4415c1ae5c17a617ef7956c95a70021d0a4a44f20518",
+  "Marcellus-Regular.ttf":
+    "1cf0cd10b17d35e852729962cc1ffaffed94514895972458345e2df34abb2f81",
+  "Cinzel-Bold-static.ttf":
+    "4c27e274a57ababc17b13ee4033cdc91599515da582a85a5bb3707ba537fdacf",
+};
+
+function warnIfFontsChanged() {
+  for (const [file, expected] of Object.entries(EXPECTED_FONT_HASHES)) {
+    const filePath = path.join(FONT_DIR, file);
+    if (!fs.existsSync(filePath)) continue; // reported clearly later, when actually read
+    const actual = crypto
+      .createHash("sha256")
+      .update(fs.readFileSync(filePath))
+      .digest("hex");
+    if (actual !== expected) {
+      console.warn(
+        `⚠ ${file} does not match the pinned checksum (expected ${expected}, got ${actual}).\n` +
+          "  Every generated mark will reflect whatever this file now contains. If that's " +
+          "intentional, review the visual diff of public/*.svg carefully, then update " +
+          "EXPECTED_FONT_HASHES in this script to match.",
       );
-      process.exit(1);
     }
   }
-
-  // 2. Font TTF files must already be present (see CROSS-MARK.md) — fail
-  // clearly and early rather than partway through generation.
-  const REQUIRED_FONTS = [
-    "CinzelDecorative-Bold.ttf",
-    "Marcellus-Regular.ttf",
-    "Cinzel-Bold-static.ttf",
-  ];
-  const missing = REQUIRED_FONTS.filter(
-    (file) => !fs.existsSync(path.join(FONT_CACHE_DIR, file)),
-  );
-  if (missing.length > 0) {
-    console.error(
-      `Missing font file(s) in ${FONT_CACHE_DIR}: ${missing.join(", ")}.\n` +
-        "Follow the one-time setup in CROSS-MARK.md to place them, then re-run this script.",
-    );
-    process.exit(1);
-  }
-
-  return opentype;
 }
 
 // --- Same ellipse arc-length math as computeArcChars ---
@@ -553,9 +564,8 @@ const BRAND_ASSET_MANIFEST = [
 ];
 
 // --- Main Execution Flow ---
-async function main() {
-  console.log("Checking font dependencies...");
-  const opentype = ensureDependenciesAndFonts();
+function main() {
+  warnIfFontsChanged();
 
   const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
   const WORDMARK_FONT_FILES = {
@@ -565,10 +575,10 @@ async function main() {
   };
 
   const decorativeFontPath = path.join(
-    FONT_CACHE_DIR,
+    FONT_DIR,
     WORDMARK_FONT_FILES[WORDMARK_FONT_CHOICE] || "Marcellus-Regular.ttf",
   );
-  const cinzelFontPath = path.join(FONT_CACHE_DIR, "Cinzel-Bold-static.ttf");
+  const cinzelFontPath = path.join(FONT_DIR, "Cinzel-Bold-static.ttf");
 
   const decorativeFont = opentype.parse(
     fs.readFileSync(decorativeFontPath).buffer,
@@ -605,7 +615,9 @@ async function main() {
   }
 }
 
-main().catch((err) => {
+try {
+  main();
+} catch (err) {
   console.error("Error generating brand mark suite:", err);
   process.exit(1);
-});
+}
