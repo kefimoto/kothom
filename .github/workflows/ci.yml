@@ -9,6 +9,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 # NOTE: deliberately no top-level `paths-ignore`.
 #
 # `main`'s branch protection requires a status check named exactly
@@ -19,9 +22,11 @@ concurrency:
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
 
@@ -59,7 +64,7 @@ jobs:
       # dangerous direction. Verify on a real PR after changing it; a wrong
       # filter here fails silently behind a green check.
       - name: Detect changed areas
-        uses: dorny/paths-filter@v4
+        uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
         id: filter
         with:
           predicate-quantifier: "every"
@@ -69,7 +74,7 @@ jobs:
               - '!**/*.md'
 
       - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -109,7 +114,7 @@ jobs:
       # gets a warm partial cache instead of a cold build.
       - name: Cache Next.js build
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .next/cache
           key: nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ hashFiles('src/**', 'content/**') }}
@@ -123,7 +128,7 @@ jobs:
 
       - name: Cache Playwright browsers
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
@@ -183,7 +188,7 @@ jobs:
       # the lighthouse-trends skill.
       - name: Lighthouse CI
         if: steps.filter.outputs.code == 'true' || github.event_name != 'pull_request'
-        uses: treosh/lighthouse-ci-action@v12
+        uses: treosh/lighthouse-ci-action@512cc908a55bfb0ad231facca52adf3d3a651df4 # v12
         with:
           configPath: ./lighthouserc.json
           uploadArtifacts: true
