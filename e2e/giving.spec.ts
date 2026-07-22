@@ -1,7 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+// CI builds and serves this app once, with online donations disabled
+// (CAN_ACCEPT_ONLINE_DONATIONS is false unless NEXT_PUBLIC_STAGING=true or
+// NEXT_PUBLIC_VERCEL_ENV=preview at build time — see src/lib/ministry.ts).
+// That's also real production's state today, so this test asserts the
+// honest, giving-not-live-yet page rather than the live GivingForm — the
+// live form only exists in a build made with the flag on, which this
+// pipeline doesn't produce.
 test.describe("Giving Page & Supporter Roll of Honor UX", () => {
-  test("renders giving options, frequency switcher, amount presets, and roll of honor", async ({
+  test("renders the honest fallback state when online giving is disabled", async ({
     page,
   }) => {
     const consoleErrors: string[] = [];
@@ -18,110 +25,31 @@ test.describe("Giving Page & Supporter Roll of Honor UX", () => {
       page.getByRole("heading", { level: 1, name: /^give$/i }),
     ).toBeVisible();
 
-    // Section headings
+    // The live giving form and donor portal management form are gated on
+    // CAN_ACCEPT_ONLINE_DONATIONS and must not render in this build.
     await expect(
       page.getByRole("heading", { name: "Select Your Giving Options" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: "Manage Existing Subscription" }),
+    ).toHaveCount(0);
+
+    // The honest, always-available mailto giving paths remain.
+    await expect(
+      page.getByRole("heading", { name: "Become a Knight" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Supporter Roll of Honor" }),
+      page.getByRole("heading", { name: "Legacy Donations" }),
     ).toBeVisible();
 
-    // Frequency Switcher testing
-    const monthlyBtn = page.getByRole("button", {
-      name: "Monthly",
-      exact: true,
-    });
-    const annualBtn = page.getByRole("button", {
-      name: "Annual",
-      exact: true,
-    });
-    const oneTimeBtn = page.getByRole("button", {
-      name: "One-Time",
-      exact: true,
-    });
-
-    await expect(monthlyBtn).toBeVisible();
-    await expect(annualBtn).toBeVisible();
-    await expect(oneTimeBtn).toBeVisible();
-
-    // Switch frequency to Annual
-    await annualBtn.click();
-    await expect(annualBtn).toHaveClass(/bg-terracotta/);
-
-    // Switch frequency to One-Time
-    await oneTimeBtn.click();
-    await expect(oneTimeBtn).toHaveClass(/bg-terracotta/);
-
-    // Switch back to Monthly
-    await monthlyBtn.click();
-    await expect(monthlyBtn).toHaveClass(/bg-terracotta/);
-
-    // Amount Presets testing
-    const btn25 = page.getByRole("button", { name: "$25 Knights" });
-    const btn50 = page.getByRole("button", { name: "$50 Family Support" });
-    const btn100 = page.getByRole("button", { name: "$100 Crisis Aid" });
-    const customBtn = page.getByRole("button", { name: "Custom Amount" });
-
-    await expect(btn25).toBeVisible();
-    await expect(btn50).toBeVisible();
-    await expect(btn100).toBeVisible();
-    await expect(customBtn).toBeVisible();
-
-    // Select preset $50
-    await btn50.click();
-    await expect(btn50).toHaveClass(/border-terracotta/);
-
-    // Select custom amount
-    await customBtn.click();
-    const customInput = page.getByLabel("Enter Custom Amount ($)");
-    await expect(customInput).toBeVisible();
-    await customInput.fill("150");
-    await expect(customInput).toHaveValue("150");
-
-    // Select $25 Knights to verify T-Shirt card is visible
-    await btn25.click();
-
-    // Knights T-Shirt visual mockup card
-    await expect(
-      page.getByRole("heading", {
-        name: "Knights of the Higher Order T-Shirt",
-      }),
-    ).toBeVisible();
-
-    // Size selector testing
-    const sizeL = page.getByRole("button", { name: "L", exact: true });
-    const sizeXL = page.getByRole("button", { name: "XL", exact: true });
-    await expect(sizeL).toBeVisible();
-    await expect(sizeXL).toBeVisible();
-
-    await sizeXL.click();
-    await expect(sizeXL).toHaveClass(/bg-terracotta/);
-
-    // Display Name and Anonymous Fields
-    const displayNameInput = page.getByLabel("Display Name / Business Name");
-    const anonymousCheckbox = page.getByLabel(
-      "Keep gift anonymous on the Roll of Honor",
-    );
-
-    await expect(displayNameInput).toBeVisible();
-    await expect(anonymousCheckbox).toBeVisible();
-
-    await displayNameInput.fill("John & Mary Smith");
-    await expect(displayNameInput).toHaveValue("John & Mary Smith");
-
-    // Check anonymous box -> input gets disabled
-    await anonymousCheckbox.check();
-    await expect(displayNameInput).toBeDisabled();
-
-    // Uncheck anonymous box -> input gets enabled again
-    await anonymousCheckbox.uncheck();
-    await expect(displayNameInput).toBeEnabled();
-
-    // Roll of Honor section verification
+    // Roll of Honor: no fabricated supporters, just the honest empty state.
     const rollOfHonorSection = page.locator("#roll-of-honor");
     await expect(rollOfHonorSection).toBeVisible();
     await expect(
-      rollOfHonorSection.getByText("Altamonte Springs Community Care"),
+      page.getByRole("heading", { name: "Supporter Roll of Honor" }),
+    ).toBeVisible();
+    await expect(
+      rollOfHonorSection.getByText(/no public supporters listed/i),
     ).toBeVisible();
 
     expect(consoleErrors).toEqual([]);
