@@ -23,19 +23,79 @@ Cinzel text wordmark instead. If you're tempted to add the mark back to the
 header, the constraint to solve isn't the CSS, it's that this mark has too much
 detail to survive below roughly 100px.
 
-`scripts/generate-kothom-mark.cjs` regenerates the file from a set of
-geometry constants. This doc explains the setup, the geometry, and how to
-change things (including swapping fonts) without having to re-derive it
-all from scratch.
+`scripts/generate-kothom-mark.cjs` regenerates the full suite of static vector brand marks from a set of geometry constants. This doc explains the setup, the geometry, and how to change things (including swapping fonts or generating new mark variants) without having to re-derive it all from"## Brand Mark Suite Variants Generated
+
+Running `node scripts/generate-kothom-mark.cjs` outputs the following production vectors into `public/`:
+
+| Preview | File | Layout | Theme / Colors | Target Use Case |
+|---|---|---|---|---|
+| ![Full Light Mark](./public/kothom-mark.svg) | `public/kothom-mark.svg` | **Full** | Light (Cream `#f4efe6` on Ink) | **Primary default mark**: Hero section, footer, dark backgrounds. |
+| ![Full Dark Mark](./public/kothom-mark-dark.svg) | `public/kothom-mark-dark.svg` | **Full** | Dark (Ink `#0a0a0a` & Terracotta `#764634`) | Print documents, letterheads, light/cream backgrounds. |
+| ![Symbol Light](./public/kothom-mark-symbol.svg) | `public/kothom-mark-symbol.svg` | **Symbol** | Light (Radiant cross & starburst, no text) | Standalone emblem, watermarks, decorative badges. |
+| ![Symbol Dark](./public/kothom-mark-symbol-dark.svg) | `public/kothom-mark-symbol-dark.svg` | **Symbol** | Dark (Ink cross, Terracotta glow) | Standalone dark emblem for light cards. |
+| ![Simple Light](./public/kothom-mark-simple.svg) | `public/kothom-mark-simple.svg` | **Simple** | Light (Vector cross only, no text/glow) | Minimal UI icon, clean vector cross. |
+| ![Simple Dark](./public/kothom-mark-simple-dark.svg) | `public/kothom-mark-simple-dark.svg` | **Simple** | Dark (Vector cross only) | Minimal UI icon for light backgrounds. |
+| ![Wordmark Light](./public/kothom-mark-wordmark.svg) | `public/kothom-mark-wordmark.svg` | **Wordmark** | Light (Arced text + \"MINISTRIES\") | Header banner typography, standalone text mark. |
+| ![Wordmark Dark](./public/kothom-mark-wordmark-dark.svg) | `public/kothom-mark-wordmark-dark.svg` | **Wordmark** | Dark (Ink text + Terracotta \"MINISTRIES\") | Light background header typography. |
+| ![Monochrome Light](./public/kothom-mark-monochrome-light.svg) | `public/kothom-mark-monochrome-light.svg` | **Full** | Solid White (`#ffffff`) | 1-color white printing, stencils, foil stamping. |
+| ![Monochrome Dark](./public/kothom-mark-monochrome-dark.svg) | `public/kothom-mark-monochrome-dark.svg` | **Full** | Solid Black (`#000000`) | 1-color black printing, rubber stamps, faxes. |
+| ![Favicon](./public/favicon.svg) | `public/favicon.svg` | **Favicon** | Square `512x512` Ink card with centered emblem | Browser tab icon, PWA icon. |
+| ![Social Avatar](./public/kothom-social-avatar.svg) | `public/kothom-social-avatar.svg` | **Avatar** | Square `1080x1080` Ink card with centered mark | Social media profile picture (Instagram, X, Facebook). |
+
+### Visual Breakdown of Variants
+
+#### 1. Full Default Radiant Mark (`public/kothom-mark.svg`)
+![Full Default Mark](./public/kothom-mark.svg)
+
+The full signature brand mark featuring the arced Marcellus wordmark, flared radiant cross with soft hotspot glow and background starburst, and tracked Cinzel "MINISTRIES" text. Optimized for dark background displays.
+
+#### 2. Full Dark Radiant Mark (`public/kothom-mark-dark.svg`)
+![Full Dark Mark](./public/kothom-mark-dark.svg)
+
+Inverted full signature mark using deep Ink (`#0a0a0a`) for the cross and wordmark, paired with warm Terracotta (`#764634`) for the hotspot glow and "MINISTRIES" text. Tailored for print, letterheads, and cream/light paper.
+
+#### 3. Symbol Only (`public/kothom-mark-symbol.svg` & `public/kothom-mark-symbol-dark.svg`)
+![Symbol Light](./public/kothom-mark-symbol.svg)
+![Symbol Dark](./public/kothom-mark-symbol-dark.svg)
+
+Tightly cropped radiant emblem containing only the flared cross, hotspot glow, and soft starburst (no typography). Perfect for watermarks, favicon badges, and decorative accents.
+
+#### 4. Simple Flat Vector Cross (`public/kothom-mark-simple.svg` & `public/kothom-mark-simple-dark.svg`)
+![Simple Light](./public/kothom-mark-simple.svg)
+![Simple Dark](./public/kothom-mark-simple-dark.svg)
+
+Ultra-clean flat vector cross geometry without starbursts, radial gradients, or text. Provides a crisp, minimal vector icon for small UI elements.
+
+#### 5. Wordmark Typography (`public/kothom-mark-wordmark.svg` & `public/kothom-mark-wordmark-dark.svg`)
+![Wordmark Light](./public/kothom-mark-wordmark.svg)
+![Wordmark Dark](./public/kothom-mark-wordmark-dark.svg)
+
+Standalone typography mark containing the arced "KNIGHTS OF THE HIGHER ORDER" wordmark and "MINISTRIES" text without the central cross. Ideal for wide banners and headers.
+
+#### 6. Solid Monochrome (`public/kothom-mark-monochrome-light.svg` & `public/kothom-mark-monochrome-dark.svg`)
+![Monochrome Light](./public/kothom-mark-monochrome-light.svg)
+![Monochrome Dark](./public/kothom-mark-monochrome-dark.svg)
+
+Single-color vector marks rendered in 100% solid White or 100% solid Black. Essential for high-contrast single-color printing, rubber stamping, laser engraving, and foil stamping.
+
+#### 7. Favicon & Social Profile Avatar (`public/favicon.svg` & `public/kothom-social-avatar.svg`)
+![Favicon](./public/favicon.svg)
+![Social Avatar](./public/kothom-social-avatar.svg)
+
+Square-ratio vector graphics centered on an Ink (`#0a0a0a`) background card. `favicon.svg` is optimized for browser tabs, and `kothom-social-avatar.svg` is proportioned for social media profile pictures."e pictures.
 
 ## One-time setup
 
 The generator needs `opentype.js` (to read font files and extract glyph
 outlines) and three `.ttf` font files. None of these are committed to the
 repo or added as project dependencies — they're design-time tooling only,
-fetched on demand into the OS tmp dir (`os.tmpdir()/kothom-mark-fonts`), so
+placed by hand into the OS tmp dir (`os.tmpdir()/kothom-mark-fonts`), so
 they live outside the repo tree entirely and there's nothing to gitignore
-or risk committing:
+or risk committing. The script only ever *reads* from this directory — it
+doesn't fetch or write anything itself, on purpose: an earlier version
+auto-downloaded these on demand, and CodeQL correctly flagged persisting
+fetched network content to disk as a risk worth avoiding rather than just
+mitigating. Populate the directory once, by hand:
 
 ```bash
 npm install --no-save opentype.js   # or: bun add opentype.js, then remove it from package.json after

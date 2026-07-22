@@ -1,43 +1,71 @@
-// Regenerates public/kothom-mark.svg — a static, print-ready vector of the
-// radiant cross mark with the wordmark baked in as real glyph outlines
-// (not live <text>), so it has no runtime font/JS dependency and can be
-// handed to a print shop as-is.
+// Regenerates public/kothom-mark.svg and full brand mark suites — static,
+// print-ready vectors of the radiant cross mark, wordmarks, symbols, favicons,
+// and social media avatars with text baked in as real glyph outlines.
 //
-// Full instructions (one-time setup, how the geometry was derived, how to
-// change the font or re-tune anything) are in CROSS-MARK.md — read
-// that before editing this file. Quick start, once the 3 .ttf files this
-// needs are sitting in the OS tmp cache dir below (see the doc for how to
-// fetch them — they live outside the repo tree on purpose, so there's
-// nothing to gitignore and no risk of committing them):
-//   node scripts/generate-kothom-mark.cjs
-//   WORDMARK_FONT=decorative node scripts/generate-kothom-mark.cjs   (preview a different font — writes to a separate file, not the real one)
+// Font TTF files are placed by hand into the OS tmp dir
+// (os.tmpdir()/kothom-mark-fonts) — see CROSS-MARK.md's one-time setup. This
+// script only ever reads them; it doesn't fetch or write anything itself.
+// (An earlier version auto-downloaded them on demand — CodeQL flagged
+// persisting fetched network content to disk, and no amount of checksum or
+// symlink hardening at the call site satisfied that check, since the
+// pattern it flags is the fetch-then-write itself. Removing the auto-fetch
+// removes the risk at the source instead of chasing mitigations for it.)
 //
-// Always run this from the repo root — it writes to public/kothom-mark.svg
-// relative to cwd, while fonts resolve from an absolute tmpdir path.
+// Full documentation is in CROSS-MARK.md.
+//
+// Usage:
+//   node scripts/generate-kothom-mark.cjs            # Generates all brand assets into public/
+//   node scripts/generate-kothom-mark.cjs --variant=dark  # Generates specific variant
+//   WORDMARK_FONT=marcellus node scripts/generate-kothom-mark.cjs # Font preview mode
 
-const opentype = require("opentype.js");
-const fs = require("fs");
-const os = require("os");
-const path = require("path");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 
 const FONT_CACHE_DIR = path.join(os.tmpdir(), "kothom-mark-fonts");
 
-const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
-const WORDMARK_FONT_FILES = {
-  decorative: "CinzelDecorative-Bold.ttf",
-  cinzel: "Cinzel-Bold-static.ttf",
-  marcellus: "Marcellus-Regular.ttf",
-};
-const decorativeFont = opentype.parse(
-  fs.readFileSync(
-    path.join(FONT_CACHE_DIR, WORDMARK_FONT_FILES[WORDMARK_FONT_CHOICE]),
-  ).buffer,
-);
-const cinzelFont = opentype.parse(
-  fs.readFileSync(path.join(FONT_CACHE_DIR, "Cinzel-Bold-static.ttf")).buffer,
-);
+function ensureDependenciesAndFonts() {
+  // 1. Ensure opentype.js is loaded safely from dependencies
+  let opentype;
+  try {
+    opentype = require("opentype.js");
+  } catch (_err) {
+    try {
+      console.log("  Installing opentype.js dev dependency...");
+      require("node:child_process").execSync("bun add -d opentype.js", {
+        stdio: "inherit",
+      });
+      opentype = require("opentype.js");
+    } catch (_e) {
+      console.error(
+        "opentype.js is required to generate vector mark paths. Please run 'bun add -d opentype.js'.",
+      );
+      process.exit(1);
+    }
+  }
 
-// --- Same ellipse arc-length math as computeArcChars in page.tsx ---
+  // 2. Font TTF files must already be present (see CROSS-MARK.md) — fail
+  // clearly and early rather than partway through generation.
+  const REQUIRED_FONTS = [
+    "CinzelDecorative-Bold.ttf",
+    "Marcellus-Regular.ttf",
+    "Cinzel-Bold-static.ttf",
+  ];
+  const missing = REQUIRED_FONTS.filter(
+    (file) => !fs.existsSync(path.join(FONT_CACHE_DIR, file)),
+  );
+  if (missing.length > 0) {
+    console.error(
+      `Missing font file(s) in ${FONT_CACHE_DIR}: ${missing.join(", ")}.\n` +
+        "Follow the one-time setup in CROSS-MARK.md to place them, then re-run this script.",
+    );
+    process.exit(1);
+  }
+
+  return opentype;
+}
+
+// --- Same ellipse arc-length math as computeArcChars ---
 function buildEllipseArcLengthTable(radiusX, radiusY, maxAngleRad, steps) {
   const angles = [];
   const cumulative = [0];
@@ -116,12 +144,6 @@ function computeArcChars(
   });
 }
 
-// Rounds every corner of a closed polygon by a fixed radius: each vertex is
-// replaced with a short straight cut-back along both adjacent edges (capped
-// at half that edge's length, so short edges can't overlap), joined by a
-// quadratic curve through the original vertex. Kept deliberately simple —
-// a fixed small radius, not a full arc-based rounding — since the ask is
-// just to soften the cross's corners "ever so slightly", not rebuild it.
 function roundedPolygonPath(points, radius) {
   const n = points.length;
   const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
@@ -156,107 +178,27 @@ function glyphPathD(font, char, fontSize) {
   return font.getPath(char, 0, 0, fontSize).toPathData(2);
 }
 
-// A single <path> per character: draw the glyph at its own origin, then
-// rotate about that origin and translate into place — equivalent to how
-// `<text x y transform="rotate(deg x y)">` positions+rotates a glyph, but
-// baked into fixed path data with no live text/font dependency.
 function charPathElement(font, char, fontSize, x, y, rotation, fill) {
   const d = glyphPathD(font, char, fontSize);
   if (!d) return "";
   const advance = font.getAdvanceWidth(char, fontSize);
-  // textAnchor="middle" equivalent: center the glyph's advance box on x.
   const dx = -advance / 2;
   return `<path d="${d}" fill="${fill}" transform="translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${rotation.toFixed(3)}) translate(${dx.toFixed(2)} 0)" />`;
 }
 
-// --- Wordmark: arced above the cross ---
-// The exact circle that touches the cross's top tip (100,8) and both
-// crossbar tips (35,66)/(165,66) has center (100, 73.42) and radius 65.42.
-// To add padding — instead of touching, clear the cross by a gap — both
-// the radius is expanded *and* the center is shifted up. Expanding the
-// radius alone pushes the peak up correctly but relocates the endpoints
-// far past the crossbar tips (a bigger circle spreads the same fixed arc
-// length over a smaller angle); translating alone keeps the endpoints
-// x-aligned with the tips but is really just the same circle sliding, not
-// padding. Solving for both together gives the peak and both endpoints
-// the same ~10-unit gap from where they'd otherwise touch, then the
-// radius is nudged out a little further (see CROSS-MARK.md) so the
-// endpoint letters clear the crossbar's flared tips instead of clipping
-// into them.
-//
-// Font size and radius/center are specific to each font's own letter
-// widths (a wider or narrower typeface needs different numbers to land in
-// the same place), so they're looked up per WORDMARK_FONT_CHOICE rather
-// than being one shared constant. See CROSS-MARK.md for how these
-// were derived and how to redo it for a new font.
+// --- Geometry Definitions ---
 const WORDMARK_TEXT = "KNIGHTS OF THE HIGHER ORDER";
 const WORDMARK_GEOMETRY = {
   decorative: { fontSize: 10.5, radius: 71.68, centerY: 69.51 },
-  cinzel: { fontSize: 10.5, radius: 71.68, centerY: 69.51 }, // approximate; not tuned for Cinzel's own widths
+  cinzel: { fontSize: 10.5, radius: 71.68, centerY: 69.51 },
   marcellus: { fontSize: 12.65, radius: 71.66, centerY: 69.49 },
 };
-const wordmarkGeometry =
-  WORDMARK_GEOMETRY[WORDMARK_FONT_CHOICE] || WORDMARK_GEOMETRY.decorative;
-const wordmarkChars = computeArcChars(
-  WORDMARK_TEXT,
-  decorativeFont,
-  wordmarkGeometry.fontSize,
-  {
-    centerX: 100,
-    centerY: wordmarkGeometry.centerY,
-    radiusX: wordmarkGeometry.radius,
-    radiusY: wordmarkGeometry.radius,
-  },
-);
-const wordmarkPaths = wordmarkChars
-  .map((p) =>
-    charPathElement(
-      decorativeFont,
-      p.char,
-      wordmarkGeometry.fontSize,
-      p.x,
-      p.y,
-      p.rotation,
-      "#f4efe6",
-    ),
-  )
-  .join("\n      ");
 
-// --- "Ministries": straight, centered, tracked, below the cross ---
-const MINISTRIES_TEXT = "MINISTRIES"; // rendered uppercase via CSS on the site; baked in here since there's no CSS in a static file
+const MINISTRIES_TEXT = "MINISTRIES";
 const MINISTRIES_FONT_SIZE = 19;
-const MINISTRIES_LETTER_SPACING = 3; // matches letterSpacing="3" in page.tsx
-const ministriesChars = MINISTRIES_TEXT.split("");
-const ministriesWidths = ministriesChars.map(
-  (c) =>
-    cinzelFont.getAdvanceWidth(c, MINISTRIES_FONT_SIZE) +
-    MINISTRIES_LETTER_SPACING,
-);
-const ministriesTotal =
-  ministriesWidths.reduce((s, w) => s + w, 0) - MINISTRIES_LETTER_SPACING; // no trailing gap
-let ministriesCumulative = -ministriesTotal / 2;
-const ministriesPaths = ministriesChars
-  .map((char, i) => {
-    const advance = cinzelFont.getAdvanceWidth(char, MINISTRIES_FONT_SIZE);
-    const x = 100 + ministriesCumulative + advance / 2;
-    ministriesCumulative += ministriesWidths[i];
-    return charPathElement(
-      cinzelFont,
-      char,
-      MINISTRIES_FONT_SIZE,
-      x,
-      217.83,
-      0,
-      "#c9a876",
-    );
-  })
-  .join("\n      ");
+const MINISTRIES_LETTER_SPACING = 3;
 
-// --- Cross body ---
-// Each arm is a flared octagon — wide at the tip, narrowing toward the
-// crossbar — with corners rounded ever so slightly. The taper is more
-// pronounced than earlier passes: tip half-width/height roughly 1.8x the
-// width at the crossbar, instead of the previous ~1.2x.
+// Cross geometry
 const CROSS_CORNER_RADIUS = 2.5;
 const VERTICAL_ARM_POINTS = [
   [100 - 16, 8],
@@ -287,17 +229,6 @@ const horizontalArmPath = roundedPolygonPath(
   CROSS_CORNER_RADIUS,
 );
 
-// --- Starburst: a filled, jagged sunburst silhouette behind the cross ---
-// A handful of thin separated ray lines reads as scattered streaks rather
-// than a burst that fills the space — there's too much bare background
-// between them. Instead this is one continuous star-shaped polygon per
-// layer: vertices alternate between an outer (spike tip) and inner
-// (valley) radius all the way around, so there are no gaps for the
-// background to show through between rays. Two layers at different sizes
-// and a slight rotation offset (plus a soft blur) give it some depth
-// without needing more than 2 shapes total — nowhere near "a thousand
-// lines". Both stay well inside the viewBox's tightest clearance from the
-// center (100,66) in any direction, so nothing gets clipped.
 function starPolygonPoints(
   cx,
   cy,
@@ -317,25 +248,240 @@ function starPolygonPoints(
   }
   return points.join(" ");
 }
-const starburstLayers = [
-  { spikes: 22, outer: 64, inner: 30, rotation: 0, opacity: 0.09 },
-  { spikes: 22, outer: 46, inner: 16, rotation: 360 / 44, opacity: 0.13 },
-]
-  .map(
-    (s) =>
-      `<polygon points="${starPolygonPoints(100, 66, s.spikes, s.outer, s.inner, s.rotation)}" fill="#f4efe6" fill-opacity="${s.opacity}" />`,
-  )
-  .join("\n    ");
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="17 -15 166 260">
-  <title>Knights of the Higher Order Ministries radiant cross mark</title>
+// --- Theme Color Palette Lookup ---
+function getThemeColors(theme) {
+  switch (theme) {
+    case "dark":
+      return {
+        crossFill: "#0a0a0a",
+        starburstFill: "#764634",
+        starburstOpacity1: 0.15,
+        starburstOpacity2: 0.22,
+        hotspotStop0: "#764634",
+        hotspotStop15: "rgba(118,70,52,0.85)",
+        hotspotStop35: "rgba(118,70,52,0.55)",
+        hotspotStop65: "rgba(118,70,52,0.18)",
+        hotspotStop100: "rgba(118,70,52,0)",
+        wordmarkFill: "#0a0a0a",
+        ministriesFill: "#764634",
+      };
+    case "monochrome-light":
+      return {
+        crossFill: "#ffffff",
+        starburstFill: "#ffffff",
+        starburstOpacity1: 0.2,
+        starburstOpacity2: 0.3,
+        hotspotStop0: "#ffffff",
+        hotspotStop15: "rgba(255,255,255,0.85)",
+        hotspotStop35: "rgba(255,255,255,0.55)",
+        hotspotStop65: "rgba(255,255,255,0.18)",
+        hotspotStop100: "rgba(255,255,255,0)",
+        wordmarkFill: "#ffffff",
+        ministriesFill: "#ffffff",
+      };
+    case "monochrome-dark":
+      return {
+        crossFill: "#000000",
+        starburstFill: "#000000",
+        starburstOpacity1: 0.2,
+        starburstOpacity2: 0.3,
+        hotspotStop0: "#000000",
+        hotspotStop15: "rgba(0,0,0,0.85)",
+        hotspotStop35: "rgba(0,0,0,0.55)",
+        hotspotStop65: "rgba(0,0,0,0.18)",
+        hotspotStop100: "rgba(0,0,0,0)",
+        wordmarkFill: "#000000",
+        ministriesFill: "#000000",
+      };
+    case "light":
+    default:
+      return {
+        crossFill: "#f4efe6",
+        starburstFill: "#f4efe6",
+        starburstOpacity1: 0.09,
+        starburstOpacity2: 0.13,
+        hotspotStop0: "#ffffff",
+        hotspotStop15: "rgba(255,255,255,0.85)",
+        hotspotStop35: "rgba(255,255,255,0.55)",
+        hotspotStop65: "rgba(255,255,255,0.18)",
+        hotspotStop100: "rgba(255,255,255,0)",
+        wordmarkFill: "#f4efe6",
+        ministriesFill: "#c9a876",
+      };
+  }
+}
+
+// --- Main SVG Mark Generator ---
+function generateMarkSvg(
+  { theme = "light", layout = "full" },
+  { decorativeFont, cinzelFont, wordmarkGeometry },
+) {
+  const colors = getThemeColors(theme);
+
+  // Compute Wordmark Paths
+  const wordmarkChars = computeArcChars(
+    WORDMARK_TEXT,
+    decorativeFont,
+    wordmarkGeometry.fontSize,
+    {
+      centerX: 100,
+      centerY: wordmarkGeometry.centerY,
+      radiusX: wordmarkGeometry.radius,
+      radiusY: wordmarkGeometry.radius,
+    },
+  );
+  const wordmarkPaths = wordmarkChars
+    .map((p) =>
+      charPathElement(
+        decorativeFont,
+        p.char,
+        wordmarkGeometry.fontSize,
+        p.x,
+        p.y,
+        p.rotation,
+        colors.wordmarkFill,
+      ),
+    )
+    .join("\n      ");
+
+  // Compute Ministries Paths
+  const ministriesChars = MINISTRIES_TEXT.split("");
+  const ministriesWidths = ministriesChars.map(
+    (c) =>
+      cinzelFont.getAdvanceWidth(c, MINISTRIES_FONT_SIZE) +
+      MINISTRIES_LETTER_SPACING,
+  );
+  const ministriesTotal =
+    ministriesWidths.reduce((s, w) => s + w, 0) - MINISTRIES_LETTER_SPACING;
+  let ministriesCumulative = -ministriesTotal / 2;
+  const ministriesPaths = ministriesChars
+    .map((char, i) => {
+      const advance = cinzelFont.getAdvanceWidth(char, MINISTRIES_FONT_SIZE);
+      const x = 100 + ministriesCumulative + advance / 2;
+      ministriesCumulative += ministriesWidths[i];
+      return charPathElement(
+        cinzelFont,
+        char,
+        MINISTRIES_FONT_SIZE,
+        x,
+        217.83,
+        0,
+        colors.ministriesFill,
+      );
+    })
+    .join("\n      ");
+
+  const starburstLayers = [
+    {
+      spikes: 22,
+      outer: 64,
+      inner: 30,
+      rotation: 0,
+      opacity: colors.starburstOpacity1,
+    },
+    {
+      spikes: 22,
+      outer: 46,
+      inner: 16,
+      rotation: 360 / 44,
+      opacity: colors.starburstOpacity2,
+    },
+  ]
+    .map(
+      (s) =>
+        `<polygon points="${starPolygonPoints(100, 66, s.spikes, s.outer, s.inner, s.rotation)}" fill="${colors.starburstFill}" fill-opacity="${s.opacity}" />`,
+    )
+    .join("\n    ");
+
+  let viewBox = "17 -15 166 260";
+  let contentMarkup = "";
+
+  const renderCrossGlowAndStarburst = `
+  <!-- Subtle starburst behind the cross -->
+  <g filter="url(#starburstBlur)">
+    ${starburstLayers}
+  </g>
+
+  <!-- Soft glow hugging the edges of the cross -->
+  <g filter="url(#soften)">
+    <path fill="${colors.crossFill}" d="${verticalArmPath}" />
+    <path fill="${colors.crossFill}" d="${horizontalArmPath}" />
+  </g>
+`;
+
+  const renderCrossBody = `
+  <!-- Crisp cross body -->
+  <path fill="${colors.crossFill}" d="${verticalArmPath}" />
+  <path fill="${colors.crossFill}" d="${horizontalArmPath}" />
+
+  <!-- Bright hotspot at the intersection -->
+  <circle cx="100" cy="66" r="58" fill="url(#hotspot)" />
+`;
+
+  const renderWordmark = `
+  <!-- Wordmark arced above the cross -->
+  <g>
+    ${wordmarkPaths}
+  </g>
+`;
+
+  const renderMinistries = `
+  <!-- "Ministries" below the cross -->
+  <g>
+    ${ministriesPaths}
+  </g>
+`;
+
+  if (layout === "full") {
+    viewBox = "17 -15 166 260";
+    contentMarkup = `${renderCrossGlowAndStarburst}${renderCrossBody}${renderWordmark}${renderMinistries}`;
+  } else if (layout === "symbol") {
+    viewBox = "17 2 166 200";
+    contentMarkup = `${renderCrossGlowAndStarburst}${renderCrossBody}`;
+  } else if (layout === "simple") {
+    viewBox = "65 8 70 186";
+    contentMarkup = `
+  <!-- Clean flat cross body -->
+  <path fill="${colors.crossFill}" d="${verticalArmPath}" />
+  <path fill="${colors.crossFill}" d="${horizontalArmPath}" />
+`;
+  } else if (layout === "wordmark") {
+    viewBox = "10 -15 180 260";
+    contentMarkup = `${renderWordmark}${renderMinistries}`;
+  } else if (layout === "favicon") {
+    viewBox = "0 0 512 512";
+    contentMarkup = `
+  <!-- Dark background container for crisp favicon contrast -->
+  <rect width="512" height="512" fill="#0a0a0a" rx="64" />
+  <g transform="translate(256 256) scale(2.2) translate(-100 -98)">
+    ${renderCrossGlowAndStarburst}
+    ${renderCrossBody}
+  </g>
+`;
+  } else if (layout === "social-avatar") {
+    viewBox = "0 0 1080 1080";
+    contentMarkup = `
+  <!-- Ink background container for social profile avatars -->
+  <rect width="1080" height="1080" fill="#0a0a0a" />
+  <g transform="translate(540 540) scale(4.2) translate(-100 -115)">
+    ${renderCrossGlowAndStarburst}
+    ${renderCrossBody}
+    ${renderWordmark}
+    ${renderMinistries}
+  </g>
+`;
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">
+  <title>Knights of the Higher Order Ministries brand mark (${layout} - ${theme})</title>
   <defs>
     <radialGradient id="hotspot" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
-      <stop offset="15%" stop-color="#ffffff" stop-opacity="0.85" />
-      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.55" />
-      <stop offset="65%" stop-color="#ffffff" stop-opacity="0.18" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+      <stop offset="0%" stop-color="${colors.hotspotStop0}" stop-opacity="1" />
+      <stop offset="15%" stop-color="${colors.hotspotStop15}" />
+      <stop offset="35%" stop-color="${colors.hotspotStop35}" />
+      <stop offset="65%" stop-color="${colors.hotspotStop65}" />
+      <stop offset="100%" stop-color="${colors.hotspotStop100}" />
     </radialGradient>
     <filter id="soften" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="3.2" />
@@ -344,43 +490,122 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="17 -15 166 260">
       <feGaussianBlur stdDeviation="1.6" />
     </filter>
   </defs>
-
-  <!-- Subtle starburst behind the cross -->
-  <g filter="url(#starburstBlur)">
-    ${starburstLayers}
-  </g>
-
-  <!-- Soft glow hugging the edges of the cross -->
-  <g filter="url(#soften)">
-    <path fill="#f4efe6" d="${verticalArmPath}" />
-    <path fill="#f4efe6" d="${horizontalArmPath}" />
-  </g>
-
-  <!-- Crisp cross body -->
-  <path fill="#f4efe6" d="${verticalArmPath}" />
-  <path fill="#f4efe6" d="${horizontalArmPath}" />
-
-  <!-- Bright hotspot at the intersection -->
-  <circle cx="100" cy="66" r="58" fill="url(#hotspot)" />
-
-  <!-- Wordmark arced above the cross -->
-  <g>
-    ${wordmarkPaths}
-  </g>
-
-  <!-- "Ministries" below the cross -->
-  <g>
-    ${ministriesPaths}
-  </g>
+${contentMarkup}
 </svg>
 `;
+}
 
-// Only the default font choice writes over the real production file;
-// previewing a different font (WORDMARK_FONT=... set explicitly) writes to
-// a separate file instead so a preview run can't clobber it by accident.
-const isDefaultFont = !process.env.WORDMARK_FONT;
-const outPath = isDefaultFont
-  ? "public/kothom-mark.svg"
-  : `kothom-mark-preview-${WORDMARK_FONT_CHOICE}.svg`;
-fs.writeFileSync(outPath, svg);
-console.log("wrote", outPath + ",", svg.length, "bytes");
+// --- Brand Asset Definition Table ---
+const BRAND_ASSET_MANIFEST = [
+  {
+    filename: "public/kothom-mark.svg",
+    layout: "full",
+    theme: "light",
+    isDefault: true,
+  },
+  { filename: "public/kothom-mark-dark.svg", layout: "full", theme: "dark" },
+  {
+    filename: "public/kothom-mark-symbol.svg",
+    layout: "symbol",
+    theme: "light",
+  },
+  {
+    filename: "public/kothom-mark-symbol-dark.svg",
+    layout: "symbol",
+    theme: "dark",
+  },
+  {
+    filename: "public/kothom-mark-simple.svg",
+    layout: "simple",
+    theme: "light",
+  },
+  {
+    filename: "public/kothom-mark-simple-dark.svg",
+    layout: "simple",
+    theme: "dark",
+  },
+  {
+    filename: "public/kothom-mark-wordmark.svg",
+    layout: "wordmark",
+    theme: "light",
+  },
+  {
+    filename: "public/kothom-mark-wordmark-dark.svg",
+    layout: "wordmark",
+    theme: "dark",
+  },
+  {
+    filename: "public/kothom-mark-monochrome-light.svg",
+    layout: "full",
+    theme: "monochrome-light",
+  },
+  {
+    filename: "public/kothom-mark-monochrome-dark.svg",
+    layout: "full",
+    theme: "monochrome-dark",
+  },
+  { filename: "public/favicon.svg", layout: "favicon", theme: "light" },
+  {
+    filename: "public/kothom-social-avatar.svg",
+    layout: "social-avatar",
+    theme: "light",
+  },
+];
+
+// --- Main Execution Flow ---
+async function main() {
+  console.log("Checking font dependencies...");
+  const opentype = ensureDependenciesAndFonts();
+
+  const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
+  const WORDMARK_FONT_FILES = {
+    decorative: "CinzelDecorative-Bold.ttf",
+    cinzel: "Cinzel-Bold-static.ttf",
+    marcellus: "Marcellus-Regular.ttf",
+  };
+
+  const decorativeFontPath = path.join(
+    FONT_CACHE_DIR,
+    WORDMARK_FONT_FILES[WORDMARK_FONT_CHOICE] || "Marcellus-Regular.ttf",
+  );
+  const cinzelFontPath = path.join(FONT_CACHE_DIR, "Cinzel-Bold-static.ttf");
+
+  const decorativeFont = opentype.parse(
+    fs.readFileSync(decorativeFontPath).buffer,
+  );
+  const cinzelFont = opentype.parse(fs.readFileSync(cinzelFontPath).buffer);
+  const wordmarkGeometry =
+    WORDMARK_GEOMETRY[WORDMARK_FONT_CHOICE] || WORDMARK_GEOMETRY.marcellus;
+
+  const fontCtx = { decorativeFont, cinzelFont, wordmarkGeometry };
+
+  const isPreviewFont = !!process.env.WORDMARK_FONT;
+  if (isPreviewFont) {
+    const svg = generateMarkSvg({ theme: "light", layout: "full" }, fontCtx);
+    const outPath = `kothom-mark-preview-${WORDMARK_FONT_CHOICE}.svg`;
+    fs.writeFileSync(outPath, svg);
+    console.log(
+      `[Preview Mode] Wrote ${outPath} (${svg.length} bytes) using font ${WORDMARK_FONT_CHOICE}`,
+    );
+  } else {
+    console.log(
+      "Generating complete Knights of the Higher Order Ministries brand mark suite...",
+    );
+    for (const asset of BRAND_ASSET_MANIFEST) {
+      const svg = generateMarkSvg(
+        { theme: asset.theme, layout: asset.layout },
+        fontCtx,
+      );
+      fs.writeFileSync(asset.filename, svg);
+      console.log(
+        `  ✓ Wrote ${asset.filename} (${asset.layout}, ${asset.theme}) - ${svg.length} bytes`,
+      );
+    }
+    console.log("All brand mark variants generated successfully in public/");
+  }
+}
+
+main().catch((err) => {
+  console.error("Error generating brand mark suite:", err);
+  process.exit(1);
+});
