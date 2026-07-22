@@ -157,7 +157,7 @@ The darkening that produced `terracotta` was for *cream text on a terracotta bac
 ### Do:
 - **Do** alternate full-bleed black and cream sections down the page (The Duotone Rule).
 - **Do** reserve terracotta strictly for clickable elements (The One Accent Rule).
-- **Do** use Cinzel Decorative only for the wordmark/hero tagline; Cinzel for section headlines; Lora for all body copy.
+- **Do** use Cinzel Decorative only for the wordmark/hero tagline; Cinzel for section headlines; PT Serif for all body copy.
 - **Do** keep every corner sharp (0px radius) — cards, buttons, images, all of it.
 - **Do** surface the founder's name, address, and phone number prominently as legitimacy proof, not buried in fine print.
 

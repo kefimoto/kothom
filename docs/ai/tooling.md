@@ -8,7 +8,7 @@ The 2026-07-21 audit originally skipped a test framework, pre-commit hooks, CODE
 - **`.github/CODEOWNERS`** — `* @kefimoto`. Lets "Require review from Code Owners" be turned on later in GitHub's branch protection UI without another repo change.
 - **`.editorconfig`** — consistent whitespace/line-endings regardless of what editor a contributor uses, which matters once someone other than the primary maintainer is editing files.
 
-Current test coverage is intentionally thin (robots/sitemap logic + one page smoke test) — the point was having the harness and CI wiring ready *before* the login/subscription forms land, not retrofitting it after.
+Current test coverage (as of 2026-07-22): seven Vitest unit-test files (`robots`, `sitemap`, `page` smoke test, `reveal`, `compliance`, `content-integrity`, `ci-path-filter`) and three Playwright specs (`homepage`, `navigation`, `animations`) under `__tests__/` and `e2e/` respectively — grown well past the original "robots/sitemap + one smoke test" baseline as the CI/compliance/content-pipeline work landed. The point was having the harness and CI wiring ready *before* the login/subscription forms land, not retrofitting it after — coverage has kept pace with each addition since.
 
 ## Tooling still deliberately not adopted
 
