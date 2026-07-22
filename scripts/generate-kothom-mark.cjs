@@ -2,8 +2,8 @@
 // print-ready vectors of the radiant cross mark, wordmarks, symbols, favicons,
 // and social media avatars with text baked in as real glyph outlines.
 //
-// All dependencies (opentype.js and font TTFs) are automatically fetched into
-// the OS temp directory (os.tmpdir()/kothom-mark-fonts) on demand if missing.
+// Font TTF files are automatically fetched into the OS temp directory
+// (os.tmpdir()/kothom-mark-fonts) on demand if missing.
 //
 // Full documentation is in CROSS-MARK.md.
 //
@@ -23,23 +23,23 @@ async function ensureDependenciesAndFonts() {
     fs.mkdirSync(FONT_CACHE_DIR, { recursive: true });
   }
 
-  // 1. Ensure opentype.js is available (loads local package if available, else downloads to tmp)
+  // 1. Ensure opentype.js is loaded safely from dependencies
   let opentype;
   try {
     opentype = require("opentype.js");
   } catch (_err) {
-    const tmpOpentypePath = path.join(FONT_CACHE_DIR, "opentype.cjs");
-    if (!fs.existsSync(tmpOpentypePath)) {
-      console.log("  Fetching opentype.js dependency into tmp directory...");
-      const res = await fetch(
-        "https://unpkg.com/opentype.js@2.0.0/dist/opentype.js",
+    try {
+      console.log("  Installing opentype.js dev dependency...");
+      require("node:child_process").execSync("bun add -d opentype.js", {
+        stdio: "inherit",
+      });
+      opentype = require("opentype.js");
+    } catch (_e) {
+      console.error(
+        "opentype.js is required to generate vector mark paths. Please run 'bun add -d opentype.js'.",
       );
-      if (!res.ok) {
-        throw new Error(`Failed to fetch opentype.js: ${res.statusText}`);
-      }
-      fs.writeFileSync(tmpOpentypePath, await res.text());
+      process.exit(1);
     }
-    opentype = require(tmpOpentypePath);
   }
 
   // 2. Ensure Font TTF files are cached in tmp directory
@@ -567,9 +567,7 @@ const BRAND_ASSET_MANIFEST = [
 
 // --- Main Execution Flow ---
 async function main() {
-  console.log(
-    "Checking and pulling all required mark dependencies into tmp...",
-  );
+  console.log("Checking and pulling font dependencies into tmp...");
   const opentype = await ensureDependenciesAndFonts();
 
   const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";

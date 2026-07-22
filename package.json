@@ -44,6 +44,7 @@
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^17.1.0",
+    "opentype.js": "^2.0.0",
     "picomatch": "^4.0.5",
     "rehype-slug": "^6.0.0",
     "tailwindcss": "^4",
