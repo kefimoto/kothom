@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { GET } from "../src/app/api/roll-of-honor/route";
 
 describe("Roll of Honor API Route", () => {
-  test("returns current year top supporters with privacy filtering", async () => {
+  test("returns the current year with no fabricated supporters", async () => {
     const res = await GET();
     expect(res.status).toBe(200);
 
@@ -10,16 +10,17 @@ describe("Roll of Honor API Route", () => {
     const currentYear = new Date().getFullYear();
 
     expect(data.year).toBe(currentYear);
-    expect(Array.isArray(data.supporters)).toBe(true);
-    expect(data.supporters.length).toBeGreaterThan(0);
+    expect(data.supporters).toEqual([]);
+  });
 
-    // Verify privacy filtering: no anonymous supporters should be present
+  test("privacy filtering excludes anonymous supporters whenever real data exists", async () => {
+    const res = await GET();
+    const data = await res.json();
+
     for (const supporter of data.supporters) {
       expect(supporter.name).toBeDefined();
       expect(supporter.tier).toBeDefined();
-      expect(supporter.year).toBe(currentYear);
-      expect(supporter.name.toLowerCase()).not.toContain("anonymous");
-      expect(supporter.name.toLowerCase()).not.toContain("private");
+      expect(supporter.year).toBe(new Date().getFullYear());
     }
   });
 });

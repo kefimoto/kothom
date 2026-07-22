@@ -35,7 +35,7 @@ export default function GivePage() {
         <Prose html={proseHtml} className="mx-auto max-w-3xl" />
       </div>
 
-      <GivingForm />
+      {CAN_ACCEPT_ONLINE_DONATIONS && <GivingForm />}
 
       <section id="become-a-knight" className="bg-ink px-6 py-20 sm:py-28">
         <div className="mx-auto flex max-w-3xl flex-col items-start gap-5">
@@ -63,22 +63,24 @@ export default function GivePage() {
         </div>
       </section>
 
-      <section
-        id="manage"
-        className="bg-cream border-t border-charcoal/10 px-6 py-20 sm:py-28"
-      >
-        <div className="mx-auto flex max-w-3xl flex-col items-start gap-5">
-          <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
-            Manage Existing Subscription
-          </h2>
-          <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
-            Enter your email address below to access your donor portal where you
-            can update payment methods, pause giving, or cancel your
-            subscription without needing a password.
-          </p>
-          <DonorPortalForm />
-        </div>
-      </section>
+      {CAN_ACCEPT_ONLINE_DONATIONS && (
+        <section
+          id="manage"
+          className="bg-cream border-t border-charcoal/10 px-6 py-20 sm:py-28"
+        >
+          <div className="mx-auto flex max-w-3xl flex-col items-start gap-5">
+            <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
+              Manage Existing Subscription
+            </h2>
+            <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
+              Enter your email address below to access your donor portal where
+              you can update payment methods, pause giving, or cancel your
+              subscription without needing a password.
+            </p>
+            <DonorPortalForm />
+          </div>
+        </section>
+      )}
 
       <RollOfHonor />
     </main>
