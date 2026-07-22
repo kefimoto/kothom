@@ -2,8 +2,14 @@
 // print-ready vectors of the radiant cross mark, wordmarks, symbols, favicons,
 // and social media avatars with text baked in as real glyph outlines.
 //
-// Font TTF files are automatically fetched into a project-local, gitignored
-// cache directory (.cache/kothom-mark-fonts) on demand if missing.
+// Font TTF files are placed by hand into the OS tmp dir
+// (os.tmpdir()/kothom-mark-fonts) — see CROSS-MARK.md's one-time setup. This
+// script only ever reads them; it doesn't fetch or write anything itself.
+// (An earlier version auto-downloaded them on demand — CodeQL flagged
+// persisting fetched network content to disk, and no amount of checksum or
+// symlink hardening at the call site satisfied that check, since the
+// pattern it flags is the fetch-then-write itself. Removing the auto-fetch
+// removes the risk at the source instead of chasing mitigations for it.)
 //
 // Full documentation is in CROSS-MARK.md.
 //
@@ -12,49 +18,13 @@
 //   node scripts/generate-kothom-mark.cjs --variant=dark  # Generates specific variant
 //   WORDMARK_FONT=marcellus node scripts/generate-kothom-mark.cjs # Font preview mode
 
-const crypto = require("node:crypto");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 
-// Deliberately NOT os.tmpdir(): that directory is world-writable and shared
-// across every local user on Linux, which makes any fixed path inside it a
-// symlink-planting target (CodeQL flags this class of finding — see the
-// PR that added this comment for the details). A project-local directory
-// only this checkout's owner can normally write to avoids the whole
-// vulnerability class rather than just mitigating it at the call site.
-const FONT_CACHE_DIR = path.join(
-  __dirname,
-  "..",
-  ".cache",
-  "kothom-mark-fonts",
-);
+const FONT_CACHE_DIR = path.join(os.tmpdir(), "kothom-mark-fonts");
 
-// Defense in depth even in a project-local directory: lstatSync (unlike
-// statSync/existsSync) does not follow symlinks, so this checks what's
-// actually AT the path, not what it points to.
-function assertNotSymlink(targetPath, description) {
-  let stats;
-  try {
-    stats = fs.lstatSync(targetPath);
-  } catch (err) {
-    if (err.code === "ENOENT") return;
-    throw err;
-  }
-  if (stats.isSymbolicLink()) {
-    throw new Error(
-      `Refusing to use ${description} at ${targetPath}: it's a symlink, not a real ${
-        description.includes("directory") ? "directory" : "file"
-      }. Remove it and re-run.`,
-    );
-  }
-}
-
-async function ensureDependenciesAndFonts() {
-  assertNotSymlink(FONT_CACHE_DIR, "font cache directory");
-  if (!fs.existsSync(FONT_CACHE_DIR)) {
-    fs.mkdirSync(FONT_CACHE_DIR, { recursive: true, mode: 0o700 });
-  }
-
+function ensureDependenciesAndFonts() {
   // 1. Ensure opentype.js is loaded safely from dependencies
   let opentype;
   try {
@@ -74,68 +44,22 @@ async function ensureDependenciesAndFonts() {
     }
   }
 
-  // 2. Ensure Font TTF files are cached locally, verified against a pinned
-  // checksum. These bytes come from a network fetch and get parsed by
-  // opentype.js and baked into every generated SVG — pinning sha256 catches
-  // a compromised or tampered response instead of silently trusting and
-  // persisting whatever the network handed back.
-  const FONT_DOWNLOADS = [
-    {
-      file: "CinzelDecorative-Bold.ttf",
-      url: "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzeldecorative/CinzelDecorative-Bold.ttf",
-      sha256:
-        "e854e68a388aa50d742a4415c1ae5c17a617ef7956c95a70021d0a4a44f20518",
-    },
-    {
-      file: "Marcellus-Regular.ttf",
-      url: "https://raw.githubusercontent.com/google/fonts/main/ofl/marcellus/Marcellus-Regular.ttf",
-      sha256:
-        "1cf0cd10b17d35e852729962cc1ffaffed94514895972458345e2df34abb2f81",
-    },
-    {
-      file: "Cinzel-Bold-static.ttf",
-      url: "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/Cinzel%5Bwght%5D.ttf",
-      sha256:
-        "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34",
-    },
+  // 2. Font TTF files must already be present (see CROSS-MARK.md) — fail
+  // clearly and early rather than partway through generation.
+  const REQUIRED_FONTS = [
+    "CinzelDecorative-Bold.ttf",
+    "Marcellus-Regular.ttf",
+    "Cinzel-Bold-static.ttf",
   ];
-
-  const sha256Hex = (buffer) =>
-    crypto.createHash("sha256").update(buffer).digest("hex");
-
-  for (const item of FONT_DOWNLOADS) {
-    const filePath = path.join(FONT_CACHE_DIR, item.file);
-    assertNotSymlink(filePath, "cached font file");
-
-    if (fs.existsSync(filePath)) {
-      if (sha256Hex(fs.readFileSync(filePath)) === item.sha256) continue;
-      console.log(
-        `  Cached ${item.file} failed the pinned checksum, re-fetching...`,
-      );
-      fs.unlinkSync(filePath);
-    }
-
-    console.log(`  Fetching font asset ${item.file} into ${FONT_CACHE_DIR}...`);
-    const res = await fetch(item.url);
-    if (!res.ok) {
-      throw new Error(
-        `Failed to download font ${item.file}: ${res.statusText}`,
-      );
-    }
-    const buffer = Buffer.from(await res.arrayBuffer());
-    const actualHash = sha256Hex(buffer);
-    if (actualHash !== item.sha256) {
-      throw new Error(
-        `Downloaded font ${item.file} does not match the pinned checksum ` +
-          `(expected ${item.sha256}, got ${actualHash}). Refusing to write ` +
-          "a font that doesn't match what was verified.",
-      );
-    }
-    // "wx": create-exclusive, fails instead of following/overwriting if
-    // something now exists at this path — closes the remaining
-    // check-then-write race between the assertNotSymlink check above and
-    // this write.
-    fs.writeFileSync(filePath, buffer, { flag: "wx" });
+  const missing = REQUIRED_FONTS.filter(
+    (file) => !fs.existsSync(path.join(FONT_CACHE_DIR, file)),
+  );
+  if (missing.length > 0) {
+    console.error(
+      `Missing font file(s) in ${FONT_CACHE_DIR}: ${missing.join(", ")}.\n` +
+        "Follow the one-time setup in CROSS-MARK.md to place them, then re-run this script.",
+    );
+    process.exit(1);
   }
 
   return opentype;
@@ -630,8 +554,8 @@ const BRAND_ASSET_MANIFEST = [
 
 // --- Main Execution Flow ---
 async function main() {
-  console.log("Checking and pulling font dependencies...");
-  const opentype = await ensureDependenciesAndFonts();
+  console.log("Checking font dependencies...");
+  const opentype = ensureDependenciesAndFonts();
 
   const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
   const WORDMARK_FONT_FILES = {

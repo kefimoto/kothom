@@ -89,16 +89,18 @@ Square-ratio vector graphics centered on an Ink (`#0a0a0a`) background card. `fa
 The generator needs `opentype.js` (to read font files and extract glyph
 outlines) and three `.ttf` font files. None of these are committed to the
 repo or added as project dependencies — they're design-time tooling only,
-fetched on demand into a project-local cache (`.cache/kothom-mark-fonts`,
-gitignored). Not the OS temp dir: that directory is world-writable and
-shared across every local user on Linux, which makes any fixed path inside
-it a symlink-planting target — CodeQL flagged exactly this the first time
-this script tried it.
+placed by hand into the OS tmp dir (`os.tmpdir()/kothom-mark-fonts`), so
+they live outside the repo tree entirely and there's nothing to gitignore
+or risk committing. The script only ever *reads* from this directory — it
+doesn't fetch or write anything itself, on purpose: an earlier version
+auto-downloaded these on demand, and CodeQL correctly flagged persisting
+fetched network content to disk as a risk worth avoiding rather than just
+mitigating. Populate the directory once, by hand:
 
 ```bash
 npm install --no-save opentype.js   # or: bun add opentype.js, then remove it from package.json after
 
-FONT_DIR=".cache/kothom-mark-fonts"
+FONT_DIR="$(node -e 'console.log(require("os").tmpdir())')/kothom-mark-fonts"
 mkdir -p "$FONT_DIR"
 curl -o "$FONT_DIR/CinzelDecorative-Bold.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzeldecorative/CinzelDecorative-Bold.ttf"
 curl -o "$FONT_DIR/Cinzel-Variable.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/Cinzel%5Bwght%5D.ttf"
