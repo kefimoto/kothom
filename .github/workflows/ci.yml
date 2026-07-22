@@ -59,7 +59,7 @@ jobs:
       # dangerous direction. Verify on a real PR after changing it; a wrong
       # filter here fails silently behind a green check.
       - name: Detect changed areas
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           predicate-quantifier: "every"
