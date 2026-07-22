@@ -28,6 +28,9 @@
 /.velite
 /public/static
 
+# design-time tooling caches (see scripts/generate-kothom-mark.cjs)
+/.cache
+
 # misc
 .DS_Store
 *.pem

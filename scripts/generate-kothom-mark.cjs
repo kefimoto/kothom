@@ -2,8 +2,8 @@
 // print-ready vectors of the radiant cross mark, wordmarks, symbols, favicons,
 // and social media avatars with text baked in as real glyph outlines.
 //
-// Font TTF files are automatically fetched into the OS temp directory
-// (os.tmpdir()/kothom-mark-fonts) on demand if missing.
+// Font TTF files are automatically fetched into a project-local, gitignored
+// cache directory (.cache/kothom-mark-fonts) on demand if missing.
 //
 // Full documentation is in CROSS-MARK.md.
 //
@@ -13,17 +13,24 @@
 //   WORDMARK_FONT=marcellus node scripts/generate-kothom-mark.cjs # Font preview mode
 
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 
-const FONT_CACHE_DIR = path.join(os.tmpdir(), "kothom-mark-fonts");
+// Deliberately NOT os.tmpdir(): that directory is world-writable and shared
+// across every local user on Linux, which makes any fixed path inside it a
+// symlink-planting target (CodeQL flags this class of finding — see the
+// PR that added this comment for the details). A project-local directory
+// only this checkout's owner can normally write to avoids the whole
+// vulnerability class rather than just mitigating it at the call site.
+const FONT_CACHE_DIR = path.join(
+  __dirname,
+  "..",
+  ".cache",
+  "kothom-mark-fonts",
+);
 
-// os.tmpdir() is world-writable and shared across every local user on Linux.
-// A predictable path inside it is a classic symlink-planting target: another
-// user could pre-create a symlink at this exact path pointing somewhere this
-// process can write, and a plain existsSync()-then-write would follow it.
-// lstatSync (unlike statSync/existsSync) does not follow symlinks, so this
-// checks what's actually AT the path, not what it points to.
+// Defense in depth even in a project-local directory: lstatSync (unlike
+// statSync/existsSync) does not follow symlinks, so this checks what's
+// actually AT the path, not what it points to.
 function assertNotSymlink(targetPath, description) {
   let stats;
   try {
@@ -66,7 +73,7 @@ async function ensureDependenciesAndFonts() {
     }
   }
 
-  // 2. Ensure Font TTF files are cached in tmp directory
+  // 2. Ensure Font TTF files are cached locally
   const FONT_DOWNLOADS = [
     {
       file: "CinzelDecorative-Bold.ttf",
@@ -596,7 +603,7 @@ const BRAND_ASSET_MANIFEST = [
 
 // --- Main Execution Flow ---
 async function main() {
-  console.log("Checking and pulling font dependencies into tmp...");
+  console.log("Checking and pulling font dependencies...");
   const opentype = await ensureDependenciesAndFonts();
 
   const WORDMARK_FONT_CHOICE = process.env.WORDMARK_FONT || "marcellus";
