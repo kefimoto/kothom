@@ -79,3 +79,10 @@ export const LEGAL_STATUS = {
  * COMPLIANCE.md § "Where things stand today".
  */
 export const CAN_CLAIM_TAX_DEDUCTIBLE: boolean = LEGAL_STATUS.is501c3;
+
+/**
+ * Whether the site is configured and permitted to accept online donations.
+ */
+export const CAN_ACCEPT_ONLINE_DONATIONS: boolean =
+  process.env.CAN_ACCEPT_ONLINE_DONATIONS === "true" ||
+  process.env.NEXT_PUBLIC_CAN_ACCEPT_ONLINE_DONATIONS === "true";
