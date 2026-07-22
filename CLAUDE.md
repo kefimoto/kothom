@@ -19,6 +19,55 @@ Project-specific context is split into topic files under `docs/ai/`. Read the re
 
 **These docs describe behavior tied to real files (`next.config.ts`, `.github/workflows/ci.yml`, `vercel.json`, `package.json`, etc.).** Before relying on a specific claim for a CI/build/config decision, check `git log` on the file(s) it describes — a doc can go stale the moment the underlying config changes without anyone thinking to update it (this happened once already: `ci-cd.md` didn't mention `vercel.json`'s `ignoreCommand` until it was added after the doc was written).
 
+# pr-flow Workflow Best Practices
+
+## Worktree-First: Always Invoke pr-flow Before Any Changes
+
+**Critical pattern:** Invoke pr-flow skill *at the start of work*, before making any changes. Never edit files directly on main, then try to use pr-flow afterwards.
+
+**Wrong way:**
+```bash
+# ❌ Make changes directly to main
+vim CLAUDE.md
+git add .
+# ... oops, now try to use pr-flow ...
+/pr-flow fix/something  # Too late!
+```
+
+**Right way:**
+```bash
+# ✅ Invoke pr-flow FIRST
+/pr-flow docs/feature-name - Brief description
+# pr-flow creates worktree → then make changes inside worktree
+```
+
+**Why:** pr-flow creates isolated worktrees. If changes are already on main when you invoke it, you've defeated the isolation. For subagents especially (audit, critique, polish), worktrees prevent conflicts between parallel agents.
+
+## Check-Watching: Background Pattern for Context Efficiency
+
+When pr-flow waits for checks, run the check loop in **background** to free context:
+
+```bash
+# ❌ Blocking (holds context hostage during wait)
+gh pr checks 37 --watch
+# ... waiting ...
+# ... waiting ...
+
+# ✅ Background (context freed for parallel work)
+gh pr checks 37 --watch &
+# Context returned immediately; can run other agents/work
+# [Notification arrives: checks passed, PR merged, clean up]
+```
+
+**Applied in pr-flow scripts**:
+```bash
+# Use run_in_background: true to free context
+until gh pr checks 37 2>&1 | grep -q "All checks have passed"; do sleep 10; done && gh pr merge 37 --squash --delete-branch
+# ↓ Run in background
+```
+
+**Token efficiency**: Same time spent waiting, but context available for other work. Enables true parallelization (multiple design audits, multiple fixes running simultaneously).
+
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands
 
