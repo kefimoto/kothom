@@ -6,6 +6,7 @@ import { GivingForm } from "@/components/giving-form";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
 import { RollOfHonor } from "@/components/roll-of-honor";
+import { CAN_ACCEPT_ONLINE_DONATIONS } from "@/lib/ministry";
 
 function getPage() {
   const found = pages.find((p) => p.slug === "give");
@@ -21,11 +22,17 @@ export const metadata: Metadata = {
 };
 
 export default function GivePage() {
+  const proseHtml = CAN_ACCEPT_ONLINE_DONATIONS
+    ? page.body
+        .replace(/<h2[^>]*id="how-giving-works-today"[^>]*>[\s\S]*$/i, "")
+        .trim()
+    : page.body;
+
   return (
     <main id="main">
       <PageHeader title={page.title} description={page.description} />
       <div className="bg-cream px-6 py-16 sm:py-20">
-        <Prose html={page.body} className="mx-auto max-w-3xl" />
+        <Prose html={proseHtml} className="mx-auto max-w-3xl" />
       </div>
 
       <GivingForm />
