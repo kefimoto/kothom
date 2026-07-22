@@ -12,6 +12,7 @@
 //   node scripts/generate-kothom-mark.cjs --variant=dark  # Generates specific variant
 //   WORDMARK_FONT=marcellus node scripts/generate-kothom-mark.cjs # Font preview mode
 
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -73,42 +74,68 @@ async function ensureDependenciesAndFonts() {
     }
   }
 
-  // 2. Ensure Font TTF files are cached locally
+  // 2. Ensure Font TTF files are cached locally, verified against a pinned
+  // checksum. These bytes come from a network fetch and get parsed by
+  // opentype.js and baked into every generated SVG — pinning sha256 catches
+  // a compromised or tampered response instead of silently trusting and
+  // persisting whatever the network handed back.
   const FONT_DOWNLOADS = [
     {
       file: "CinzelDecorative-Bold.ttf",
       url: "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzeldecorative/CinzelDecorative-Bold.ttf",
+      sha256:
+        "e854e68a388aa50d742a4415c1ae5c17a617ef7956c95a70021d0a4a44f20518",
     },
     {
       file: "Marcellus-Regular.ttf",
       url: "https://raw.githubusercontent.com/google/fonts/main/ofl/marcellus/Marcellus-Regular.ttf",
+      sha256:
+        "1cf0cd10b17d35e852729962cc1ffaffed94514895972458345e2df34abb2f81",
     },
     {
       file: "Cinzel-Bold-static.ttf",
       url: "https://raw.githubusercontent.com/google/fonts/main/ofl/cinzel/Cinzel%5Bwght%5D.ttf",
+      sha256:
+        "f4d83d34d1f6c741193e4acf4b3dff9531e5a67b6aa65228d00a7db72a4e0f34",
     },
   ];
+
+  const sha256Hex = (buffer) =>
+    crypto.createHash("sha256").update(buffer).digest("hex");
 
   for (const item of FONT_DOWNLOADS) {
     const filePath = path.join(FONT_CACHE_DIR, item.file);
     assertNotSymlink(filePath, "cached font file");
-    if (!fs.existsSync(filePath)) {
+
+    if (fs.existsSync(filePath)) {
+      if (sha256Hex(fs.readFileSync(filePath)) === item.sha256) continue;
       console.log(
-        `  Fetching font asset ${item.file} into ${FONT_CACHE_DIR}...`,
+        `  Cached ${item.file} failed the pinned checksum, re-fetching...`,
       );
-      const res = await fetch(item.url);
-      if (!res.ok) {
-        throw new Error(
-          `Failed to download font ${item.file}: ${res.statusText}`,
-        );
-      }
-      const arrayBuf = await res.arrayBuffer();
-      // "wx": create-exclusive, fails instead of following/overwriting if
-      // something now exists at this path — closes the remaining
-      // check-then-write race between the assertNotSymlink check above and
-      // this write.
-      fs.writeFileSync(filePath, Buffer.from(arrayBuf), { flag: "wx" });
+      fs.unlinkSync(filePath);
     }
+
+    console.log(`  Fetching font asset ${item.file} into ${FONT_CACHE_DIR}...`);
+    const res = await fetch(item.url);
+    if (!res.ok) {
+      throw new Error(
+        `Failed to download font ${item.file}: ${res.statusText}`,
+      );
+    }
+    const buffer = Buffer.from(await res.arrayBuffer());
+    const actualHash = sha256Hex(buffer);
+    if (actualHash !== item.sha256) {
+      throw new Error(
+        `Downloaded font ${item.file} does not match the pinned checksum ` +
+          `(expected ${item.sha256}, got ${actualHash}). Refusing to write ` +
+          "a font that doesn't match what was verified.",
+      );
+    }
+    // "wx": create-exclusive, fails instead of following/overwriting if
+    // something now exists at this path — closes the remaining
+    // check-then-write race between the assertNotSymlink check above and
+    // this write.
+    fs.writeFileSync(filePath, buffer, { flag: "wx" });
   }
 
   return opentype;
