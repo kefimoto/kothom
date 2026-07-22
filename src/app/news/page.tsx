@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { news } from "#site/content";
 import { PageHeader } from "@/components/page-header";
+import { buildMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: "News & Updates",
   description:
     "Stories and updates from Knights of the Higher Order Ministries — what's happening in the community and with the families we serve.",
-  alternates: { canonical: "/news" },
-};
+  path: "/news",
+});
 
 export default function NewsIndexPage() {
   // Draft posts get no page (see the [slug] route's generateStaticParams),

@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { legal, pages } from "#site/content";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
+import { buildMetadata } from "@/lib/metadata";
 import { LEGAL_STATUS, MAILING_ADDRESS, MINISTRY } from "@/lib/ministry";
 
 function getPage() {
@@ -12,11 +12,11 @@ function getPage() {
 }
 const page = getPage();
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: page.title,
   description: page.description,
-  alternates: { canonical: "/transparency" },
-};
+  path: "/transparency",
+});
 
 // Each row reads directly off LEGAL_STATUS so this page can never drift from
 // what src/lib/ministry.ts actually says. A null/false value renders as

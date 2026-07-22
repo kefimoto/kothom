@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
 import { ctaClassName } from "@/components/cta";
 import { DonorPortalForm } from "@/components/donor-portal-form";
 import { PageHeader } from "@/components/page-header";
+import { buildMetadata } from "@/lib/metadata";
 import { MINISTRY } from "@/lib/ministry";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
   title: "Manage Your Membership",
   description:
     "Access your donor self-service portal to update payment methods, pause, or cancel recurring gifts without a password.",
-  alternates: { canonical: "/membership" },
-};
+  path: "/membership",
+});
 
 export default function MembershipPage() {
   return (

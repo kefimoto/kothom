@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { legal } from "#site/content";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
+import { buildMetadata } from "@/lib/metadata";
 
 // Every legal page is one markdown file in content/legal/. Adding a new one —
 // a cookie notice, a state-specific disclosure — means adding a file and
@@ -29,11 +30,11 @@ export async function generateMetadata({
   const page = findPage(slug);
   if (!page) return {};
 
-  return {
+  return buildMetadata({
     title: page.title,
     description: page.description,
-    alternates: { canonical: `/legal/${page.slug}` },
-  };
+    path: `/legal/${page.slug}`,
+  });
 }
 
 export default async function LegalPage({
