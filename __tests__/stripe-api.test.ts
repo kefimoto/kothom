@@ -28,8 +28,8 @@ vi.mock("../src/lib/ministry", async (importOriginal) => {
   };
 });
 
-import { POST as checkoutHandler } from "../src/app/api/checkout/route";
 import { POST as webhookHandler } from "../src/app/api/webhooks/stripe/route";
+import { createCheckoutSession } from "../src/lib/actions";
 import { getStripeServer } from "../src/lib/stripe";
 
 describe("Stripe Server SDK", () => {
@@ -51,34 +51,28 @@ describe("Stripe Server SDK", () => {
   });
 });
 
-describe("Checkout API Handler", () => {
+describe("Checkout Server Action", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.STRIPE_SECRET_KEY = "sk_test_12345";
   });
 
   test("validates donation amount", async () => {
-    const req = new Request("http://localhost:3000/api/checkout", {
-      method: "POST",
-      body: JSON.stringify({ amount: -10, frequency: "monthly" }),
-      headers: { "Content-Type": "application/json" },
+    const result = await createCheckoutSession({
+      amount: -10,
+      frequency: "monthly",
     });
-    const res = await checkoutHandler(req);
-    expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.error).toBe("Invalid donation amount.");
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error).toBe("Invalid donation amount.");
   });
 
   test("validates donation frequency", async () => {
-    const req = new Request("http://localhost:3000/api/checkout", {
-      method: "POST",
-      body: JSON.stringify({ amount: 50, frequency: "weekly" }),
-      headers: { "Content-Type": "application/json" },
+    const result = await createCheckoutSession({
+      amount: 50,
+      frequency: "weekly",
     });
-    const res = await checkoutHandler(req);
-    expect(res.status).toBe(400);
-    const data = await res.json();
-    expect(data.error).toBe("Invalid frequency specified.");
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error).toBe("Invalid frequency specified.");
   });
 
   test("creates recurring monthly checkout session with metadata", async () => {
@@ -87,22 +81,17 @@ describe("Checkout API Handler", () => {
       url: "https://checkout.stripe.com/pay/cs_test_monthly",
     });
 
-    const req = new Request("http://localhost:3000/api/checkout", {
-      method: "POST",
-      body: JSON.stringify({
-        amount: 25,
-        frequency: "monthly",
-        tShirtSize: "L",
-        displayName: "John Doe",
-        isAnonymous: false,
-      }),
-      headers: { "Content-Type": "application/json" },
+    const result = await createCheckoutSession({
+      amount: 25,
+      frequency: "monthly",
+      tShirtSize: "L",
+      displayName: "John Doe",
+      isAnonymous: false,
     });
 
-    const res = await checkoutHandler(req);
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data).toEqual({
+    expect(result.ok).toBe(true);
+    expect(result).toEqual({
+      ok: true,
       sessionId: "cs_test_monthly",
       url: "https://checkout.stripe.com/pay/cs_test_monthly",
     });
@@ -134,18 +123,13 @@ describe("Checkout API Handler", () => {
       url: "https://checkout.stripe.com/pay/cs_test_annual",
     });
 
-    const req = new Request("http://localhost:3000/api/checkout", {
-      method: "POST",
-      body: JSON.stringify({
-        amount: 100,
-        frequency: "annual",
-        isAnonymous: true,
-      }),
-      headers: { "Content-Type": "application/json" },
+    const result = await createCheckoutSession({
+      amount: 100,
+      frequency: "annual",
+      isAnonymous: true,
     });
 
-    const res = await checkoutHandler(req);
-    expect(res.status).toBe(200);
+    expect(result.ok).toBe(true);
 
     expect(mockCheckoutSessionsCreate).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -171,17 +155,12 @@ describe("Checkout API Handler", () => {
       url: "https://checkout.stripe.com/pay/cs_test_onetime",
     });
 
-    const req = new Request("http://localhost:3000/api/checkout", {
-      method: "POST",
-      body: JSON.stringify({
-        amount: 50,
-        frequency: "one-time",
-      }),
-      headers: { "Content-Type": "application/json" },
+    const result = await createCheckoutSession({
+      amount: 50,
+      frequency: "one-time",
     });
 
-    const res = await checkoutHandler(req);
-    expect(res.status).toBe(200);
+    expect(result.ok).toBe(true);
 
     expect(mockCheckoutSessionsCreate).toHaveBeenCalledWith(
       expect.objectContaining({

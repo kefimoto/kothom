@@ -10,12 +10,12 @@ vi.mock("resend", () => {
   };
 });
 
-import { POST as portalHandler } from "../src/app/api/portal/route";
+import { requestDonorPortalAccess } from "../src/lib/actions";
 
 const GENERIC_MESSAGE =
   "If an active donor subscription is associated with this email address, we've sent access instructions to it.";
 
-describe("Donor Portal magic-link request handler", () => {
+describe("Donor Portal magic-link request action", () => {
   const originalResendKey = process.env.RESEND_API_KEY;
   const originalTokenSecret = process.env.PORTAL_TOKEN_SECRET;
 
@@ -31,97 +31,65 @@ describe("Donor Portal magic-link request handler", () => {
     process.env.PORTAL_TOKEN_SECRET = originalTokenSecret;
   });
 
-  test("returns 400 when email is missing", async () => {
-    const req = new Request("http://localhost:3000/api/portal", {
-      method: "POST",
-      body: JSON.stringify({}),
-      headers: { "Content-Type": "application/json" },
-    });
+  test("returns an error when email is missing", async () => {
+    const result = await requestDonorPortalAccess(
+      {} as unknown as { email: string },
+    );
 
-    const res = await portalHandler(req);
-    expect(res.status).toBe(400);
-
-    const data = await res.json();
-    expect(data.error).toBe("Please enter a valid email address.");
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error).toBe(
+      "Please enter a valid email address.",
+    );
     expect(mockSend).not.toHaveBeenCalled();
   });
 
-  test("returns 400 when email format is invalid", async () => {
-    const req = new Request("http://localhost:3000/api/portal", {
-      method: "POST",
-      body: JSON.stringify({ email: "invalid-email-string" }),
-      headers: { "Content-Type": "application/json" },
+  test("returns an error when email format is invalid", async () => {
+    const result = await requestDonorPortalAccess({
+      email: "invalid-email-string",
     });
 
-    const res = await portalHandler(req);
-    expect(res.status).toBe(400);
-
-    const data = await res.json();
-    expect(data.error).toBe("Please enter a valid email address.");
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error).toBe(
+      "Please enter a valid email address.",
+    );
     expect(mockSend).not.toHaveBeenCalled();
   });
 
   test("sends a magic-link email and never returns a portal URL directly", async () => {
-    const req = new Request("http://localhost:3000/api/portal", {
-      method: "POST",
-      body: JSON.stringify({ email: "donor@example.com" }),
-      headers: {
-        "Content-Type": "application/json",
-        origin: "https://kothoministries.org",
-      },
+    const result = await requestDonorPortalAccess({
+      email: "donor@example.com",
     });
 
-    const res = await portalHandler(req);
-    expect(res.status).toBe(200);
-
-    const data = await res.json();
-    expect(data.url).toBeUndefined();
-    expect(data.message).toBe(GENERIC_MESSAGE);
+    expect(result.ok).toBe(true);
+    expect(result.ok && "url" in result && result.url).toBeFalsy();
+    expect(result.ok && result.message).toBe(GENERIC_MESSAGE);
 
     expect(mockSend).toHaveBeenCalledTimes(1);
     const sentEmail = mockSend.mock.calls[0][0];
     expect(sentEmail.to).toBe("donor@example.com");
-    expect(sentEmail.html).toContain(
-      "https://kothoministries.org/api/portal/verify?token=",
-    );
+    expect(sentEmail.html).toContain("/api/portal/verify?token=");
   });
 
   test("returns the same generic message regardless of whether the email exists", async () => {
-    // The handler never queries Stripe — existence is only checked at
+    // The action never queries Stripe — existence is only checked at
     // /api/portal/verify, after the requester proves control of the inbox.
-    const req1 = new Request("http://localhost:3000/api/portal", {
-      method: "POST",
-      body: JSON.stringify({ email: "unknown@example.com" }),
-      headers: { "Content-Type": "application/json" },
-    });
-    const req2 = new Request("http://localhost:3000/api/portal", {
-      method: "POST",
-      body: JSON.stringify({ email: "donor@example.com" }),
-      headers: { "Content-Type": "application/json" },
-    });
-
-    const [data1, data2] = await Promise.all([
-      portalHandler(req1).then((r) => r.json()),
-      portalHandler(req2).then((r) => r.json()),
+    const [result1, result2] = await Promise.all([
+      requestDonorPortalAccess({ email: "unknown@example.com" }),
+      requestDonorPortalAccess({ email: "donor@example.com" }),
     ]);
 
-    expect(data1.message).toBe(GENERIC_MESSAGE);
-    expect(data2.message).toBe(GENERIC_MESSAGE);
+    expect(result1.ok && result1.message).toBe(GENERIC_MESSAGE);
+    expect(result2.ok && result2.message).toBe(GENERIC_MESSAGE);
   });
 
-  test("returns 500 when sending the email fails", async () => {
+  test("returns an error when sending the email fails", async () => {
     mockSend.mockRejectedValueOnce(new Error("Resend network timeout"));
 
-    const req = new Request("http://localhost:3000/api/portal", {
-      method: "POST",
-      body: JSON.stringify({ email: "donor@example.com" }),
-      headers: { "Content-Type": "application/json" },
+    const result = await requestDonorPortalAccess({
+      email: "donor@example.com",
     });
 
-    const res = await portalHandler(req);
-    expect(res.status).toBe(500);
-
-    const data = await res.json();
-    expect(data.error).toBe("Resend network timeout");
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.error).toBe("Resend network timeout");
   });
 });

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { ctaClassName } from "@/components/cta";
+import { createCheckoutSession } from "@/lib/actions";
 
 type Frequency = "monthly" | "annual" | "one-time";
 type TShirtSize = "S" | "M" | "L" | "XL" | "2XL" | "3XL";
@@ -27,8 +28,8 @@ export function GivingForm() {
   const [tShirtSize, setTShirtSize] = useState<TShirtSize>("L");
   const [displayName, setDisplayName] = useState<string>("");
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, startTransition] = useTransition();
 
   const selectedAmount =
     presetAmount === "custom"
@@ -37,7 +38,7 @@ export function GivingForm() {
 
   const isEligibleForTShirt = selectedAmount >= 25;
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -46,41 +47,33 @@ export function GivingForm() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+    startTransition(async () => {
+      try {
+        const result = await createCheckoutSession({
           amount: selectedAmount,
           frequency,
           tShirtSize: isEligibleForTShirt ? tShirtSize : undefined,
           displayName: isAnonymous ? "" : displayName,
           isAnonymous,
-        }),
-      });
+        });
 
-      const data = await response.json();
+        if (!result.ok) {
+          throw new Error(result.error || "Failed to create checkout session.");
+        }
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create checkout session.");
+        if (result.url) {
+          window.location.href = result.url;
+        } else {
+          throw new Error("No checkout URL returned.");
+        }
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "An error occurred during checkout.";
+        setErrorMessage(msg);
       }
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("No checkout URL returned.");
-      }
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : "An error occurred during checkout.";
-      setErrorMessage(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
+    });
   }
 
   return (
