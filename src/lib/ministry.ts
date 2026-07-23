@@ -58,7 +58,7 @@ export const MAILING_ADDRESS = `${MINISTRY.address.street}, ${MINISTRY.address.c
  */
 const IS_STAGING =
   process.env.NEXT_PUBLIC_STAGING === "true" ||
-  process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
+  process.env.VERCEL_ENV === "preview";
 
 export const LEGAL_STATUS = {
   /** IRS Employer Identification Number. COMPLIANCE.md § "Step 2". */
