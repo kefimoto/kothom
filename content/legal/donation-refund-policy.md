@@ -1,16 +1,16 @@
 ---
 title: Donation Refund & Cancellation Policy
 description: How to request a refund for a gift to Knights of the Higher Order Ministries, and how to cancel or change a recurring gift without ever needing to log in.
-lastUpdated: 2026-07-21
+lastUpdated: 2026-07-23
 ---
 
 ## Our commitment
 
 If you give to Knights of the Higher Order Ministries and something isn't right — you gave by mistake, changed your mind, or the gift didn't go the way you expected — call or email us. We'll make it right. We'd rather refund a gift than keep one that doesn't sit well with the person who gave it.
 
-## How giving works today
+## How giving works
 
-We don't yet process gifts through this website. The "Become a Knight" and "Legacy Donations" buttons open an email to us; from there, a gift is made by check, in person, or by direct arrangement — never by entering card details into this site. Everything below describes how refunds and cancellations work for gifts made this way.
+You can give online through this website using a debit or credit card, processed securely by Stripe. You can also give by check, in person, or by direct arrangement. Everything below describes how refunds and cancellations work for all gifts, online or otherwise.
 
 ## Requesting a refund
 
@@ -30,10 +30,10 @@ A "Become a Knight" gift of $25 or more includes a Knights of the Higher Order T
 
 ## Recurring gifts
 
-We don't currently offer recurring (automatic, repeating) giving through this website. If and when we do, these terms will apply:
+You can set up monthly or annual recurring gifts through this website. These terms apply:
 
 - You can cancel or change a recurring gift at any time, for any reason, without ever needing to log in anywhere.
-- Cancel by calling 689-327-6388 or emailing knightsofthehigherorder@gmail.com. We'll confirm your cancellation and the date it takes effect.
+- Cancel by visiting our [membership page](/membership) to manage your subscription, or by calling 689-327-6388 or emailing knightsofthehigherorder@gmail.com. We'll confirm your cancellation and the date it takes effect.
 - Cancelling stops future gifts. It doesn't undo a gift already processed — ask us about that specific gift if you'd like a refund, using the section above.
 - There's no cancellation fee and no minimum commitment.
 

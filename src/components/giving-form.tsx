@@ -25,6 +25,7 @@ export function GivingForm() {
   const [frequency, setFrequency] = useState<Frequency>("monthly");
   const [presetAmount, setPresetAmount] = useState<number | "custom">(25);
   const [customAmount, setCustomAmount] = useState<string>("25");
+  const [email, setEmail] = useState<string>("");
   const [tShirtSize, setTShirtSize] = useState<TShirtSize>("L");
   const [displayName, setDisplayName] = useState<string>("");
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
@@ -47,11 +48,17 @@ export function GivingForm() {
       return;
     }
 
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+
     startTransition(async () => {
       try {
         const result = await createCheckoutSession({
           amount: selectedAmount,
           frequency,
+          email: email.trim().toLowerCase(),
           tShirtSize: isEligibleForTShirt ? tShirtSize : undefined,
           displayName: isAnonymous ? "" : displayName,
           isAnonymous,
@@ -233,8 +240,29 @@ export function GivingForm() {
             </div>
           )}
 
-          {/* Display Name & Anonymous Preferences */}
+          {/* Email & Display Name & Anonymous Preferences */}
           <div className="flex flex-col gap-4 border-t border-charcoal/10 pt-6">
+            <div>
+              <label
+                htmlFor="email"
+                className="block font-headline text-xs font-semibold uppercase tracking-wider text-charcoal mb-2"
+              >
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                className="w-full border border-charcoal/30 bg-cream p-3 font-body text-charcoal text-base focus:border-terracotta focus:outline-none rounded-none"
+              />
+              <p className="font-body text-xs text-charcoal/60 mt-1">
+                Used to aggregate your donations and manage your subscription.
+              </p>
+            </div>
+
             <div>
               <label
                 htmlFor="displayName"

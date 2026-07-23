@@ -1,7 +1,7 @@
 ---
 title: Privacy Policy
 description: How Knights of the Higher Order Ministries handles information on this website, including our commitment to using no cookies, analytics, or tracking.
-lastUpdated: 2026-07-21
+lastUpdated: 2026-07-23
 ---
 
 ## Who we are
@@ -28,9 +28,9 @@ Whatever you include in that message — your name, your contact details, and an
 
 We use what you send us for the reason you sent it: to respond to a request for help, to receive a gift, to answer a question, or to arrange pastoral care. We don't use it to build a profile of you, and we don't sell it or share it with advertisers. If you're giving a gift, see our Donor Privacy Policy for our specific, unconditional commitments about donor names and contact information.
 
-## Giving today
+## Giving online
 
-The "Become a Knight" and "Legacy Donations" links on this site currently open an email to us rather than a payment form — we don't yet process gifts online. Nothing you type into your own email program is sent to or stored by this website; it travels through your email provider and ours, the same as any other email.
+When you give through this website, your payment is processed securely by Stripe, a trusted payment processor. Your email address is used to track and aggregate your gifts, manage recurring donations, and send you confirmations and receipts. Stripe handles your card information for the transaction only — we never see your card number.
 
 ## How we protect what you send us
 

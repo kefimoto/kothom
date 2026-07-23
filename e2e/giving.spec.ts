@@ -49,7 +49,7 @@ test.describe("Giving Page & Supporter Roll of Honor UX", () => {
       page.getByRole("heading", { name: "Supporter Roll of Honor" }),
     ).toBeVisible();
     await expect(
-      rollOfHonorSection.getByText(/no public supporters listed/i),
+      rollOfHonorSection.getByText(/no supporters listed/i),
     ).toBeVisible();
 
     expect(consoleErrors).toEqual([]);

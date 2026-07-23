@@ -33,6 +33,7 @@ async function resolveOrigin(): Promise<string> {
 export type CheckoutInput = {
   amount: number;
   frequency: string;
+  email: string;
   tShirtSize?: string;
   displayName?: string;
   isAnonymous?: boolean;
@@ -55,7 +56,7 @@ export async function createCheckoutSession(
   }
 
   try {
-    const { amount, frequency, tShirtSize, displayName, isAnonymous } =
+    const { amount, frequency, email, tShirtSize, displayName, isAnonymous } =
       input || ({} as CheckoutInput);
 
     if (typeof amount !== "number" || amount <= 0) {
@@ -66,11 +67,20 @@ export async function createCheckoutSession(
       return { ok: false, error: "Invalid frequency specified." };
     }
 
+    if (
+      typeof email !== "string" ||
+      !email.trim() ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    ) {
+      return { ok: false, error: "Invalid email address." };
+    }
+
     // Amount received in dollars (e.g. 25 -> 2500 cents)
     const amountInCents = Math.round(amount * 100);
 
     const stripe = getStripeServer();
     const origin = await resolveOrigin();
+    const cleanEmail = email.trim().toLowerCase();
 
     const isSubscription = frequency === "monthly" || frequency === "annual";
     const mode: Stripe.Checkout.SessionCreateParams.Mode = isSubscription
@@ -99,6 +109,7 @@ export async function createCheckoutSession(
     }
 
     const session = await stripe.checkout.sessions.create({
+      customer_email: cleanEmail,
       mode,
       payment_method_types: ["card"],
       line_items: [lineItem],
@@ -107,8 +118,8 @@ export async function createCheckoutSession(
         displayName: displayName ? String(displayName) : "",
         isAnonymous: String(Boolean(isAnonymous)),
       },
-      success_url: `${origin}/donate/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/donate`,
+      success_url: `${origin}/give/success`,
+      cancel_url: `${origin}/give/cancel`,
     });
 
     return { ok: true, sessionId: session.id, url: session.url };
