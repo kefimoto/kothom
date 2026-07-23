@@ -59,4 +59,4 @@ We may update these terms as the ministry grows and its legal status changes. We
 
 ## Questions about this policy
 
-Call us at 689-123-4567, email Knightsofthehigherorder@gmail.com, or write to us at 380 Lake Ontario Court, Altamonte Springs, FL 32701. Office hours are Monday – Sunday, 10am – 5pm.
+Call us at 689-327-6388, email Knightsofthehigherorder@gmail.com, or write to us at 380 Lake Ontario Court, Altamonte Springs, FL 32701. Office hours are Monday – Sunday, 10am – 5pm.

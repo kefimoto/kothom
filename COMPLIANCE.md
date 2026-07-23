@@ -124,7 +124,7 @@ Do not wire up Stripe until all of the following are true:
 - [ ] A working way for a recurring donor to **cancel without logging in** (today: `/membership` explains calling or emailing). Do not launch recurring giving without a cancellation path that a person can actually complete.
 - [ ] A receipting process that states either "no goods or services were provided" or the deductible portion, per the T-shirt decision
 - [x] **Security headers and a CSP** — enabled 2026-07-21, ahead of Stripe going live (see CLAUDE.md). Revisit the CSP's `script-src` if a real login/payment form needs stricter rules than the current no-nonce policy allows.
-- [ ] The **real phone number** replacing the `689-123-4567` placeholder in `src/lib/ministry.ts`
+- [x] The **real phone number** (`689-327-6388`) replacing the placeholder in `src/lib/ministry.ts`
 
 ---
 

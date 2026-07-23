@@ -31,7 +31,7 @@ Consequently:
 
 - **No page claims donations are tax deductible**, and no EIN or Florida registration number appears anywhere. `LEGAL_STATUS` in `src/lib/ministry.ts` gates every such disclosure and is empty until each filing is genuinely done. Don't fill those in speculatively.
 - **No payment processing.** "Become a Knight" and "Legacy Donations" open a `mailto:`. `src/components/donate-button.tsx` is the single place real checkout should attach.
-- **Phone number is a placeholder** (`689-123-4567`) — the source material had two conflicting real numbers and neither was confirmed correct as of 2026-07-20. It now lives in one place (`src/lib/ministry.ts`), and a unit test fails the build if any content file names a number that disagrees with it.
+- **Phone number is `689-327-6388`** — lives in one place (`src/lib/ministry.ts`), and a unit test fails the build if any content file names a number that disagrees with it.
 - **One open business-model question**, flagged in `COMPLIANCE.md`: the $25 "Become a Knight" gift includes a T-shirt, which makes it a quid pro quo contribution for IRS purposes *and* a membership for Stripe's purposes — the latter is excluded from Stripe's nonprofit rate. Worth resolving before Stripe onboarding.
 
 ## Learn More

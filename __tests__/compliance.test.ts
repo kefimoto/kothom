@@ -86,11 +86,13 @@ describe("legal status gating", () => {
     );
   });
 
-  test("the placeholder phone number is still flagged as one", () => {
+  test("the placeholder phone number flag matches its placeholder state", () => {
     // Guards against the number being replaced without clearing the flag, or
     // the flag being cleared without replacing the number.
-    if (MINISTRY.phone.display === "689-123-4567") {
+    if ((MINISTRY.phone.display as string) === "689-123-4567") {
       expect(MINISTRY.phone.isPlaceholder).toBe(true);
+    } else {
+      expect(MINISTRY.phone.isPlaceholder).toBe(false);
     }
   });
 });

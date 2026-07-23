@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import Home from "../src/app/page";
+import { MINISTRY } from "../src/lib/ministry";
 
 test("renders the hero heading and primary CTAs", () => {
   render(<Home />);
@@ -10,7 +11,9 @@ test("renders the hero heading and primary CTAs", () => {
   ).toBeDefined();
 
   expect(
-    screen.getAllByRole("link", { name: /call 689-123-4567/i }),
+    screen.getAllByRole("link", {
+      name: new RegExp(`call ${MINISTRY.phone.display}`, "i"),
+    }),
   ).toHaveLength(2);
   expect(screen.getByRole("link", { name: "See How to Give" })).toHaveProperty(
     "href",
