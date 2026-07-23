@@ -1,15 +1,15 @@
 ---
 title: Give
-description: Two ways to give to Knights of the Higher Order Ministries — an annual gift as a Knight, or a legacy gift through your will or estate.
+description: Two ways to give to Knights of the Higher Order Ministries — recurring or one-time gifts as a Knight, or a legacy gift through your will or estate.
 ---
 
 ## Your gift funds real help
 
 There are two ways to give. Both make you a Knight. Both go directly to single-parent families in Central Florida — a utility bill paid, groceries bought, a family kept housed.
 
-An annual gift of $25 or more — **Become a Knight** — supports the ministry's work year-round and includes a Knights of the Higher Order T-shirt. It's the most direct way to give, and it makes you a member of this ministry.
+A gift of $25 or more — **Become a Knight** — supports the ministry's work. You can give monthly, annually, or as a one-time gift. Recurring gifts include a Knights of the Higher Order T-shirt. It's the most direct way to give, and it makes you a member of this ministry.
 
-A **Legacy Donation** is planned giving: naming the ministry in your will, your living trust, or as a beneficiary on a retirement account or life insurance policy. It costs you nothing today and makes a lasting impact on single-parent households in Central Florida for years to come. Legacy donors are Knights too, the same as anyone giving an annual gift — this isn't a lesser or separate track. If you're considering a legacy gift, talk to the attorney or advisor who helps with your estate plan, and reach out to us — we're glad to answer questions about how a gift would be used.
+A **Legacy Donation** is planned giving: naming the ministry in your will, your living trust, or as a beneficiary on a retirement account or life insurance policy. It costs you nothing today and makes a lasting impact on single-parent households in Central Florida for years to come. Legacy donors are Knights too, the same as anyone giving a gift today — this isn't a lesser or separate track. If you're considering a legacy gift, talk to the attorney or advisor who helps with your estate plan, and reach out to us — we're glad to answer questions about how a gift would be used.
 
 ## How giving works today
 
