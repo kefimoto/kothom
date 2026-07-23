@@ -1,7 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 export interface Supporter {
   id: string;
   name: string;
@@ -10,49 +6,11 @@ export interface Supporter {
 }
 
 interface RollOfHonorProps {
-  supporters?: Supporter[];
-  year?: number;
+  supporters: Supporter[];
+  year: number;
 }
 
-export function RollOfHonor({
-  supporters: initialSupporters,
-  year: initialYear,
-}: RollOfHonorProps) {
-  const [supporters, setSupporters] = useState<Supporter[]>(
-    initialSupporters || [],
-  );
-  const [year, setYear] = useState<number>(
-    initialYear || new Date().getFullYear(),
-  );
-  const [loading, setLoading] = useState<boolean>(!initialSupporters);
-
-  useEffect(() => {
-    if (initialSupporters && initialSupporters.length > 0) return;
-
-    let isMounted = true;
-    async function fetchSupporters() {
-      try {
-        const res = await fetch("/api/roll-of-honor");
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted) {
-            setSupporters(data.supporters || []);
-            if (data.year) setYear(data.year);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch Roll of Honor:", error);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-
-    fetchSupporters();
-    return () => {
-      isMounted = false;
-    };
-  }, [initialSupporters]);
-
+export function RollOfHonor({ supporters, year }: RollOfHonorProps) {
   return (
     <section
       id="roll-of-honor"
@@ -73,11 +31,7 @@ export function RollOfHonor({
           </p>
         </div>
 
-        {loading ? (
-          <div className="border border-cream/20 bg-charcoal/40 p-8 text-center font-body text-cream/70 rounded-none">
-            Loading Roll of Honor...
-          </div>
-        ) : supporters.length === 0 ? (
+        {supporters.length === 0 ? (
           <div className="border border-cream/20 bg-charcoal/40 p-8 text-center font-body text-cream/70 rounded-none">
             No public supporters listed for {year} yet.
           </div>
