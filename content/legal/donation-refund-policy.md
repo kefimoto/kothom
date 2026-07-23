@@ -17,7 +17,7 @@ We don't yet process gifts through this website. The "Become a Knight" and "Lega
 To ask for a refund of a gift, contact us:
 
 - Call 689-327-6388
-- Email Knightsofthehigherorder@gmail.com
+- Email knightsofthehigherorder@gmail.com
 
 Tell us your name, roughly when you gave, and why you're asking. We'll refund a gift made by check or by arrangement within 30 days of your request, using the same method you gave or another method we agree on together. You don't need an account or a login to ask — this site doesn't have logins at all.
 
@@ -33,7 +33,7 @@ A "Become a Knight" gift of $25 or more includes a Knights of the Higher Order T
 We don't currently offer recurring (automatic, repeating) giving through this website. If and when we do, these terms will apply:
 
 - You can cancel or change a recurring gift at any time, for any reason, without ever needing to log in anywhere.
-- Cancel by calling 689-327-6388 or emailing Knightsofthehigherorder@gmail.com. We'll confirm your cancellation and the date it takes effect.
+- Cancel by calling 689-327-6388 or emailing knightsofthehigherorder@gmail.com. We'll confirm your cancellation and the date it takes effect.
 - Cancelling stops future gifts. It doesn't undo a gift already processed — ask us about that specific gift if you'd like a refund, using the section above.
 - There's no cancellation fee and no minimum commitment.
 
@@ -43,4 +43,4 @@ A Legacy Donation, made through a will, living trust, or beneficiary designation
 
 ## Questions about this policy
 
-Call us at 689-327-6388, email Knightsofthehigherorder@gmail.com, or write to us at 380 Lake Ontario Court, Altamonte Springs, FL 32701. Office hours are Monday – Sunday, 10am – 5pm.
+Call us at 689-327-6388, email knightsofthehigherorder@gmail.com, or write to us at 380 Lake Ontario Court, Altamonte Springs, FL 32701. Office hours are Monday – Sunday, 10am – 5pm.

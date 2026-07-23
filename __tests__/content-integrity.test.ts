@@ -57,6 +57,25 @@ describe("content integrity", () => {
     ).toEqual([]);
   });
 
+  test("no content file contains an email address other than the current one", () => {
+    const emailPattern = /\b[A-Za-z0-9._%+-]+@gmail\.com\b/g;
+    const offenders: string[] = [];
+
+    for (const file of files) {
+      for (const match of file.text.matchAll(emailPattern)) {
+        if (match[0] !== MINISTRY.email) {
+          offenders.push(`${file.path}: found ${match[0]}`);
+        }
+      }
+    }
+
+    expect(
+      offenders,
+      `Content files name an email that disagrees with MINISTRY.email ` +
+        `(${MINISTRY.email}) in src/lib/ministry.ts. Update the markdown too.`,
+    ).toEqual([]);
+  });
+
   test("no content file references the vercel.app deployment alias", () => {
     const offenders = files
       .filter((file) => file.text.includes("vercel.app"))

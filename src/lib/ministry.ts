@@ -22,7 +22,7 @@ export const MINISTRY = {
     isPlaceholder: false,
   },
 
-  email: "Knightsofthehigherorder@gmail.com",
+  email: "knightsofthehigherorder@gmail.com",
 
   address: {
     street: "380 Lake Ontario Court",
