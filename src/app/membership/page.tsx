@@ -2,7 +2,7 @@ import { ctaClassName } from "@/components/cta";
 import { DonorPortalForm } from "@/components/donor-portal-form";
 import { PageHeader } from "@/components/page-header";
 import { buildMetadata } from "@/lib/metadata";
-import { MINISTRY } from "@/lib/ministry";
+import { CAN_ACCEPT_ONLINE_DONATIONS, MINISTRY } from "@/lib/ministry";
 
 export const metadata = buildMetadata({
   title: "Manage Your Membership",
@@ -20,18 +20,20 @@ export default function MembershipPage() {
       />
       <div className="bg-cream px-6 py-16 sm:py-20">
         <div className="mx-auto flex max-w-3xl flex-col gap-10">
-          <div className="flex flex-col gap-4 border border-charcoal/10 bg-cream p-6 sm:p-8">
-            <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
-              Passwordless Donor Portal Access
-            </h2>
-            <p className="max-w-[70ch] text-pretty font-body text-lg leading-relaxed text-charcoal">
-              Enter the email address you used when setting up your recurring
-              gift. We will generate a secure link to access your Stripe
-              customer portal where you can manage or cancel your subscription
-              instantly — no password required.
-            </p>
-            <DonorPortalForm />
-          </div>
+          {CAN_ACCEPT_ONLINE_DONATIONS && (
+            <div className="flex flex-col gap-4 border border-charcoal/10 bg-cream p-6 sm:p-8">
+              <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
+                Passwordless Donor Portal Access
+              </h2>
+              <p className="max-w-[70ch] text-pretty font-body text-lg leading-relaxed text-charcoal">
+                Enter the email address you used when setting up your recurring
+                gift. We will generate a secure link to access your Stripe
+                customer portal where you can manage or cancel your subscription
+                instantly — no password required.
+              </p>
+              <DonorPortalForm />
+            </div>
+          )}
 
           <div className="flex flex-col gap-4">
             <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">

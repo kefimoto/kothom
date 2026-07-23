@@ -84,7 +84,6 @@ export async function POST(request: Request) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log("Checkout session completed:", session.id);
 
       let customerId = session.customer;
       if (!customerId && session.customer_email) {
@@ -105,9 +104,8 @@ export async function POST(request: Request) {
       if (customerId && typeof customerId === "string") {
         try {
           const stripe = getStripeServer();
-          const displayName = (session.metadata?.displayName as string) || "";
-          const isAnonymous =
-            (session.metadata?.isAnonymous as string) || "false";
+          const displayName = session.metadata?.displayName || "";
+          const isAnonymous = session.metadata?.isAnonymous || "false";
 
           await stripe.customers.update(customerId, {
             metadata: {
@@ -154,7 +152,6 @@ export async function POST(request: Request) {
     }
     case "invoice.payment_succeeded": {
       const invoice = event.data.object as Stripe.Invoice;
-      console.log("Invoice payment succeeded:", invoice.id);
       if (invoice.customer) {
         try {
           revalidatePath("/give");
@@ -165,7 +162,7 @@ export async function POST(request: Request) {
       break;
     }
     default:
-      console.log(`Unhandled event type: ${event.type}`);
+      break;
   }
 
   return NextResponse.json({ received: true });

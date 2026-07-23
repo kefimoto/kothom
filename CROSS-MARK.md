@@ -23,7 +23,9 @@ Cinzel text wordmark instead. If you're tempted to add the mark back to the
 header, the constraint to solve isn't the CSS, it's that this mark has too much
 detail to survive below roughly 100px.
 
-`scripts/generate-kothom-mark.cjs` regenerates the full suite of static vector brand marks from a set of geometry constants. This doc explains the setup, the geometry, and how to change things (including swapping fonts or generating new mark variants) without having to re-derive it all from"## Brand Mark Suite Variants Generated
+`scripts/generate-kothom-mark.cjs` regenerates the full suite of static vector brand marks from a set of geometry constants. This doc explains the setup, the geometry, and how to change things (including swapping fonts or generating new mark variants) without having to re-derive it all from scratch.
+
+## Brand Mark Suite Variants Generated
 
 Running `node scripts/generate-kothom-mark.cjs` outputs the following production vectors into `public/`:
 
@@ -90,7 +92,7 @@ Single-color vector marks rendered in 100% solid White or 100% solid Black. Esse
 ![Favicon](./public/favicon.svg)
 ![Social Avatar](./public/kothom-social-avatar.svg)
 
-Square-ratio vector graphics centered on an Ink (`#0a0a0a`) background card. `favicon.svg` is optimized for browser tabs, and `kothom-social-avatar.svg` is proportioned for social media profile pictures."e pictures.
+Square-ratio vector graphics centered on an Ink (`#0a0a0a`) background card. `favicon.svg` is optimized for browser tabs, and `kothom-social-avatar.svg` is proportioned for social media profile pictures.
 
 ## One-time setup
 

@@ -35,10 +35,11 @@ For anything touching layout, color, type, or the cross mark, read `PRODUCT.md` 
 ## How a change reaches production
 
 1. Open a PR against `main`.
-2. Two required status checks run automatically and **must both pass** — this applies to everyone, including repo admins; there is no bypass:
+2. Three required status checks run automatically and **must all pass** — this applies to everyone, including repo admins; there is no bypass:
    - **`quality-gate`** (`.github/workflows/ci.yml`) — content validation, lint, typecheck, unit tests, `next build`, and Playwright e2e tests on a plain Ubuntu runner via GitHub Actions. A PR that touches **only** `content/**` and markdown skips everything except content validation, since there's no code to check; the Vercel build below still exercises the full build either way.
+   - **`CodeQL security gate`** (repository ruleset) — blocks merges if high-or-higher severity security findings are detected.
    - **`Vercel`** — a separate build Vercel's own GitHub App runs in its own environment (different Node/container/env vars than `quality-gate`), which also produces the PR's preview deployment. This is the real signal that what merges will actually deploy.
-3. Once both checks are green and the PR is merged to `main`, Vercel auto-deploys to production at [kothoministries.org](https://kothoministries.org).
+3. Once all checks are green and the PR is merged to `main`, Vercel auto-deploys to production at [kothoministries.org](https://kothoministries.org).
 
 Force-pushes and branch deletion on `main` are blocked at the GitHub level.
 
@@ -56,11 +57,12 @@ Practically: push your PR, then wait for a maintainer to approve the pending che
 A few things look like bugs but are intentional and tracked — check `CLAUDE.md` under "Known placeholders" and "Tooling deliberately not adopted" before opening a PR about them:
 
 - The phone number lives in `src/lib/ministry.ts`; don't hardcode contact details anywhere else.
-- "Become a Knight" / "Legacy Donations" intentionally link to `mailto:` — there's no live Stripe checkout yet. `src/components/donate-button.tsx` is the single place real checkout should ever attach.
+- Stripe checkout is implemented but gated off in production (`CAN_ACCEPT_ONLINE_DONATIONS`). In production, "Become a Knight" / "Legacy Donations" remain `mailto:` links until the legal filings are complete.
 - **No page claims donations are tax deductible, and no EIN or Florida registration number appears anywhere.** That's not an omission — none of those filings are complete. `LEGAL_STATUS` in `src/lib/ministry.ts` gates it, and `COMPLIANCE.md` explains why. Don't fill those values in speculatively.
 - **`--strict` on every `velite` invocation is load-bearing.** Without it, a markdown file with a bad frontmatter field is silently dropped from the output while the build reports success. See `CLAUDE.md`.
 - The cross mark is absent from the site header on purpose — see `CROSS-MARK.md`.
-- No commitlint, no Dependabot — each is still a deliberate call; see `CLAUDE.md` for the reasoning and what would change that calculus.
+- No commitlint — still a deliberate call; see `CLAUDE.md` for the reasoning and what would change that.
+- Dependabot is enabled (`.github/dependabot.yml`); see `docs/ai/tooling.md` for adoption details.
 
 ## Reliability principle
 
