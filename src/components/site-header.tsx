@@ -28,7 +28,7 @@ export function SiteHeader() {
         >
           <span
             aria-hidden="true"
-            className="block font-headline text-base uppercase leading-tight tracking-[0.08em] text-cream sm:text-lg"
+            className="block text-center font-headline text-base uppercase leading-tight tracking-[0.08em] text-cream sm:text-left sm:text-lg"
           >
             Knights of the
             <br />
