@@ -7,6 +7,7 @@ import { Prose } from "@/components/prose";
 import { RollOfHonor } from "@/components/roll-of-honor";
 import { buildMetadata } from "@/lib/metadata";
 import { CAN_ACCEPT_ONLINE_DONATIONS } from "@/lib/ministry";
+import { getRollOfHonor } from "@/lib/roll-of-honor";
 
 function getPage() {
   const found = pages.find((p) => p.slug === "give");
@@ -27,6 +28,7 @@ export default function GivePage() {
         .replace(/<h2[^>]*id="how-giving-works-today"[^>]*>[\s\S]*$/i, "")
         .trim()
     : page.body;
+  const { year, supporters } = getRollOfHonor();
 
   return (
     <main id="main">
@@ -82,7 +84,7 @@ export default function GivePage() {
         </section>
       )}
 
-      <RollOfHonor />
+      <RollOfHonor supporters={supporters} year={year} />
     </main>
   );
 }
