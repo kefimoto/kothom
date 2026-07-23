@@ -4,10 +4,8 @@ import { DonorPortalForm } from "@/components/donor-portal-form";
 import { GivingForm } from "@/components/giving-form";
 import { PageHeader } from "@/components/page-header";
 import { Prose } from "@/components/prose";
-import { RollOfHonor } from "@/components/roll-of-honor";
 import { buildMetadata } from "@/lib/metadata";
 import { CAN_ACCEPT_ONLINE_DONATIONS } from "@/lib/ministry";
-import { getRollOfHonor } from "@/lib/roll-of-honor";
 
 function getPage() {
   const found = pages.find((p) => p.slug === "give");
@@ -22,13 +20,12 @@ export const metadata = buildMetadata({
   path: "/give",
 });
 
-export default async function GivePage() {
+export default function GivePage() {
   const proseHtml = CAN_ACCEPT_ONLINE_DONATIONS
     ? page.body
         .replace(/<h2[^>]*id="how-giving-works-today"[^>]*>[\s\S]*$/i, "")
         .trim()
     : page.body;
-  const { year, supporters, anonymousDonorCount } = await getRollOfHonor();
 
   return (
     <main id="main">
@@ -84,12 +81,6 @@ export default async function GivePage() {
           </div>
         </section>
       )}
-
-      <RollOfHonor
-        supporters={supporters}
-        year={year}
-        anonymousDonorCount={anonymousDonorCount}
-      />
     </main>
   );
 }
