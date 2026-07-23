@@ -1,45 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { ctaClassName } from "@/components/cta";
+import { requestDonorPortalAccess } from "@/lib/actions";
 
 export function DonorPortalForm() {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, startTransition] = useTransition();
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setLoading(true);
     setMessage(null);
     setError(null);
 
-    try {
-      const res = await fetch("/api/portal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+    startTransition(async () => {
+      try {
+        const result = await requestDonorPortalAccess({ email });
 
-      const data = await res.json();
+        if (!result.ok) {
+          throw new Error(result.error || "Failed to process portal request.");
+        }
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to process portal request.");
+        if (result.url) {
+          window.location.href = result.url;
+        } else if (result.message) {
+          setMessage(result.message);
+        }
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error ? err.message : "An unexpected error occurred.",
+        );
       }
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else if (data.message) {
-        setMessage(data.message);
-      }
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred.",
-      );
-    } finally {
-      setLoading(false);
-    }
+    });
   }
 
   return (
