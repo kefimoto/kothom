@@ -55,7 +55,7 @@ Practically: push your PR, then wait for a maintainer to approve the pending che
 
 A few things look like bugs but are intentional and tracked — check `CLAUDE.md` under "Known placeholders" and "Tooling deliberately not adopted" before opening a PR about them:
 
-- The phone number (`689-123-4567`) is a known placeholder, not a typo. It lives in `src/lib/ministry.ts`; don't hardcode contact details anywhere else.
+- The phone number lives in `src/lib/ministry.ts`; don't hardcode contact details anywhere else.
 - "Become a Knight" / "Legacy Donations" intentionally link to `mailto:` — there's no live Stripe checkout yet. `src/components/donate-button.tsx` is the single place real checkout should ever attach.
 - **No page claims donations are tax deductible, and no EIN or Florida registration number appears anywhere.** That's not an omission — none of those filings are complete. `LEGAL_STATUS` in `src/lib/ministry.ts` gates it, and `COMPLIANCE.md` explains why. Don't fill those values in speculatively.
 - **`--strict` on every `velite` invocation is load-bearing.** Without it, a markdown file with a bad frontmatter field is silently dropped from the output while the build reports success. See `CLAUDE.md`.

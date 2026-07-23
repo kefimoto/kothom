@@ -16,13 +16,10 @@ export const MINISTRY = {
     title: "President and Founder",
   },
 
-  // PLACEHOLDER. The source Canva deck carried two conflicting real numbers and
-  // the client confirmed on 2026-07-20 that neither is currently correct.
-  // Replacing it is now a one-line change here rather than a sitewide grep.
   phone: {
-    display: "689-123-4567",
-    tel: "tel:+16891234567",
-    isPlaceholder: true,
+    display: "689-327-6388",
+    tel: "tel:+16893276388",
+    isPlaceholder: false,
   },
 
   email: "Knightsofthehigherorder@gmail.com",

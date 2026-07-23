@@ -6,6 +6,6 @@
 
 ## Known placeholders / not-yet-implemented
 
-- **Phone number is a placeholder**: `689-123-4567`. The source Canva deck had two conflicting real numbers and the client confirmed neither is currently correct (2026-07-20). It now lives in **one place** — `MINISTRY.phone` in `src/lib/ministry.ts` — so replacing it is a one-line change. Markdown in `content/` spells it out in prose and can't import the constant, so `__tests__/content-integrity.test.ts` fails the build if any content file names a number that disagrees with it.
+- **Phone number**: `689-327-6388`. It lives in **one place** — `MINISTRY.phone` in `src/lib/ministry.ts`. Markdown in `content/` spells it out in prose and can't import the constant, so `__tests__/content-integrity.test.ts` fails the build if any content file names a number that disagrees with it.
 - **No payment processing yet.** "Become a Knight" and "Legacy Donations" go through `<DonateButton>` (`src/components/donate-button.tsx`), which currently opens a `mailto:`. That component is the single place real checkout should ever attach. Donations are not collectible through the site yet — don't describe this as a working donation flow.
 - **No auth.** `/membership` is a real, useful page explaining how to change or stop a gift by phone/email; it's where an account portal would attach later.
