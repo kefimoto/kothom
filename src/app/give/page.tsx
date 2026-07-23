@@ -45,8 +45,8 @@ export default async function GivePage() {
             Become a Knight
           </h2>
           <p className="text-pretty font-body text-lg leading-relaxed text-cream/90">
-            An annual gift of $25 or more, including a Knights of the Higher
-            Order T-shirt. Reach out and we'll arrange it directly.
+            Your gift of $25 or more — monthly, annual, or one-time — makes you
+            a Knight. Reach out and we'll arrange it directly.
           </p>
           <DonateButton intent="knight">Join the Ranks</DonateButton>
         </div>

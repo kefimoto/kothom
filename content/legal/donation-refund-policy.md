@@ -21,13 +21,6 @@ To ask for a refund of a gift, contact us:
 
 Tell us your name, roughly when you gave, and why you're asking. We'll refund a gift made by check or by arrangement within 30 days of your request, using the same method you gave or another method we agree on together. You don't need an account or a login to ask — this site doesn't have logins at all.
 
-## Become a Knight and the T-shirt
-
-A "Become a Knight" gift of $25 or more includes a Knights of the Higher Order T-shirt. That changes what a refund covers:
-
-- If your shirt hasn't shipped yet, we'll refund your full gift, no questions asked.
-- If your shirt has already been sent, we'll still refund your gift in full as a one-time courtesy. We may ask you to keep the shirt rather than mail it back, since the cost of return shipping usually isn't worth it. We'd rather absorb the cost of a shirt than argue with someone who gave to us in good faith.
-
 ## Recurring gifts
 
 You can set up monthly or annual recurring gifts through this website. These terms apply:

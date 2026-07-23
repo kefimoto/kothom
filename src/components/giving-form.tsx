@@ -6,7 +6,6 @@ import { createCheckoutSession } from "@/lib/actions";
 import { EMAIL_REGEX } from "@/lib/validation";
 
 type Frequency = "monthly" | "annual" | "one-time";
-type TShirtSize = "S" | "M" | "L" | "XL" | "2XL" | "3XL";
 
 const FREQUENCIES: { id: Frequency; label: string }[] = [
   { id: "monthly", label: "Monthly" },
@@ -20,14 +19,11 @@ const PRESETS = [
   { amount: 100, label: "$100 Crisis Aid", tier: "Crisis Aid Partner" },
 ];
 
-const TSHIRT_SIZES: TShirtSize[] = ["S", "M", "L", "XL", "2XL", "3XL"];
-
 export function GivingForm() {
   const [frequency, setFrequency] = useState<Frequency>("monthly");
   const [presetAmount, setPresetAmount] = useState<number | "custom">(25);
   const [customAmount, setCustomAmount] = useState<string>("25");
   const [email, setEmail] = useState<string>("");
-  const [tShirtSize, setTShirtSize] = useState<TShirtSize>("L");
   const [displayName, setDisplayName] = useState<string>("");
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -37,8 +33,6 @@ export function GivingForm() {
     presetAmount === "custom"
       ? Number.parseFloat(customAmount) || 0
       : presetAmount;
-
-  const isEligibleForTShirt = selectedAmount >= 25;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,7 +54,6 @@ export function GivingForm() {
           amount: selectedAmount,
           frequency,
           email: email.trim().toLowerCase(),
-          tShirtSize: isEligibleForTShirt ? tShirtSize : undefined,
           displayName: isAnonymous ? "" : displayName,
           isAnonymous,
         });
@@ -188,58 +181,6 @@ export function GivingForm() {
               </div>
             )}
           </div>
-
-          {/* Knights T-Shirt Visual Mockup Card */}
-          {isEligibleForTShirt && (
-            <div
-              id="tshirt-card"
-              className="border border-tan-gold/40 bg-ink p-6 text-cream rounded-none"
-            >
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-cream/20">
-                <div>
-                  <span className="font-semibold text-xs text-tan-gold uppercase tracking-wider block mb-1">
-                    Complimentary Knights Gift
-                  </span>
-                  <h3 className="font-headline text-xl text-cream">
-                    Knights of the Higher Order T-Shirt
-                  </h3>
-                </div>
-                <div className="bg-charcoal/80 border border-tan-gold/30 px-3 py-1 font-headline text-xs text-tan-gold uppercase rounded-none">
-                  Included with $25+ Gift
-                </div>
-              </div>
-
-              <p className="font-body text-cream/80 text-sm mb-6 leading-relaxed">
-                As a thank you for your Knights-level support, choose your size
-                for the official Knights of the Higher Order Ministry T-shirt.
-              </p>
-
-              <div>
-                <label
-                  htmlFor="tshirt-size-selector"
-                  className="block font-headline text-xs font-semibold uppercase tracking-wider text-tan-gold mb-2"
-                >
-                  Select T-Shirt Size
-                </label>
-                <div id="tshirt-size-selector" className="flex flex-wrap gap-2">
-                  {TSHIRT_SIZES.map((size) => (
-                    <button
-                      type="button"
-                      key={size}
-                      onClick={() => setTShirtSize(size)}
-                      className={`h-11 min-w-[44px] px-3 border font-headline text-sm font-semibold rounded-none transition-colors ${
-                        tShirtSize === size
-                          ? "border-tan-gold bg-terracotta text-cream"
-                          : "border-cream/30 bg-charcoal/60 text-cream/80 hover:border-cream/60"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Email & Display Name & Anonymous Preferences */}
           <div className="flex flex-col gap-4 border-t border-charcoal/10 pt-6">
