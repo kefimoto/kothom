@@ -1,6 +1,59 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { Resend } from "resend";
 import type Stripe from "stripe";
+import { MINISTRY } from "@/lib/ministry";
 import { getStripeServer } from "@/lib/stripe";
+
+async function sendConfirmationEmail(
+  customerEmail: string,
+  displayName: string,
+  amount: number,
+  frequency: string,
+) {
+  try {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.error("RESEND_API_KEY is not configured");
+      return;
+    }
+
+    const resend = new Resend(apiKey);
+    const frequencyLabel =
+      frequency === "monthly"
+        ? "monthly"
+        : frequency === "annual"
+          ? "annual"
+          : "one-time";
+
+    await resend.emails.send({
+      from:
+        process.env.RESEND_FROM_EMAIL ||
+        "Knights of the Higher Order Ministries <onboarding@resend.dev>",
+      to: customerEmail,
+      subject: "Donation Confirmation",
+      html: `
+        <p>Thank you for your generous ${frequencyLabel} gift of $${amount} to Knights of the Higher Order Ministries!</p>
+        <p>Your donation has been received and will make a real difference in the lives of single-parent families in Central Florida.</p>
+        <h3>Donation Details</h3>
+        <ul>
+          <li><strong>Amount:</strong> $${amount}</li>
+          <li><strong>Frequency:</strong> ${frequencyLabel}</li>
+          ${displayName ? `<li><strong>Name:</strong> ${displayName}</li>` : ""}
+        </ul>
+        ${
+          frequency !== "one-time"
+            ? `<p><strong>Manage Your Subscription:</strong> You can update, pause, or cancel your recurring gift anytime by visiting <a href="https://kothoministries.org/membership">our membership page</a>.</p>`
+            : ""
+        }
+        <p>Questions? Contact us at ${MINISTRY.phone.display} or ${MINISTRY.email}.</p>
+        <p>In service,<br/>Knights of the Higher Order Ministries</p>
+      `,
+    });
+  } catch (error) {
+    console.error("Error sending confirmation email:", error);
+  }
+}
 
 export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -38,11 +91,67 @@ export async function POST(request: Request) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       console.log("Checkout session completed:", session.id);
+
+      if (session.customer && typeof session.customer === "string") {
+        try {
+          const stripe = getStripeServer();
+          const displayName = (session.metadata?.displayName as string) || "";
+          const isAnonymous =
+            (session.metadata?.isAnonymous as string) || "false";
+
+          await stripe.customers.update(session.customer, {
+            metadata: {
+              displayName,
+              isAnonymous,
+            },
+          });
+
+          // Send confirmation email to all donors
+          if (session.customer_email) {
+            const lineItems = await stripe.checkout.sessions.listLineItems(
+              session.id,
+              { limit: 1 },
+            );
+            const lineItem = lineItems.data[0];
+            if (lineItem?.price) {
+              const amount = (lineItem.price.unit_amount || 0) / 100;
+              const frequency =
+                lineItem.price.recurring?.interval === "month"
+                  ? "monthly"
+                  : lineItem.price.recurring?.interval === "year"
+                    ? "annual"
+                    : "one-time";
+              const emailDisplayName =
+                isAnonymous === "true" ? "Anonymous Donor" : displayName;
+              await sendConfirmationEmail(
+                session.customer_email,
+                emailDisplayName,
+                amount,
+                frequency,
+              );
+            }
+          }
+
+          revalidatePath("/give");
+        } catch (error) {
+          console.error(
+            "Error updating customer metadata or sending email:",
+            error,
+          );
+        }
+      }
       break;
     }
     case "invoice.payment_succeeded": {
       const invoice = event.data.object as Stripe.Invoice;
       console.log("Invoice payment succeeded:", invoice.id);
+      if (invoice.customer) {
+        try {
+          revalidatePath("/give");
+        } catch (error) {
+          console.error("Error revalidating on invoice payment:", error);
+        }
+      }
       break;
     }
     default:

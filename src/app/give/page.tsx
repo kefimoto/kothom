@@ -22,13 +22,13 @@ export const metadata = buildMetadata({
   path: "/give",
 });
 
-export default function GivePage() {
+export default async function GivePage() {
   const proseHtml = CAN_ACCEPT_ONLINE_DONATIONS
     ? page.body
         .replace(/<h2[^>]*id="how-giving-works-today"[^>]*>[\s\S]*$/i, "")
         .trim()
     : page.body;
-  const { year, supporters } = getRollOfHonor();
+  const { year, supporters, anonymousDonorCount } = await getRollOfHonor();
 
   return (
     <main id="main">
@@ -84,7 +84,11 @@ export default function GivePage() {
         </section>
       )}
 
-      <RollOfHonor supporters={supporters} year={year} />
+      <RollOfHonor
+        supporters={supporters}
+        year={year}
+        anonymousDonorCount={anonymousDonorCount}
+      />
     </main>
   );
 }

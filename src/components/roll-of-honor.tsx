@@ -1,16 +1,14 @@
-export interface Supporter {
-  id: string;
-  name: string;
-  tier: string;
-  year: number;
-}
-
 interface RollOfHonorProps {
-  supporters: Supporter[];
+  supporters: Array<{ id: string; name: string; year: number }>;
   year: number;
+  anonymousDonorCount: number;
 }
 
-export function RollOfHonor({ supporters, year }: RollOfHonorProps) {
+export function RollOfHonor({
+  supporters,
+  year,
+  anonymousDonorCount,
+}: RollOfHonorProps) {
   return (
     <section
       id="roll-of-honor"
@@ -31,33 +29,33 @@ export function RollOfHonor({ supporters, year }: RollOfHonorProps) {
           </p>
         </div>
 
-        {supporters.length === 0 ? (
+        {supporters.length === 0 && anonymousDonorCount === 0 ? (
           <div className="border border-cream/20 bg-charcoal/40 p-8 text-center font-body text-cream/70 rounded-none">
-            No public supporters listed for {year} yet.
+            No supporters listed for {year} yet.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {supporters.map((supporter) => (
-              <div
-                key={supporter.id}
-                className="flex flex-col justify-between gap-4 border border-tan-gold/30 bg-charcoal/40 p-6 rounded-none transition-colors hover:border-tan-gold/60"
-              >
-                <div>
-                  <h3 className="font-headline font-semibold text-cream text-lg">
-                    {supporter.name}
-                  </h3>
-                </div>
-                <div className="flex items-center justify-between border-t border-cream/10 pt-3">
-                  <span className="font-semibold text-xs text-tan-gold uppercase tracking-wider">
-                    {supporter.tier}
-                  </span>
-                  <span className="font-body text-cream/60 text-xs">
-                    {supporter.year}
-                  </span>
-                </div>
+          <>
+            {supporters.length > 0 && (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-8">
+                {supporters.map((supporter) => (
+                  <div
+                    key={supporter.id}
+                    className="border border-tan-gold/30 bg-charcoal/40 p-6 rounded-none"
+                  >
+                    <h3 className="font-headline font-semibold text-cream text-lg">
+                      {supporter.name}
+                    </h3>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+            {anonymousDonorCount > 0 && (
+              <div className="border border-cream/20 bg-charcoal/40 p-6 text-center font-body text-cream/70 rounded-none">
+                Plus {anonymousDonorCount} anonymous{" "}
+                {anonymousDonorCount === 1 ? "gift" : "gifts"} this year.
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

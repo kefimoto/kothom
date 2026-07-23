@@ -1,7 +1,7 @@
 ---
 title: Terms of Use
 description: The terms for using the Knights of the Higher Order Ministries website, including our current legal status and how giving works today.
-lastUpdated: 2026-07-22
+lastUpdated: 2026-07-23
 ---
 
 ## Welcome
@@ -29,9 +29,9 @@ You're welcome to browse this site, read about our work, and reach out for help 
 - Try to gain unauthorized access to any part of the site or the systems behind it.
 - Use anything on this site to impersonate KOTHOM, Pastor T, or anyone connected with the ministry.
 
-## No payment processing yet
+## Payment processing
 
-The "Become a Knight" and "Legacy Donations" buttons on this site currently open an email to us. We don't process payments through this website. Any gift you make happens by check, in person, or by direct arrangement with us — never by entering card information into this site.
+This website processes donations securely through Stripe. When you give online, your payment is handled by Stripe's secure payment processor. We never see your full card number. You can also give by check, in person, or by direct arrangement — just reach out and we'll work with you.
 
 ## Content and the Knights of the Higher Order mark
 
