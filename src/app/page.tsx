@@ -141,9 +141,10 @@ export default function Home() {
               </figure>
               <Reveal delay={150}>
                 <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
-                  An annual gift of $25 or more goes directly to helping
-                  single-parent families — and makes you a Knight. Members
-                  receive a Knights of the Higher Order T-shirt.
+                  A gift of $25 or more — monthly, annual, or one-time — goes
+                  directly to helping single-parent families and makes you a
+                  Knight. Recurring gifts include a Knights of the Higher Order
+                  T-shirt.
                 </p>
                 <div className="mt-5">
                   <CtaLink href="/give">Join the Ranks</CtaLink>
