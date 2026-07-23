@@ -33,9 +33,9 @@ export const FOOTER_NAV: { heading: string; links: Route[] }[] = [
     heading: "Support the Ministry",
     links: [
       { href: "/give", label: "Ways to Give" },
-      { href: "/give#become-a-knight", label: "Become a Knight" },
+      { href: "/give#make-a-gift", label: "Make a Gift" },
       { href: "/give#legacy", label: "Legacy Donations" },
-      { href: "/membership", label: "Manage Your Membership" },
+      { href: "/manage", label: "Manage Your Giving" },
     ],
   },
   {
@@ -61,7 +61,7 @@ export const STATIC_ROUTES: string[] = [
   "/give",
   "/contact",
   "/transparency",
-  "/membership",
+  "/manage",
   "/news",
   "/media",
 ];

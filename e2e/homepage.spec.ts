@@ -18,9 +18,7 @@ test("homepage renders the hero and primary CTAs with no console errors", async 
   await expect(
     page.getByRole("link", { name: "See How to Give" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "Join the Ranks" }),
-  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Give Now" })).toBeVisible();
 
   expect(consoleErrors).toEqual([]);
 });

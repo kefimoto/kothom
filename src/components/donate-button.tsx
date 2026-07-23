@@ -8,7 +8,7 @@ import { CAN_ACCEPT_ONLINE_DONATIONS, MINISTRY } from "@/lib/ministry";
 // Checkout redirect (or embedded form) and leave every call site untouched;
 // they only know about `intent` and `children`, never about mailto vs. Stripe.
 const SUBJECTS: Record<"knight" | "legacy", string> = {
-  knight: "Become a Knight",
+  knight: "Make a Gift",
   legacy: "Legacy Donations Inquiry",
 };
 

@@ -39,16 +39,17 @@ export default async function GivePage() {
 
       {CAN_ACCEPT_ONLINE_DONATIONS && <GivingForm />}
 
-      <section id="become-a-knight" className="bg-ink px-6 py-20 sm:py-28">
+      <section id="make-a-gift" className="bg-ink px-6 py-20 sm:py-28">
         <div className="mx-auto flex max-w-3xl flex-col items-start gap-5">
           <h2 className="font-headline text-2xl text-cream sm:text-3xl">
-            Become a Knight
+            Make a Gift
           </h2>
           <p className="text-pretty font-body text-lg leading-relaxed text-cream/90">
-            Your gift of $25 or more — monthly, annual, or one-time — makes you
-            a Knight. Reach out and we'll arrange it directly.
+            Give what you can, when you can — monthly, annual, or one-time.
+            Every gift goes directly to single-parent families in Central
+            Florida. Reach out and we'll arrange it directly.
           </p>
-          <DonateButton intent="knight">Join the Ranks</DonateButton>
+          <DonateButton intent="knight">Give Now</DonateButton>
         </div>
       </section>
 
@@ -72,11 +73,11 @@ export default async function GivePage() {
         >
           <div className="mx-auto flex max-w-3xl flex-col items-start gap-5">
             <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
-              Manage Existing Subscription
+              Manage Your Giving
             </h2>
             <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
-              Enter your email address below to access your donor portal where
-              you can update payment methods, pause giving, or cancel your
+              Enter your email address below to manage your recurring gifts. You
+              can update payment methods, pause giving, or cancel your
               subscription without needing a password.
             </p>
             <DonorPortalForm />

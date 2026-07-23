@@ -75,7 +75,7 @@ export default function Home() {
             </h2>
             <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
               Your gift — big or small, now or planned — goes directly to
-              single-parent families in Central Florida, and makes you a Knight.
+              single-parent families in Central Florida.
             </p>
             <CtaLink href="#give">See How to Give</CtaLink>
           </Reveal>
@@ -135,18 +135,18 @@ export default function Home() {
                 </Reveal>
                 <figcaption className="bg-terracotta px-6 py-4">
                   <span className="font-headline text-lg text-cream">
-                    Become a Knight
+                    Support the Ministry
                   </span>
                 </figcaption>
               </figure>
               <Reveal delay={150}>
                 <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
                   A gift of $25 or more — monthly, annual, or one-time — goes
-                  directly to helping single-parent families and makes you a
-                  Knight.
+                  directly to helping single-parent families. Give what you can,
+                  when you can.
                 </p>
                 <div className="mt-5">
-                  <CtaLink href="/give">Join the Ranks</CtaLink>
+                  <CtaLink href="/give">Give Now</CtaLink>
                 </div>
               </Reveal>
             </div>
