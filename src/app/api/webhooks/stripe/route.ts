@@ -1,8 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import type Stripe from "stripe";
 import { MINISTRY } from "@/lib/ministry";
+import { getResendClient } from "@/lib/resend";
 import { getStripeServer } from "@/lib/stripe";
 
 async function sendConfirmationEmail(
@@ -12,13 +12,7 @@ async function sendConfirmationEmail(
   frequency: string,
 ) {
   try {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      console.error("RESEND_API_KEY is not configured");
-      return;
-    }
-
-    const resend = new Resend(apiKey);
+    const resend = getResendClient();
     const frequencyLabel =
       frequency === "monthly"
         ? "monthly"
