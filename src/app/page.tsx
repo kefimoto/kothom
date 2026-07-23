@@ -139,13 +139,7 @@ export default function Home() {
                   receive a Knights of the Higher Order T-shirt.
                 </p>
                 <div className="mt-5">
-                  <CtaLink
-                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-                      "Become a Knight",
-                    )}`}
-                  >
-                    Join the Ranks
-                  </CtaLink>
+                  <CtaLink href="/give">Join the Ranks</CtaLink>
                 </div>
               </Reveal>
             </div>
@@ -175,13 +169,7 @@ export default function Home() {
                   Knights too.
                 </p>
                 <div className="mt-5">
-                  <CtaLink
-                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-                      "Legacy Donations Inquiry",
-                    )}`}
-                  >
-                    Learn More
-                  </CtaLink>
+                  <CtaLink href="/give">Learn More</CtaLink>
                 </div>
               </Reveal>
             </div>
