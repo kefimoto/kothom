@@ -57,7 +57,7 @@ export const MAILING_ADDRESS = `${MINISTRY.address.street}, ${MINISTRY.address.c
  * the explanation. Update both together.
  */
 const IS_STAGING =
-  process.env.NEXT_PUBLIC_STAGING === "true" ||
+  process.env.NODE_ENV === "development" ||
   process.env.VERCEL_ENV === "preview";
 
 export const LEGAL_STATUS = {
