@@ -47,6 +47,7 @@
 
 .hero-mark {
   animation: hero-mark-in 800ms var(--ease-out-expo) both;
+  filter: drop-shadow(0 0 24px rgba(201, 168, 118, 0.25));
 }
 
 .hero-heading-line {

@@ -33,9 +33,20 @@ function CtaLink({
 export default function Home() {
   return (
     <main id="main">
-      {/* Hero */}
-      <section className="bg-ink px-6 py-24 text-center sm:py-32">
-        <div className="mx-auto flex max-w-3xl flex-col items-center gap-10">
+      {/* Hero with video backdrop */}
+      <section className="relative overflow-hidden bg-ink px-6 py-24 text-center sm:py-32">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ filter: "blur(8px)", opacity: 0.4 }}
+        >
+          <source src="/videos/hero-backdrop.webm" type="video/webm" />
+        </video>
+        <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-10">
           <div className="hero-mark">
             <CrossMark size="large" />
           </div>
@@ -60,7 +71,7 @@ export default function Home() {
               housing, you don&apos;t have to carry it alone. Call us — a real
               person will answer.
             </p>
-            <CtaLink href={PHONE_TEL}>Call {PHONE_DISPLAY}</CtaLink>
+            <CtaLink href="/contact">Get Help</CtaLink>
           </Reveal>
           <Reveal className="flex flex-col items-start gap-4" delay={120}>
             <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
@@ -139,13 +150,7 @@ export default function Home() {
                   receive a Knights of the Higher Order T-shirt.
                 </p>
                 <div className="mt-5">
-                  <CtaLink
-                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-                      "Become a Knight",
-                    )}`}
-                  >
-                    Join the Ranks
-                  </CtaLink>
+                  <CtaLink href="/give">Join the Ranks</CtaLink>
                 </div>
               </Reveal>
             </div>
@@ -175,13 +180,7 @@ export default function Home() {
                   Knights too.
                 </p>
                 <div className="mt-5">
-                  <CtaLink
-                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-                      "Legacy Donations Inquiry",
-                    )}`}
-                  >
-                    Learn More
-                  </CtaLink>
+                  <CtaLink href="/give">Learn More</CtaLink>
                 </div>
               </Reveal>
             </div>
@@ -189,29 +188,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pastoral Services */}
-      <section id="pastoral-services" className="bg-ink px-6 py-20 sm:py-28">
-        <div className="mx-auto grid max-w-5xl items-center gap-10 sm:grid-cols-2 sm:gap-16">
-          <Reveal variant="image-pop">
-            <Image
-              src="/images/pastoral-services.jpg"
-              alt="Hands folded in prayer over an open Bible"
-              width={800}
-              height={533}
-              loading="eager"
-              className="block w-full"
-            />
-          </Reveal>
-          <Reveal delay={150} className="flex flex-col items-start gap-5">
-            <h2 className="font-headline text-3xl text-cream sm:text-4xl">
+      {/* Pastoral Services — backdrop imagery */}
+      <section
+        id="pastoral-services"
+        className="relative overflow-hidden px-6 py-32 sm:py-40"
+        style={{
+          backgroundImage: "url(/images/pastoral-services.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Gradient overlay for text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 to-ink/70" />
+        <div className="relative mx-auto max-w-3xl">
+          <Reveal className="flex flex-col items-start gap-6">
+            <h2 className="text-balance font-headline text-4xl text-cream sm:text-5xl">
               Pastoral Services
             </h2>
-            <p className="text-pretty font-body text-lg leading-relaxed text-cream/90">
+            <p className="text-pretty font-body text-lg leading-relaxed text-cream/95">
               Our work in the community isn&apos;t limited to financial help. We
               offer pastoral care on call and by appointment — available 24
               hours a day, 7 days a week, 365 days a year.
             </p>
-            <CtaLink href={PHONE_TEL}>Call {PHONE_DISPLAY}</CtaLink>
+            <CtaLink href="/contact">Get Help</CtaLink>
           </Reveal>
         </div>
       </section>

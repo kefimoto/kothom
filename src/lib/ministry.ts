@@ -93,12 +93,7 @@ export function canAcceptOnlineDonations(status: LegalStatus): boolean {
 }
 
 export const CAN_ACCEPT_ONLINE_DONATIONS: boolean =
-  (LEGAL_STATUS.is501c3 as boolean) === true &&
-  (LEGAL_STATUS.isFloridaNonprofitCorp as boolean) === true &&
-  typeof LEGAL_STATUS.ein === "string" &&
-  LEGAL_STATUS.ein.trim().length > 0 &&
-  typeof LEGAL_STATUS.fdacsRegistration === "string" &&
-  LEGAL_STATUS.fdacsRegistration.trim().length > 0;
+  canAcceptOnlineDonations(LEGAL_STATUS);
 
 /**
  * Whether the site may describe gifts as tax deductible. Gated on the IRS
