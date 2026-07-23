@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { MINISTRY } from "@/lib/ministry";
@@ -139,24 +138,11 @@ export async function POST(request: Request) {
               );
             }
           }
-
-          revalidatePath("/give");
         } catch (error) {
           console.error(
             "Error updating customer metadata or sending email:",
             error,
           );
-        }
-      }
-      break;
-    }
-    case "invoice.payment_succeeded": {
-      const invoice = event.data.object as Stripe.Invoice;
-      if (invoice.customer) {
-        try {
-          revalidatePath("/give");
-        } catch (error) {
-          console.error("Error revalidating on invoice payment:", error);
         }
       }
       break;
