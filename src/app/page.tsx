@@ -177,24 +177,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pastoral Services */}
-      <section id="pastoral-services" className="bg-ink px-6 py-20 sm:py-28">
-        <div className="mx-auto grid max-w-5xl items-center gap-10 sm:grid-cols-2 sm:gap-16">
-          <Reveal variant="image-pop">
-            <Image
-              src="/images/pastoral-services.jpg"
-              alt="Hands folded in prayer over an open Bible"
-              width={800}
-              height={533}
-              loading="eager"
-              className="block w-full"
-            />
-          </Reveal>
-          <Reveal delay={150} className="flex flex-col items-start gap-5">
-            <h2 className="font-headline text-3xl text-cream sm:text-4xl">
+      {/* Pastoral Services — backdrop imagery */}
+      <section
+        id="pastoral-services"
+        className="relative overflow-hidden px-6 py-32 sm:py-40"
+        style={{
+          backgroundImage: "url(/images/pastoral-services.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Gradient overlay for text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 to-ink/70" />
+        <div className="relative mx-auto max-w-3xl">
+          <Reveal className="flex flex-col items-start gap-6">
+            <h2 className="text-balance font-headline text-4xl text-cream sm:text-5xl">
               Pastoral Services
             </h2>
-            <p className="text-pretty font-body text-lg leading-relaxed text-cream/90">
+            <p className="text-pretty font-body text-lg leading-relaxed text-cream/95">
               Our work in the community isn&apos;t limited to financial help. We
               offer pastoral care on call and by appointment — available 24
               hours a day, 7 days a week, 365 days a year.
