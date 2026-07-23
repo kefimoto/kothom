@@ -1,7 +1,6 @@
 import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata } from "next";
 import { Cinzel, Cinzel_Decorative, PT_Serif } from "next/font/google";
-import { ChromeGate } from "@/components/chrome-gate";
 import { FloatingCallButton } from "@/components/floating-call-button";
 import { OrganizationSchema } from "@/components/organization-schema";
 import { SiteFooter } from "@/components/site-footer";
@@ -84,13 +83,9 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        <ChromeGate>
-          <SiteHeader />
-        </ChromeGate>
+        <SiteHeader />
         {children}
-        <ChromeGate>
-          <SiteFooter />
-        </ChromeGate>
+        <SiteFooter />
         <FloatingCallButton />
       </body>
       {GA_MEASUREMENT_ID ? <GoogleAnalytics gaId={GA_MEASUREMENT_ID} /> : null}
