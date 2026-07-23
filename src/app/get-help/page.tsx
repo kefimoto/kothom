@@ -28,9 +28,6 @@ export default function GetHelpPage() {
           prose. */}
       <div className="bg-cream px-6 py-12 sm:py-16">
         <div className="mx-auto flex max-w-3xl flex-col items-start gap-4">
-          <p className="text-pretty font-body text-lg leading-relaxed text-charcoal">
-            Call now. A real person answers — no form, no queue.
-          </p>
           <a href={MINISTRY.phone.tel} className={`${ctaClassName} text-xl`}>
             Call {MINISTRY.phone.display}
           </a>
