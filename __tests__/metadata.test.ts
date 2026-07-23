@@ -14,7 +14,7 @@ describe("buildMetadata", () => {
     expect(meta.description).toBe("Two ways to give.");
     expect(meta.alternates?.canonical).toBe("/give");
 
-    const og = meta.openGraph;
+    const og = meta.openGraph as Record<string, unknown>;
     expect(og?.title).toBe("Give");
     expect(og?.description).toBe("Two ways to give.");
     expect(og?.url).toBe(`${SITE_URL}/give`);
@@ -29,7 +29,7 @@ describe("buildMetadata", () => {
       },
     ]);
 
-    const tw = meta.twitter;
+    const tw = meta.twitter as Record<string, unknown>;
     expect(tw?.card).toBe("summary_large_image");
     expect(tw?.title).toBe("Give");
     expect(tw?.description).toBe("Two ways to give.");
