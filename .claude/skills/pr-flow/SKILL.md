@@ -1,6 +1,6 @@
 ---
 name: pr-flow
-description: Use when the user wants an isolated set of changes taken from working branch to merged PR without touching their main checkout or disturbing other agents/sessions that may be running there — e.g. "do the whole nine", "worktree this and PR it", "ship this as a PR", "branch, commit, push, merge", "put this up and merge it". Runs the full worktree → commit → push → PR → checks → squash-merge → cleanup cycle end to end.
+description: Use when the user wants an isolated set of changes taken from working branch to merged PR — e.g. "do the whole nine", "ship this as a PR", "branch, commit, push, merge", "put this up and merge it". Runs the full branch → commit → push → PR → checks → squash-merge → cleanup cycle end to end. Worktrees are optional when not using subagents.
 version: 1.0.0
 user-invocable: true
 argument-hint: "[branch-name or short description of the change]"
@@ -9,9 +9,19 @@ license: Apache 2.0
 
 Takes a set of changes from an isolated worktree to a merged, cleaned-up PR — the full cycle, run the same way every time instead of re-derived per session.
 
-## Why a worktree, always
+## Worktrees: when to use them
 
-Never make these changes directly in the user's primary checkout. A worktree gives an isolated working directory on its own branch while sharing the same `.git` object database — so another agent or session working in the primary checkout is never disturbed, and there's no risk of clobbering uncommitted work there. This applies even for tiny changes (e.g. a one-line doc fix); the cost of a worktree is low and the cost of a collision is not.
+**Use a worktree when:**
+- Multiple agents or sessions are running in parallel and might touch the same code
+- The change is complex or the flow will take a while (higher risk of collision)
+- You want to maximize isolation for safety
+
+**Skip the worktree when:**
+- You're running in a single session (no parallel agents)
+- The change is simple and self-contained
+- The user prefers speed over maximum isolation
+
+A worktree gives an isolated working directory on its own branch while sharing the same `.git` object database — so another agent or session working in the primary checkout is never disturbed, and there's no risk of clobbering uncommitted work. The cost of a worktree is low but not zero; skip it for simple, single-session flows.
 
 ## Steps
 
