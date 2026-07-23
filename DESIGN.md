@@ -38,7 +38,6 @@ typography:
     lineHeight: 1.1
 rounded:
   none: "0px"
-  sm: "2px"
 components:
   button-primary:
     backgroundColor: "{colors.terracotta}"

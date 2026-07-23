@@ -30,7 +30,7 @@ Markdown in `content/` is compiled to typed JSON at build time and imported from
 Consequently:
 
 - **No page claims donations are tax deductible**, and no EIN or Florida registration number appears anywhere. `LEGAL_STATUS` in `src/lib/ministry.ts` gates every such disclosure and is empty until each filing is genuinely done. Don't fill those in speculatively.
-- **No payment processing.** "Become a Knight" and "Legacy Donations" open a `mailto:`. `src/components/donate-button.tsx` is the single place real checkout should attach.
+- **Payment processing is implemented but gated off.** A full Stripe checkout flow exists (`src/lib/stripe.ts`, `src/lib/actions.ts`, webhook handlers), but is only live in preview/staging environments (`CAN_ACCEPT_ONLINE_DONATIONS` in `src/lib/ministry.ts`). In production, "Become a Knight" and "Legacy Donations" remain `mailto:` links.
 - **Phone number is `689-327-6388`** — lives in one place (`src/lib/ministry.ts`), and a unit test fails the build if any content file names a number that disagrees with it.
 - **One open business-model question**, flagged in `COMPLIANCE.md`: the $25 "Become a Knight" gift includes a T-shirt, which makes it a quid pro quo contribution for IRS purposes *and* a membership for Stripe's purposes — the latter is excluded from Stripe's nonprofit rate. Worth resolving before Stripe onboarding.
 

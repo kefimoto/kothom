@@ -112,9 +112,9 @@ Stripe's discounted nonprofit pricing requires that **more than 80% of payment v
 
 ---
 
-## Before switching on real payments
+## Before enabling real payments
 
-Do not wire up Stripe until all of the following are true:
+Stripe is already implemented and wired up (see `src/lib/stripe.ts`, `src/lib/actions.ts`, and webhook handlers), but gated off in production via `CAN_ACCEPT_ONLINE_DONATIONS` in `src/lib/ministry.ts`. Do not enable real payments by flipping that flag until all of the following are true:
 
 - [ ] Steps 1–4 complete, all four constants set in `src/lib/ministry.ts`
 - [ ] A bank account in the ministry's legal name, opened with the EIN

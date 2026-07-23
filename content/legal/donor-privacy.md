@@ -1,7 +1,7 @@
 ---
 title: Donor Privacy Policy
 description: Our commitment never to sell, rent, trade, or share a donor's name or contact information, the only two exceptions to it, and how to control what we hold about you.
-lastUpdated: 2026-07-21
+lastUpdated: 2026-07-23
 ---
 
 ## Our promise to you
@@ -10,7 +10,7 @@ We will never sell, rent, trade, or share your name or contact information with 
 
 There are exactly two things that promise cannot cover, and we would rather name them than let you discover them later:
 
-- **The bank or card processor that handles your gift.** If we ever accept gifts by card, the company processing the payment necessarily receives your name and billing details, because that is how a payment works. They handle it for that transaction only. We will not give them permission to use it for their own marketing, and we will not send them anything they don't need.
+- **The payment processor that handles your gift.** When you give through this website, your payment is processed securely by Stripe, a trusted payment processor. Stripe handles your card information for that transaction only — we never see your card number. We will not give them permission to use your information for their own marketing, and we will not send them anything they don't need.
 - **A court order.** If a court or a law with binding force requires us to produce a record, we have to comply. We would tell you if that ever happened, unless we were forbidden to.
 
 Neither of those is a loophole for sharing your information with anyone who wants it. Outside those two, the answer is no — including to people who ask nicely, and including to other ministries.

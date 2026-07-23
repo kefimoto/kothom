@@ -125,6 +125,8 @@ export async function getRollOfHonor(): Promise<RollOfHonorData> {
                   totalAmount: totalAmount / 100,
                 },
               };
+            } else {
+              return { type: "anonymous" as const };
             }
           }
         } catch (error) {

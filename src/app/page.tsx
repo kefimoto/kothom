@@ -7,10 +7,6 @@ import { ctaClassName } from "@/components/cta";
 import { Reveal } from "@/components/reveal";
 import { MINISTRY } from "@/lib/ministry";
 
-const PHONE_DISPLAY = MINISTRY.phone.display;
-const PHONE_TEL = MINISTRY.phone.tel;
-const CONTACT_EMAIL = MINISTRY.email;
-
 export const metadata: Metadata = {
   title: { absolute: MINISTRY.name },
   alternates: { canonical: "/" },

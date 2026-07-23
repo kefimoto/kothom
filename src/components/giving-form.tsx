@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { ctaClassName } from "@/components/cta";
 import { createCheckoutSession } from "@/lib/actions";
+import { EMAIL_REGEX } from "@/lib/validation";
 
 type Frequency = "monthly" | "annual" | "one-time";
 type TShirtSize = "S" | "M" | "L" | "XL" | "2XL" | "3XL";
@@ -48,7 +49,7 @@ export function GivingForm() {
       return;
     }
 
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (!email.trim() || !EMAIL_REGEX.test(email.trim())) {
       setErrorMessage("Please enter a valid email address.");
       return;
     }

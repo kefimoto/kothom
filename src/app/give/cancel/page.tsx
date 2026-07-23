@@ -1,31 +1,29 @@
 import Link from "next/link";
 import { ctaClassName } from "@/components/cta";
+import { PageHeader } from "@/components/page-header";
+import { buildMetadata } from "@/lib/metadata";
 import { MINISTRY } from "@/lib/ministry";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Donation Cancelled",
   description: "No worries. We'd love to hear from you.",
-};
+  path: "/give/cancel",
+});
 
 export default function DonateCancelPage() {
   return (
-    <main id="main" className="min-h-screen bg-cream flex flex-col">
-      <div className="flex-1 px-6 py-16 sm:py-24">
-        <div className="mx-auto max-w-2xl">
-          <div className="mb-8 text-center">
-            <h1 className="font-headline text-3xl sm:text-4xl text-charcoal mb-4">
-              No Worries
-            </h1>
-            <p className="font-body text-lg text-charcoal/80 leading-relaxed">
-              We understand — giving is a big decision, and we respect yours.
-            </p>
-          </div>
-
-          <div className="border border-charcoal/20 bg-white rounded-none p-8 mb-8">
-            <h2 className="font-headline text-xl text-charcoal mb-6">
+    <main id="main">
+      <PageHeader
+        title="No Worries"
+        description="We understand — giving is a big decision, and we respect yours."
+      />
+      <div className="bg-cream px-6 py-16 sm:py-20">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-8 flex flex-col gap-4 border border-charcoal/10 bg-cream p-6 sm:p-8">
+            <h2 className="font-headline text-2xl text-charcoal">
               If you have questions
             </h2>
-            <p className="font-body text-charcoal/70 mb-6">
+            <p className="font-body text-charcoal/70">
               We're here to help. Reach out and let's talk about how we can
               serve your heart:
             </p>
@@ -70,11 +68,11 @@ export default function DonateCancelPage() {
             </div>
           </div>
 
-          <div className="bg-charcoal/5 border border-charcoal/10 rounded-none p-8 mb-8">
-            <h3 className="font-headline font-semibold text-charcoal mb-3">
+          <div className="mb-8 flex flex-col gap-4 border border-charcoal/10 bg-cream p-6 sm:p-8">
+            <h3 className="font-headline text-2xl text-charcoal">
               Other ways to help
             </h3>
-            <p className="font-body text-charcoal/70 mb-4">
+            <p className="font-body text-charcoal/70">
               If online giving isn't right for you now, there are other ways to
               support the mission:
             </p>
@@ -86,7 +84,7 @@ export default function DonateCancelPage() {
             </ul>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link href="/give" className={ctaClassName}>
               Back to Giving
             </Link>

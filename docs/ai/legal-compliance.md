@@ -7,5 +7,5 @@
 ## Known placeholders / not-yet-implemented
 
 - **Phone number**: `689-327-6388`. It lives in **one place** — `MINISTRY.phone` in `src/lib/ministry.ts`. Markdown in `content/` spells it out in prose and can't import the constant, so `__tests__/content-integrity.test.ts` fails the build if any content file names a number that disagrees with it.
-- **No payment processing yet.** "Become a Knight" and "Legacy Donations" go through `<DonateButton>` (`src/components/donate-button.tsx`), which currently opens a `mailto:`. That component is the single place real checkout should ever attach. Donations are not collectible through the site yet — don't describe this as a working donation flow.
+- **Payment processing is implemented but gated.** Stripe checkout is wired up and functional (`src/lib/stripe.ts`, `src/lib/actions.ts`, webhook handlers), but only enabled in preview/staging environments. In production, donations remain `mailto:`-only until the legal filings are complete and the feature flag is switched on (see `CAN_ACCEPT_ONLINE_DONATIONS` in `src/lib/ministry.ts`).
 - **No auth.** `/membership` is a real, useful page explaining how to change or stop a gift by phone/email; it's where an account portal would attach later.

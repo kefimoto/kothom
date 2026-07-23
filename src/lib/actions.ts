@@ -6,6 +6,7 @@ import { CAN_ACCEPT_ONLINE_DONATIONS } from "@/lib/ministry";
 import { signPortalToken } from "@/lib/portal-token";
 import { getResendClient } from "@/lib/resend";
 import { getStripeServer } from "@/lib/stripe";
+import { EMAIL_REGEX } from "@/lib/validation";
 
 /**
  * Resolves the request origin the same way the previous Route Handlers did:
@@ -70,7 +71,7 @@ export async function createCheckoutSession(
     if (
       typeof email !== "string" ||
       !email.trim() ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+      !EMAIL_REGEX.test(email.trim())
     ) {
       return { ok: false, error: "Invalid email address." };
     }
@@ -157,7 +158,7 @@ export async function requestDonorPortalAccess(
     if (
       typeof email !== "string" ||
       !email.trim() ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+      !EMAIL_REGEX.test(email.trim())
     ) {
       return { ok: false, error: "Please enter a valid email address." };
     }

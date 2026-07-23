@@ -1,84 +1,57 @@
 import Link from "next/link";
 import { ctaClassName } from "@/components/cta";
+import { PageHeader } from "@/components/page-header";
+import { buildMetadata } from "@/lib/metadata";
 
-export const metadata = {
+export const metadata = buildMetadata({
   title: "Donation Received",
   description:
     "Thank you for your generous gift to Knights of the Higher Order Ministries.",
-};
+  path: "/give/success",
+});
 
 export default function DonateSuccessPage() {
   return (
-    <main id="main" className="min-h-screen bg-cream flex flex-col">
-      <div className="flex-1 px-6 py-16 sm:py-24">
-        <div className="mx-auto max-w-2xl">
-          <div className="mb-8 text-center">
-            <div className="mb-6 inline-block">
-              <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
-                <svg
-                  className="h-8 w-8 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <title>Donation confirmed</title>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </div>
-            </div>
-            <h1 className="font-headline text-3xl sm:text-4xl text-charcoal mb-4">
-              Thank You
-            </h1>
-            <p className="font-body text-lg text-charcoal/80 leading-relaxed mb-2">
-              Your generous gift has been received and will make a real
-              difference in the lives of single-parent families in Central
-              Florida.
-            </p>
-            <p className="font-body text-base text-charcoal/60">
-              A confirmation email is on its way to you.
-            </p>
-          </div>
+    <main id="main">
+      <PageHeader
+        title="Thank You"
+        description="Your donation has been received."
+      />
+      <div className="bg-cream px-6 py-16 sm:py-20">
+        <div className="mx-auto max-w-3xl">
+          <p className="mb-8 text-pretty font-body text-lg leading-relaxed text-charcoal">
+            Your generous gift has been received and will make a real difference
+            in the lives of single-parent families in Central Florida. A
+            confirmation email is on its way to you.
+          </p>
 
-          <div className="border border-charcoal/20 bg-white rounded-none p-8 mb-8">
-            <h2 className="font-headline text-xl text-charcoal mb-6">
+          <div className="mb-8 flex flex-col gap-4 border border-charcoal/10 bg-cream p-6 sm:p-8">
+            <h2 className="font-headline text-2xl text-charcoal">
               What Happens Next
             </h2>
-            <ul className="space-y-4">
+            <ol className="space-y-4">
               <li className="flex gap-4">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="h-6 w-6 rounded-full bg-tan-gold/20 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-tan-gold">
-                      1
-                    </span>
-                  </div>
-                </div>
+                <span className="flex-shrink-0 font-headline font-semibold text-charcoal">
+                  1.
+                </span>
                 <div>
                   <h3 className="font-headline font-semibold text-charcoal">
                     Confirmation Email
                   </h3>
-                  <p className="font-body text-charcoal/70 text-sm">
+                  <p className="font-body text-charcoal/70">
                     Check your email for a receipt and tax documentation.
                   </p>
                 </div>
               </li>
               <li className="flex gap-4">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="h-6 w-6 rounded-full bg-tan-gold/20 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-tan-gold">
-                      2
-                    </span>
-                  </div>
-                </div>
+                <span className="flex-shrink-0 font-headline font-semibold text-charcoal">
+                  2.
+                </span>
                 <div>
                   <h3 className="font-headline font-semibold text-charcoal">
                     Manage Your Subscription
                   </h3>
-                  <p className="font-body text-charcoal/70 text-sm">
+                  <p className="font-body text-charcoal/70">
                     For recurring gifts, you can update, pause, or cancel
                     anytime by visiting the{" "}
                     <Link
@@ -92,27 +65,23 @@ export default function DonateSuccessPage() {
                 </div>
               </li>
               <li className="flex gap-4">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="h-6 w-6 rounded-full bg-tan-gold/20 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-tan-gold">
-                      3
-                    </span>
-                  </div>
-                </div>
+                <span className="flex-shrink-0 font-headline font-semibold text-charcoal">
+                  3.
+                </span>
                 <div>
                   <h3 className="font-headline font-semibold text-charcoal">
                     Stay Connected
                   </h3>
-                  <p className="font-body text-charcoal/70 text-sm">
+                  <p className="font-body text-charcoal/70">
                     We'll keep you updated on how your gift is making a
                     difference. You can update your preferences anytime.
                   </p>
                 </div>
               </li>
-            </ul>
+            </ol>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Link href="/give" className={ctaClassName}>
               Back to Giving
             </Link>
