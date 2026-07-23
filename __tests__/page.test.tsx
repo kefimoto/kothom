@@ -12,7 +12,7 @@ test("renders the hero heading and primary CTAs", () => {
 
   expect(
     screen.getAllByRole("link", {
-      name: new RegExp(`call ${MINISTRY.phone.display}`, "i"),
+      name: "Get Help",
     }),
   ).toHaveLength(2);
   expect(screen.getByRole("link", { name: "See How to Give" })).toHaveProperty(
