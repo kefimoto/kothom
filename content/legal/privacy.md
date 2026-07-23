@@ -18,7 +18,7 @@ We do not collect any information automatically when you browse this site. There
 
 The only time we receive information from you is when you give it to us directly:
 
-- Emailing us at Knightsofthehigherorder@gmail.com — through the "Get Help" or "Become a Knight" links, or on your own.
+- Emailing us at knightsofthehigherorder@gmail.com — through the "Get Help" or "Become a Knight" links, or on your own.
 - Calling us at 689-327-6388.
 - Writing to us at 380 Lake Ontario Court, Altamonte Springs, FL 32701.
 
@@ -46,4 +46,4 @@ If this policy changes, we'll update the "last updated" date at the top of this 
 
 ## Questions about this policy
 
-Call us at 689-327-6388, email Knightsofthehigherorder@gmail.com, or write to us at 380 Lake Ontario Court, Altamonte Springs, FL 32701. Office hours are Monday – Sunday, 10am – 5pm.
+Call us at 689-327-6388, email knightsofthehigherorder@gmail.com, or write to us at 380 Lake Ontario Court, Altamonte Springs, FL 32701. Office hours are Monday – Sunday, 10am – 5pm.
