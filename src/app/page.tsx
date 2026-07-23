@@ -33,9 +33,20 @@ function CtaLink({
 export default function Home() {
   return (
     <main id="main">
-      {/* Hero */}
-      <section className="bg-ink px-6 py-24 text-center sm:py-32">
-        <div className="mx-auto flex max-w-3xl flex-col items-center gap-10">
+      {/* Hero with video backdrop */}
+      <section className="relative overflow-hidden bg-ink px-6 py-24 text-center sm:py-32">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ filter: "blur(8px)", opacity: 0.4 }}
+        >
+          <source src="/videos/hero-backdrop.webm" type="video/webm" />
+        </video>
+        <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center gap-10">
           <div className="hero-mark">
             <CrossMark size="large" />
           </div>
