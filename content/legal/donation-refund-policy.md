@@ -26,7 +26,7 @@ Tell us your name, roughly when you gave, and why you're asking. We'll refund a 
 You can set up monthly or annual recurring gifts through this website. These terms apply:
 
 - You can cancel or change a recurring gift at any time, for any reason, without ever needing to log in anywhere.
-- Cancel by visiting our [membership page](/membership) to manage your subscription, or by calling 689-327-6388 or emailing knightsofthehigherorder@gmail.com. We'll confirm your cancellation and the date it takes effect.
+- Cancel by visiting our [giving management page](/manage) to manage your recurring gift, or by calling 689-327-6388 or emailing knightsofthehigherorder@gmail.com. We'll confirm your cancellation and the date it takes effect.
 - Cancelling stops future gifts. It doesn't undo a gift already processed — ask us about that specific gift if you'd like a refund, using the section above.
 - There's no cancellation fee and no minimum commitment.
 

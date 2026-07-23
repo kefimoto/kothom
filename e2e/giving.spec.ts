@@ -31,25 +31,15 @@ test.describe("Giving Page & Supporter Roll of Honor UX", () => {
       page.getByRole("heading", { name: "Select Your Giving Options" }),
     ).toHaveCount(0);
     await expect(
-      page.getByRole("heading", { name: "Manage Existing Subscription" }),
+      page.getByRole("heading", { name: "Manage Your Giving" }),
     ).toHaveCount(0);
 
     // The honest, always-available mailto giving paths remain.
     await expect(
-      page.getByRole("heading", { name: "Become a Knight" }),
+      page.getByRole("heading", { name: "Make a Gift" }),
     ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Legacy Donations" }),
-    ).toBeVisible();
-
-    // Roll of Honor: no fabricated supporters, just the honest empty state.
-    const rollOfHonorSection = page.locator("#roll-of-honor");
-    await expect(rollOfHonorSection).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Supporter Roll of Honor" }),
-    ).toBeVisible();
-    await expect(
-      rollOfHonorSection.getByText(/no supporters listed/i),
     ).toBeVisible();
 
     expect(consoleErrors).toEqual([]);

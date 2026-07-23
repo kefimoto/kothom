@@ -14,7 +14,7 @@ const FREQUENCIES: { id: Frequency; label: string }[] = [
 ];
 
 const PRESETS = [
-  { amount: 25, label: "$25 Knights", tier: "Knights Member" },
+  { amount: 25, label: "$25 Gift", tier: "Gift" },
   { amount: 50, label: "$50 Family Support", tier: "Family Support" },
   { amount: 100, label: "$100 Crisis Aid", tier: "Crisis Aid Partner" },
 ];

@@ -37,7 +37,7 @@ async function sendConfirmationEmail(
         </ul>
         ${
           frequency !== "one-time"
-            ? `<p><strong>Manage Your Subscription:</strong> You can update, pause, or cancel your recurring gift anytime by visiting <a href="https://kothoministries.org/membership">our membership page</a>.</p>`
+            ? `<p><strong>Manage Your Giving:</strong> You can update, pause, or cancel your recurring gift anytime by visiting <a href="https://kothoministries.org/manage">our donations page</a>.</p>`
             : ""
         }
         <p>Questions? Contact us at ${MINISTRY.phone.display} or ${MINISTRY.email}.</p>
