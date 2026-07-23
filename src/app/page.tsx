@@ -60,7 +60,7 @@ export default function Home() {
               housing, you don&apos;t have to carry it alone. Call us — a real
               person will answer.
             </p>
-            <CtaLink href={PHONE_TEL}>Call {PHONE_DISPLAY}</CtaLink>
+            <CtaLink href="/contact">Get Help</CtaLink>
           </Reveal>
           <Reveal className="flex flex-col items-start gap-4" delay={120}>
             <h2 className="font-headline text-2xl text-charcoal sm:text-3xl">
@@ -199,7 +199,7 @@ export default function Home() {
               offer pastoral care on call and by appointment — available 24
               hours a day, 7 days a week, 365 days a year.
             </p>
-            <CtaLink href={PHONE_TEL}>Call {PHONE_DISPLAY}</CtaLink>
+            <CtaLink href="/contact">Get Help</CtaLink>
           </Reveal>
         </div>
       </section>
