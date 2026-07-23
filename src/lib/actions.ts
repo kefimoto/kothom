@@ -1,10 +1,10 @@
 "use server";
 
 import { headers } from "next/headers";
-import { Resend } from "resend";
 import type Stripe from "stripe";
 import { CAN_ACCEPT_ONLINE_DONATIONS } from "@/lib/ministry";
 import { signPortalToken } from "@/lib/portal-token";
+import { getResendClient } from "@/lib/resend";
 import { getStripeServer } from "@/lib/stripe";
 
 /**
@@ -143,14 +143,6 @@ export type PortalInput = { email: string };
 export type PortalResult =
   | { ok: true; url?: string; message: string }
   | { ok: false; error: string };
-
-function getResendClient(): Resend {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY is not defined in environment variables");
-  }
-  return new Resend(apiKey);
-}
 
 // Whether a Stripe customer exists for this email is intentionally never
 // checked here — only at /api/portal/verify, once the requester has proven
