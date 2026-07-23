@@ -92,14 +92,30 @@ export async function POST(request: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
       console.log("Checkout session completed:", session.id);
 
-      if (session.customer && typeof session.customer === "string") {
+      let customerId = session.customer;
+      if (!customerId && session.customer_email) {
+        try {
+          const stripe = getStripeServer();
+          const customers = await stripe.customers.list({
+            email: session.customer_email,
+            limit: 1,
+          });
+          if (customers.data.length > 0) {
+            customerId = customers.data[0].id;
+          }
+        } catch (error) {
+          console.error("Error looking up customer by email:", error);
+        }
+      }
+
+      if (customerId && typeof customerId === "string") {
         try {
           const stripe = getStripeServer();
           const displayName = (session.metadata?.displayName as string) || "";
           const isAnonymous =
             (session.metadata?.isAnonymous as string) || "false";
 
-          await stripe.customers.update(session.customer, {
+          await stripe.customers.update(customerId, {
             metadata: {
               displayName,
               isAnonymous,
