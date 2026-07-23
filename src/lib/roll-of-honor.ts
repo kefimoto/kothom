@@ -102,24 +102,44 @@ export async function getRollOfHonor(): Promise<RollOfHonorData> {
     const publicSupporters: PublicSupporter[] = [];
     let anonymousDonorCount = 0;
 
-    for (const [customerId, { totalAmount }] of customerTotals.entries()) {
-      try {
-        const customer = await stripe.customers.retrieve(customerId);
+    const customerIds = Array.from(customerTotals.keys());
+    const batchSize = 10;
 
-        if (typeof customer === "object" && "metadata" in customer) {
-          if (customer.metadata?.isAnonymous === "true") {
-            anonymousDonorCount++;
-          } else if (customer.metadata?.displayName) {
-            publicSupporters.push({
-              id: customerId,
-              name: customer.metadata.displayName,
-              year: currentYear,
-              totalAmount: totalAmount / 100,
-            });
+    for (let i = 0; i < customerIds.length; i += batchSize) {
+      const batch = customerIds.slice(i, i + batchSize);
+      const customerRetrievals = batch.map(async (customerId) => {
+        try {
+          const customer = await stripe.customers.retrieve(customerId);
+          const totalAmount = customerTotals.get(customerId)?.totalAmount || 0;
+
+          if (typeof customer === "object" && "metadata" in customer) {
+            if (customer.metadata?.isAnonymous === "true") {
+              return { type: "anonymous" as const };
+            } else if (customer.metadata?.displayName) {
+              return {
+                type: "public" as const,
+                supporter: {
+                  id: customerId,
+                  name: customer.metadata.displayName,
+                  year: currentYear,
+                  totalAmount: totalAmount / 100,
+                },
+              };
+            }
           }
+        } catch (error) {
+          console.error(`Error retrieving customer ${customerId}:`, error);
         }
-      } catch (error) {
-        console.error(`Error retrieving customer ${customerId}:`, error);
+        return null;
+      });
+
+      const results = await Promise.all(customerRetrievals);
+      for (const result of results) {
+        if (result?.type === "anonymous") {
+          anonymousDonorCount++;
+        } else if (result?.type === "public") {
+          publicSupporters.push(result.supporter);
+        }
       }
     }
 
