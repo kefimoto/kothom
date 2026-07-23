@@ -61,6 +61,7 @@ describe("Checkout Server Action", () => {
     const result = await createCheckoutSession({
       amount: -10,
       frequency: "monthly",
+      email: "donor@example.com",
     });
     expect(result.ok).toBe(false);
     expect(!result.ok && result.error).toBe("Invalid donation amount.");
@@ -70,6 +71,7 @@ describe("Checkout Server Action", () => {
     const result = await createCheckoutSession({
       amount: 50,
       frequency: "weekly",
+      email: "donor@example.com",
     });
     expect(result.ok).toBe(false);
     expect(!result.ok && result.error).toBe("Invalid frequency specified.");
@@ -84,6 +86,7 @@ describe("Checkout Server Action", () => {
     const result = await createCheckoutSession({
       amount: 25,
       frequency: "monthly",
+      email: "john@example.com",
       tShirtSize: "L",
       displayName: "John Doe",
       isAnonymous: false,
@@ -126,6 +129,7 @@ describe("Checkout Server Action", () => {
     const result = await createCheckoutSession({
       amount: 100,
       frequency: "annual",
+      email: "donor@example.com",
       isAnonymous: true,
     });
 
@@ -158,6 +162,7 @@ describe("Checkout Server Action", () => {
     const result = await createCheckoutSession({
       amount: 50,
       frequency: "one-time",
+      email: "donor@example.com",
     });
 
     expect(result.ok).toBe(true);
