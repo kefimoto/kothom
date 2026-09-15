@@ -20,12 +20,12 @@
     "*.{ts,tsx,js,jsx,json,css,md}": "biome check --write --no-errors-on-unmatched"
   },
   "dependencies": {
-    "@next/third-parties": "^16.2.11",
-    "next": "16.2.11",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "resend": "^6.18.0",
-    "stripe": "^22.3.2"
+    "@next/third-parties": "^16.3.5",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "resend": "^6.28.0",
+    "stripe": "^22.6.2"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.5",
